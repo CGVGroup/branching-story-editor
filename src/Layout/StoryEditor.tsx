@@ -55,6 +55,10 @@ function StoryEditor(props: {
 			props.setStories(stories =>
 				new Map(stories).set(id, new Template(template.template, template.instances)));
 	}, [props.setStories, template])
+
+	useEffect(() => {
+		fileUpload.current?.addEventListener("cancel", () => setFileUploading(false));
+	}, [])
 	
 	return (
 		<Container className="h-100" fluid>
@@ -125,7 +129,8 @@ function StoryEditor(props: {
 									<Row style={{height:"60%"}}>
 									<TemplateDetails
 										template={template}
-										setTemplate={setTemplate} />
+										setTemplate={setTemplate}
+										onClick={(index: number) => navigate(`/stories/${id}/${index}`)} />
 									</Row>
 								</Card.Body>
 							</>

@@ -7,10 +7,11 @@ import StoryElements from "./StoryElements.tsx";
 function TemplateDetails(props: {
   template: Template,
   setTemplate: React.Dispatch<React.SetStateAction<Template | undefined>>
+  onClick: (index: number) => void
 }) {
+
   const onInstance = useCallback(() => {
-    props.setTemplate(template => 
-      new Template(template?.template, template?.instances).instantiate());
+    props.setTemplate(template => template?.cloneAndInstantiate());
 	}, [props]);
   
   const onClickDeleteInstance = useCallback((instanceIndex: number) => {
@@ -44,7 +45,9 @@ function TemplateDetails(props: {
                   <Button variant="danger" onClick={() => onClickDeleteInstance(idx)}>
                     <i className="bi bi-trash" aria-label="delete" /> 
                   </Button>}>
-                {instance.title}
+                <ListGroup.Item action onClick={() => props.onClick(idx)}>
+                  {instance.title}
+                </ListGroup.Item>
               </ActionListElement>
             )}
           </ListGroup>

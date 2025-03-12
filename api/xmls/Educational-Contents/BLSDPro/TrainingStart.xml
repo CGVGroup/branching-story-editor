@@ -1,8 +1,0 @@
-<?xml version="1.0" ?>
-<node>
-  <language value="ITA">
-    <description level="Novice">Nuova</description>
-    <description level="Intermediate">Benvenuto alla sessione di training per la procedure di BLSD avanzato.</description>
-    <description level="Expert">Benvenuto alla sessione di training per la procedure di BLSD avanzato.</description>
-  </language>
-</node>

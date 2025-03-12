@@ -116,8 +116,7 @@ function TemplateEditor(props: {
 						activeKey={currentTab}
 						onSelect={k => setCurrentTab(k ?? "structure")}
 						navbarScroll
-						variant="underline"
-						style={{flexWrap:"nowrap"}}>
+						variant="underline">
 						<Tab
 							eventKey="structure"
 							title={<div className="custom-nav-link">Struttura</div>}
@@ -157,9 +156,9 @@ function TemplateEditor(props: {
 										setScene={newScene => onSceneEdited(nodeId, newScene)}/>}
 								{node.type === NodeType.choice &&
 									<ChoiceEditor 
+										story={localStory}
 										choices={node.data.choices as ChoiceDetails[]}
-										setChoices={newChoice => onChoiceEdited(nodeId, newChoice)}
-										story={localStory} />}
+										setChoices={newChoice => onChoiceEdited(nodeId, newChoice)} />}
 							</Tab>
 							)}
 						)}

@@ -28,7 +28,8 @@ function SceneEditor(props: {
 	const [localScene, setLocalScene] = useState(
 		new Scene(
 			props.scene.workspace,
-			props.scene.details
+			props.scene.details,
+			props.scene.prompt
 		));
 	
 	const handleWorkspaceChange = useCallback((workspace: Blockly.Workspace) => {
@@ -38,7 +39,7 @@ function SceneEditor(props: {
 		}
 		const workspaceObject: BlockData[] = JSON.parse("[" + workspaceString + "]");
 		setBlocks(workspaceObject.map(block => [block.outputText ?? "", convertFromObjectTypeToEnum(block.type)]));
-		setLocalScene(localScene => new Scene(workspace, localScene.details));
+		setLocalScene(localScene => new Scene(workspace, localScene.details, localScene.prompt));
 	}, []);
 
 	const { workspace } = useBlocklyWorkspace({
@@ -54,7 +55,11 @@ function SceneEditor(props: {
 	}, []);
 
 	const handleEditDetails = useCallback((newDetails: SceneDetailsType) => {
-		setLocalScene(scene => new Scene(scene.workspace, newDetails));
+		setLocalScene(scene => new Scene(scene.workspace, newDetails, scene.prompt));
+	}, []);
+
+	const handleEditPrompt = useCallback((newPrompt: string) => {
+		setLocalScene(scene => new Scene(scene.workspace, scene.details, newPrompt));
 	}, []);
 
 	const onClickAdd = useCallback((type: StoryElementType) => {
@@ -86,6 +91,8 @@ function SceneEditor(props: {
 			workspace.scrollCenter()
 		}
 	}, [workspace]);
+
+
 
 	useEffect(() => {
 		if (workspace) populateCustomToolbox(props.story, workspace, onClickAdd);
@@ -119,14 +126,10 @@ function SceneEditor(props: {
 							</div>
 							<div className="h-25">
 								<PromptArea
-									initialText={
-										blocks.map(block => {
-											if (block[1] === null) return block[0] ?? "";
-											return `@${block[0]}`;
-										}).join("")
-									}
+									initialText={localScene.prompt}
 									story={props.story}
-									setBlocks={handleBlockChange} />
+									setBlocks={handleBlockChange}
+									setText={handleEditPrompt} />
 							</div>
 						</Card.Body>
 					</Card>

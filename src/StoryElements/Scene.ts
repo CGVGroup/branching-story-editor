@@ -10,18 +10,17 @@ type SceneDetails = {
     backgroundIds: [string[], string[], string[]];
 }
 
-type SerializedScene = {
-    workspace: {[key: string]: any} | undefined;
-    details: SceneDetails;
-}
-
 class Scene {
     workspace: {[key: string]: any} | undefined;
     details: SceneDetails;
+    prompt: string;
+    fullText: string;
 
     constructor(
         workspace?: Blockly.Workspace | {[key: string]: any},
-        details?: Partial<SceneDetails>
+        details?: Partial<SceneDetails>,
+        prompt?: string,
+        fullText?: string
     ) {
         if (workspace instanceof Blockly.Workspace)
             this.workspace = Blockly.serialization.workspaces.save(workspace);
@@ -36,47 +35,27 @@ class Scene {
                 value: details?.value ?? "",
                 backgroundIds: details?.backgroundIds ?? [[], [], []],
             }
+            this.prompt = prompt ?? "";
+            this.fullText = fullText ?? "";
     }
 
     copy(): Scene {
         return new Scene(
             this.workspace,
-            this.details
-        )
-    }
-
-    serialize() {
-        return {
-            workspace: this.workspace,
-            details: this.details
-        }
-    }
-
-    static deserialize(obj: SerializedScene) {
-        return new Scene(
-            obj.workspace,
-            obj.details
-        )
+            this.details,
+            this.prompt
+        );
     }
 
     toJson(): string {  //Renamed to lowercase to avoid JSON.stringify from using this
-        return JSON.stringify(this.serialize());
+        return JSON.stringify(this);
     }
 
     static fromJSON(json: string) {
         try {
-            const obj = JSON.parse(json)
-            return this.deserialize(obj);
+            return JSON.parse(json);
         } catch (ex) {
-            throw new Error("Failed to parse JSON file: " + ex)
-        }
-    }
-
-    static fromJSONObject(object: SerializedScene) {
-        try {
-            return this.deserialize(object);
-        } catch (ex) {
-            throw new Error("Failed to parse Serialized Scene Object: " + ex)
+            throw new Error("Failed to parse JSON file: " + ex);
         }
     }
 
@@ -84,9 +63,9 @@ class Scene {
         const newScene = Scene.fromJSON(json);
         if (newScene.workspace) {
             try {
-                Blockly.serialization.workspaces.load(newScene.workspace, workspace)
+                Blockly.serialization.workspaces.load(newScene.workspace, workspace);
             } catch (ex) {
-                console.error("Failed to parse JSON workspace: ", ex)
+                console.error("Failed to parse JSON workspace: ", ex);
             }
         } else {
             console.info("No workspace to parse");
@@ -99,4 +78,4 @@ class Scene {
 }
 
 export default Scene;
-export {type SceneDetails, type SerializedScene};
+export {type SceneDetails};

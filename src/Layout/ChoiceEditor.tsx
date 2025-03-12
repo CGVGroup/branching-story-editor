@@ -5,9 +5,10 @@ import PromptArea from "./PromptArea.tsx";
 import Story from "../StoryElements/Story.tsx";
 
 function ChoiceEditor(props: {
+    story: Story,
     choices: ChoiceDetails[],
     setChoices: (choices: ChoiceDetails[]) => void,
-    story: Story,
+    readOnly?: boolean
 }) {
     const [localChoices, setLocalChoices] = useState(props.choices);
     const [timer, setTimer] = useState<NodeJS.Timeout>();
@@ -59,23 +60,31 @@ function ChoiceEditor(props: {
                                 </InputGroup.Text>
                                 <Form.Control
                                     value={choice.title}
-                                    onChange={e => setChoice(choiceIndex, {...localChoices[choiceIndex], title: e.target.value})} />
-                                <Button variant="danger" onClick={() => deleteChoice(choiceIndex)}>
-                                    <i className="bi bi-trash" aria-label="delete" /> 
-                                </Button>
-                                <Button variant="secondary" onClick={() => moveChoiceLeft(choiceIndex)} disabled={choiceIndex === 0} >
-                                    <i className="bi bi-chevron-left" aria-label="move left" /> 
-                                </Button>
-                                <Button variant="secondary" onClick={() => moveChoiceRight(choiceIndex)} disabled={choiceIndex === choices.length - 1}>
-                                    <i className="bi bi-chevron-right" aria-label="move right" /> 
-                                </Button>
+                                    onChange={e => setChoice(choiceIndex, {...localChoices[choiceIndex], title: e.target.value})}
+                                    disabled={props.readOnly} />
+                                {!props.readOnly &&
+                                    <>
+                                        <Button variant="danger" onClick={() => deleteChoice(choiceIndex)}>
+                                            <i className="bi bi-trash" aria-label="delete" /> 
+                                        </Button>
+                                        <Button variant="secondary" onClick={() => moveChoiceLeft(choiceIndex)} disabled={choiceIndex === 0} >
+                                            <i className="bi bi-chevron-left" aria-label="move left" /> 
+                                        </Button>
+                                        <Button variant="secondary" onClick={() => moveChoiceRight(choiceIndex)} disabled={choiceIndex === choices.length - 1}>
+                                            <i className="bi bi-chevron-right" aria-label="move right" /> 
+                                        </Button>
+                                    </>
+                                }
                             </InputGroup>
                         </Card.Header>
                         <Card.Body style={{overflowY:"auto"}}>
                             <Form onSubmit={e => e.preventDefault()}>
                                 <InputGroup>
                                     <InputGroup.Text style={{width:textWidth}}>Scelta giusta:</InputGroup.Text>
-                                    <Button variant={choice.wrong ? "danger" : "success"} onClick={() => setChoice(choiceIndex, {...localChoices[choiceIndex], wrong: !localChoices[choiceIndex].wrong})}>
+                                    <Button
+                                        variant={choice.wrong ? "danger" : "success"}
+                                        onClick={() => setChoice(choiceIndex, {...localChoices[choiceIndex], wrong: !localChoices[choiceIndex].wrong})}
+                                        disabled={props.readOnly} >
                                         {choice.wrong ? <i className="bi bi-x-lg"/> : <i className="bi bi-check-lg"/>}
                                     </Button>
                                 </InputGroup>
@@ -83,30 +92,31 @@ function ChoiceEditor(props: {
                                     <PromptArea
                                         initialText={choice.choice}
                                         story={props.story}
-                                        setText={(text: string) => setChoice(choiceIndex, {...localChoices[choiceIndex], choice: text})} />
+                                        setText={(text: string) => setChoice(choiceIndex, {...localChoices[choiceIndex], choice: text})}
+                                        readOnly={props.readOnly} />
                                 </div>
-                                {/*<InputGroup>
-                                    <InputGroup.Text style={{width:textWidth}}>Testo scelta:</InputGroup.Text>
-                                </InputGroup>*/}
                                 <Collapse in={choice.wrong}>
                                     <InputGroup>
                                         <InputGroup.Text style={{width:textWidth}}>Conseguenza:</InputGroup.Text>
                                         <Form.Control
                                             as="textarea"
                                             value={choice.consequence}
-                                            onChange={e => setChoice(choiceIndex, {...localChoices[choiceIndex], consequence: e.target.value})} />
+                                            onChange={e => setChoice(choiceIndex, {...localChoices[choiceIndex], consequence: e.target.value})}
+                                            disabled={props.readOnly} />
                                     </InputGroup>
                                 </Collapse>
                             </Form>
                         </Card.Body>
                     </Card>
                 )}
-                <Button variant="light" onClick={addNewChoice}>
-                    <Col>
-                        <i className="bi bi-plus-square-dotted" style={{display: "block", fontSize:"xxx-large"}}></i>
-                        Aggiungi Scelta
-                    </Col>
-                </Button>
+                {!props.readOnly &&
+                    <Button variant="light" onClick={addNewChoice}>
+                        <Col>
+                            <i className="bi bi-plus-square-dotted" style={{display: "block", fontSize:"xxx-large"}}></i>
+                            Aggiungi Scelta
+                        </Col>
+                    </Button>
+                }
             </div>
         </Col>
     );

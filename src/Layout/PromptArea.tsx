@@ -20,7 +20,8 @@ function PromptArea(props: {
 	initialText?: string,
 	setBlocks?: (blocks: [string, StoryElementType | null][]) => void,
 	setText?: (text: string) => void,
-	onBlur?: (text: string) => void
+	onBlur?: (text: string) => void,
+	readOnly?: boolean
 }) {
 	const ref = useRef<RichTextareaHandle>(null);
 	const refApp = useRef(document.getElementsByClassName("App").item(0));
@@ -243,15 +244,16 @@ function PromptArea(props: {
 							closeMenu();
 						}
 					}
-				}}>
+				}}
+				disabled={props.readOnly}>
 				{renderer}
 			</RichTextarea>
-			{refApp.current && showMenu &&
+			{refApp.current && showMenu && !props.readOnly &&
 				createPortal(
 					<div
 						className="prompt-area-menu d-flex flex-column"
 						onBlur={closeMenu}
-						style={{height: filtered.length > maxElementsShown ? "15em" : "", transform: `translate(min(${pos?.left ?? 0}px, calc(100vw - 100%)), max(${pos?.top ?? 0}px - 100%, 0px))`}}>
+						style={{height: filtered.length > maxElementsShown ? "18em" : "", transform: `translate(min(${pos?.left ?? 0}px, calc(100vw - 100%)), max(${pos?.top ?? 0}px - 100%, 0px))`}}>
 						{elements}
 					</div>,
 					refApp.current)

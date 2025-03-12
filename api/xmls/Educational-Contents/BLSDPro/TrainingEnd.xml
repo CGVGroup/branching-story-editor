@@ -1,8 +1,0 @@
-<?xml version="1.0" ?>
-<node>
-  <language value="ITA">
-    <description level="Expert">Hai correttamente completato la sessione di training. Adesso ritornerai al menu principale.</description>
-    <description level="Intermediate">Hai correttamente completato la sessione di training. Adesso ritornerai al menu principale.</description>
-    <description level="Novice">Hai correttamente completato la sessione di training. Adesso ritornerai al menu principale.</description>
-  </language>
-</node>
