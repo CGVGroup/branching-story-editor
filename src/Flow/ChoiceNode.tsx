@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Handle, NodeProps, NodeToolbar, Position } from "@xyflow/react";
-import { Button, ButtonGroup, Col, InputGroup, Row } from "react-bootstrap";
+import { Button, ButtonGroup, Col, InputGroup } from "react-bootstrap";
 import { ChoiceDetails, ChoiceNodeType, StoryNode } from "./StoryNode.tsx";
 import { LabeledHandle } from "./LabeledHandle.tsx";
 import DynamicTextField from "../Layout/DynamicTextField.tsx";
@@ -27,6 +27,7 @@ function ChoiceNode(props: NodeProps<ChoiceNodeType>) {
           onSubmit={handleSubmitChoiceName}
           isInvalid={label => label === ""}
           baseProps={{
+            id: "name",
             className: "name",
             size: "sm",
           }} />

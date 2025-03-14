@@ -119,7 +119,7 @@ function InstanceEditor(props: {
                                                         {loadings[idx] ? 
                                                             <Spinner size="sm"/>
                                                         :
-                                                            <i className="bi bi-send"/>
+                                                            <i className="bi bi-send" />
                                                         }
                                                     </Button>
                                                 </Col>

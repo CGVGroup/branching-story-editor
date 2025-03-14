@@ -18,7 +18,6 @@ const maxElementsShown = 8;
 function PromptArea(props: {
 	story: Story,
 	initialText?: string,
-	setBlocks?: (blocks: [string, StoryElementType | null][]) => void,
 	setText?: (text: string) => void,
 	onBlur?: (text: string) => void,
 	readOnly?: boolean
@@ -225,10 +224,6 @@ function PromptArea(props: {
 				onChange={e => {
 					setText(e.target.value);
 					props.setText?.(e.target.value);
-					props.setBlocks?.(
-						textSplitter(e.target.value, false)
-						.map(s => s.startsWith("@") && s.match(highlight_all) ? [s.slice(1), mentionMatcher(s)] : [s, null])
-					);
 				}}
 				onKeyDown={onKeyDown}
 				onSelectionChange={r => {

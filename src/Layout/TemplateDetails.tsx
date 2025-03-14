@@ -1,6 +1,5 @@
 import React, { useCallback } from "react";
 import { Button, Card, ListGroup, Stack } from "react-bootstrap";
-import Template from "../StoryElements/Template.ts";
 import ActionListElement from "./ActionListElement.tsx";
 import StoryElements from "./StoryElements.tsx";
 

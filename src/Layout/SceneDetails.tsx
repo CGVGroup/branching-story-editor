@@ -121,7 +121,7 @@ function SceneDetails(props: {
 								noElementsText="Nessun Luogo" />
 						</Col>
 						<Button onClick={() => setBackgroundsModal(true)}>
-							<i className="bi bi-pencil"></i>
+							<i className="bi bi-pencil" />
 						</Button>
 					</InputGroup>
 					

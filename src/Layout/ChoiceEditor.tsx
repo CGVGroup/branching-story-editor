@@ -1,8 +1,9 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { Button, Card, Col, Collapse, Form, InputGroup, ListGroup, Row } from "react-bootstrap";
+import { Button, Card, Col, Collapse, Form, InputGroup } from "react-bootstrap";
 import { ChoiceDetails } from "../Flow/StoryNode.tsx";
 import PromptArea from "./PromptArea.tsx";
 import Story from "../StoryElements/Story.tsx";
+import debouncing from "../Misc/Debouncing.ts";
 
 function ChoiceEditor(props: {
     story: Story,
@@ -37,14 +38,10 @@ function ChoiceEditor(props: {
 
     const handleSave = useCallback((choices: ChoiceDetails[]) => {
         props.setChoices(choices);
-    }, []);
+    }, [props.setChoices]);
 
-    useEffect(() => {
-        if (timer) {
-            clearTimeout(timer);
-        }
-        setTimer(setTimeout(() => handleSave(localChoices), 250));
-    }, [localChoices, handleSave]);
+    useEffect(() => debouncing(timer, setTimer, () => handleSave(localChoices), 250)
+    , [localChoices, handleSave]);
 
     return (
         <Col>
@@ -112,7 +109,7 @@ function ChoiceEditor(props: {
                 {!props.readOnly &&
                     <Button variant="light" onClick={addNewChoice}>
                         <Col>
-                            <i className="bi bi-plus-square-dotted" style={{display: "block", fontSize:"xxx-large"}}></i>
+                            <i className="bi bi-plus-square-dotted" style={{display: "block", fontSize:"xxx-large"}} />
                             Aggiungi Scelta
                         </Col>
                     </Button>

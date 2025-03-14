@@ -28,9 +28,9 @@ const LabeledHandle = React.forwardRef<
       className={`handle-text ${flexDirections[position] ?? ""} ${className ?? ""}`}
     >
       <Handle position={position} className={handleClassName} {...props}/>
-      <label className={`px-2 ${labelClassName ?? ""}`} style={{visibility: title ? "visible" : "hidden"}}>
+      <span className={`px-2 ${labelClassName ?? ""}`} style={{visibility: title ? "visible" : "hidden"}}>
         {title ? title : "Nessun titolo"}
-      </label>
+      </span>
     </div>
   ),
 );

@@ -6,19 +6,17 @@ import { ReactFlow, Controls, Background, applyNodeChanges, Panel, ReactFlowInst
 import Story from "../StoryElements/Story.ts";
 import Scene from "../StoryElements/Scene.ts";
 import { ChoiceNodeProps, createNewChoiceNode, createNewSceneNode, NodeType, SceneNodeProps, storyNodeTypes } from "./StoryNode.tsx";
+import debouncing from "../Misc/Debouncing.ts";
 
 function StoryFlowChartEditor (props: {
   story: Story,
   setStory: React.Dispatch<React.SetStateAction<Story>>,
   onClickEditNode: (id: string) => void,
 }) {
-  const story = props.story;
   const [nodes, setNodes] = useState<Node[]>([]);
   const [edges, setEdges] = useState<Edge[]>([]);
   const [rfInstance, setRfInstance] = useState<ReactFlowInstance>();
   const [timer, setTimer] = useState<NodeJS.Timeout>();
-
-  const [selectedNodeId, setSelectedNodeId] = useState<string>();
 
   const flowRef = useRef(null);
 
@@ -34,18 +32,6 @@ function StoryFlowChartEditor (props: {
     setEdges(eds => addEdge({ ...connection, markerEnd: {type: MarkerType.ArrowClosed, width: 20, height: 20} }, eds),
   ), []);
 
-  const onNodeClick = useCallback((_, node: Node) => {
-    setSelectedNodeId(node.id);  
-  }, []);
-
-  const onNodeContextMenu = useCallback((_, node: Node) => {
-    setSelectedNodeId(node.id);  
-  }, []);
-
-  const onPaneClick = useCallback(() => {
-    setSelectedNodeId(undefined);
-  }, []);
-
   const onClickEdit = useCallback((id: string) => {
     props.onClickEditNode(id);
   }, [props.onClickEditNode]);
@@ -55,20 +41,6 @@ function StoryFlowChartEditor (props: {
       node => node.id !== nodeId
     ));
   }, []);
-  
-  const onSceneEdited = useCallback((newScene: Scene) => {
-    if (selectedNodeId) {
-      setNodes(nodes => nodes.map(
-        node => {
-          if (node.id === selectedNodeId) {
-            return {...node, data: {...node.data, scene: newScene.copy()}};
-          } else {
-            return node;
-          }
-        }
-      ));
-    }
-  }, [selectedNodeId]);
 
   const onSceneNameChanged = useCallback((id: string, newName: string) => {
     setNodes(nodes => nodes.map(
@@ -180,21 +152,19 @@ function StoryFlowChartEditor (props: {
   }, [onClickEdit, onClickDelete, onSceneNameChanged, onSceneTitleChanged])
 
   const handleInit = useCallback((rfInstance: ReactFlowInstance) => {
-    story.flow.nodes.forEach(node => addExistingNode(node));
-    setEdges(story.flow.edges);
+    props.story.flow.nodes.forEach(node => addExistingNode(node));
+    setEdges(props.story.flow.edges);
     rfInstance.fitView();
     setRfInstance(rfInstance);
-  }, [story, addExistingNode]);
+  }, [props.story, addExistingNode]);
 
-  useEffect(() => {
-    if (timer) {
-      clearTimeout(timer);
-    }
-    setTimer(setTimeout(() => {
-      if (rfInstance)
-          props.setStory(story.cloneAndAddFlow({nodes: nodes, edges: edges, viewport: rfInstance.getViewport()}));
-    }, 250));
-  }, [nodes, edges, rfInstance])
+  const handleSave = useCallback(() => {
+    if (rfInstance)
+      props.setStory(story => story.cloneAndAddFlow({nodes: nodes, edges: edges, viewport: rfInstance.getViewport()}));
+  }, [nodes, edges, rfInstance]);
+
+  useEffect(() => debouncing(timer, setTimer, handleSave, 250)
+  , [handleSave]);
   
   const nodeTypes = useMemo(() => storyNodeTypes, []);
 
@@ -207,9 +177,6 @@ function StoryFlowChartEditor (props: {
         onConnect={onConnect}
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
-        onNodeClick={onNodeClick}
-        onNodeContextMenu={onNodeContextMenu}
-        onPaneClick={onPaneClick}
         onInit={handleInit}
         deleteKeyCode={['Backspace', 'Delete']}
         style={{ border: "1px solid black" }}

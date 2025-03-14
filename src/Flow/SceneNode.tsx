@@ -1,4 +1,4 @@
-import React, { memo, useState } from "react";
+import React, { useState } from "react";
 import { Button, ButtonGroup, Col, InputGroup } from "react-bootstrap";
 import { Handle, NodeProps, NodeToolbar, Position } from "@xyflow/react";
 import Scene from "../StoryElements/Scene.ts";
@@ -30,6 +30,7 @@ function SceneNode(props: NodeProps<SceneNodeType>) {
           onSubmit={handleSubmitSceneName}
           isInvalid={label => label === ""}
           baseProps={{
+            id: "name",
             className: "name",
             size: "sm",
           }}/>
@@ -38,6 +39,7 @@ function SceneNode(props: NodeProps<SceneNodeType>) {
           focusOnDoubleClick={true}
           onSubmit={handleSubmitSceneTitle}
           baseProps={{
+            id: "title",
             className: "title",
             size: "sm",
             placeholder: "Nessun Titolo",

@@ -1,6 +1,6 @@
+import React from "react";
 import { Form, InputGroup } from "react-bootstrap";
 import { CharacterElement, LocationElement, ObjectElement, StoryElementType, StoryElement } from "../StoryElements/StoryElement.ts";
-import React from "react";
 
 function StoryElementInputForm(props: {
     type: StoryElementType,

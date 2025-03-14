@@ -9,7 +9,9 @@ type SerializedStory = {
     objects: [string, ObjectElement][],
     locations: [string, LocationElement][],
     flow: ReactFlowJsonObject,
-    title: string
+    title: string,
+    summary: string,
+    notes: string
 }
 
 class Story {
@@ -18,13 +20,17 @@ class Story {
     locations: Map<string, LocationElement>;
     flow: ReactFlowJsonObject;
     title: string;
+    summary: string;
+    notes: string;
 
     constructor(
         characters: CharacterElement[] | [string, CharacterElement][] = [],
         objects: ObjectElement[] | [string, ObjectElement][] = [],
         locations: LocationElement[] | [string, LocationElement][] = [],
         flow: ReactFlowJsonObject = {nodes: [], edges: [], viewport: {x: 0, y: 0, zoom: 1}},
-        title?: string
+        title?: string,
+        summary?: string,
+        notes?: string
     ) {
         this.characters = new Map();
         characters.forEach(char => Array.isArray(char) ? this.characters.set(char[0], char[1]) : this.characters.set(uuidv4(), char));
@@ -34,10 +40,19 @@ class Story {
         locations.forEach(loc => Array.isArray(loc) ? this.locations.set(loc[0], loc[1]) : this.locations.set(uuidv4(), loc));
         this.flow = flow;
         this.title = title ?? "Storia senza titolo";
+        this.summary = summary ?? "";
+        this.notes = notes ?? "";
     }
 
     clone(): Story {
-        return new Story([...this.characters.entries()], [...this.objects.entries()], [...this.locations.entries()], this.flow, this.title); 
+        return new Story(
+            [...this.characters.entries()],
+            [...this.objects.entries()],
+            [...this.locations.entries()],
+            this.flow,
+            this.title,
+            this.summary,
+            this.notes); 
     }
 
     canAddElement(element: StoryElement): boolean {
@@ -162,12 +177,14 @@ class Story {
             objects: Array.from(this.objects.entries()),
             locations: Array.from(this.locations.entries()),
             flow: this.flow,
-            title: this.title
+            title: this.title,
+            summary: this.summary,
+            notes: this.notes
         }
     }
 
     static deserialize(obj: SerializedStory): Story {
-        return new Story(obj.characters, obj.objects, obj.locations, obj.flow, obj.title);
+        return new Story(obj.characters, obj.objects, obj.locations, obj.flow, obj.title, obj.summary, obj.notes);
     }
 
     toJSON(): string {
@@ -175,28 +192,7 @@ class Story {
     }
 
     static fromJSON(json: string): Story {
-        const obj = JSON.parse(json)
-        return this.deserialize(obj);
-    }
-
-    instantiate(): Story {
-        const instance = this.clone();
-        for (const char of this.characters) {
-            if (char[1].isVariable) {
-                instance.characters[char[0]] = new CharacterElement(false, char[1].name + " (Istanziato)");
-            }
-        }
-        for (const obj of this.objects) {
-            if (obj[1].isVariable) {
-                instance.objects[obj[0]] = new ObjectElement(false, obj[1].name + " (Istanziato)");
-            }
-        }
-        for (const loc of this.locations) {
-            if (loc[1].isVariable) {
-                instance.locations[loc[0]] = new LocationElement(false, loc[1].name + " (Istanziato)");
-            }
-        }
-        return instance;
+        return this.deserialize(JSON.parse(json));
     }
 }
 

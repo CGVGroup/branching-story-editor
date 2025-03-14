@@ -82,7 +82,7 @@ function StoryElements (props: {
 
   const elementList = useCallback((type: StoryElementType, readOnly: boolean, className?: string) => {
     return (
-      <ListGroup style={{maxHeight: "90%", overflowY: "auto"}} className="story-elements">
+      <ListGroup style={{overflowY: "auto"}} className="story-elements">
         {[...props.story.getTypeMap(type)].map(([id, elem]) => (
           <OverlayTrigger
             key={id}
@@ -122,7 +122,7 @@ function StoryElements (props: {
           <Tab
             eventKey={tab.type}
             key={tab.type}
-            className={"h-100"}
+            className="h-100"
             tabClassName={tab.className}
             title={
               <>
@@ -136,7 +136,7 @@ function StoryElements (props: {
             {!readOnly && 
               <Button onClick={onAddButtonClicked} variant="outline-primary">
                 {tab.buttonText}
-                <i className="bi bi-plus-square"/>
+                <i className="bi bi-plus-square" />
               </Button>}
             {elementList(tab.type, readOnly, tab.className)}
           </Tab>

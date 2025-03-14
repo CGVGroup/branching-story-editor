@@ -12,7 +12,7 @@ function ElementChip(props: {
         <Card className={props.className} style={props.style}>
             {props.name}
             {props.onRemove && 
-                <i className="bi bi-x-lg close-button" onClick={props.onRemove}></i>
+                <i className="bi bi-x-lg close-button" onClick={props.onRemove} />
             }
         </Card>
     );

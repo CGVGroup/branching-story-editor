@@ -1,4 +1,4 @@
-function saveToDisk(object: any, fileName?: string, fileType?: string) {
+export default function saveToDisk(object: any, fileName?: string, fileType?: string) {
     if (!object) return;
     const name = fileName ?? "Download";
     const type = fileType ?? "text/plain";
@@ -10,5 +10,3 @@ function saveToDisk(object: any, fileName?: string, fileType?: string) {
     link.click();
     link.remove();
 }
-
-export default saveToDisk;
