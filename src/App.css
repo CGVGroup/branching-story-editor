@@ -252,4 +252,8 @@
   .full-text:disabled {
     cursor: wait;
   }
+
+  textarea {
+    resize: none;
+  }
 }

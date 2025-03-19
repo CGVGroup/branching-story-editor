@@ -55,7 +55,7 @@ function BackgroundElementsModal(props: {
     setSelectedObjects: React.Dispatch<React.SetStateAction<Set<string>>>,
     selectedLocation: Set<string>,
     setSelectedLocation: React.Dispatch<React.SetStateAction<Set<string>>>,
-    noElementTexts: [string, string, string]
+    noElementTexts: string[]
 }) {
     return (
         <Modal

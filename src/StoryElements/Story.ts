@@ -56,13 +56,13 @@ class Story {
     }
 
     canAddElement(element: StoryElement): boolean {
-        const map = this.getTypeMap(element.type);
+        const map = this.getElementMapByType(element.type);
         return ![...map.values()].some(el => el.name === element.name);
     }
 
     addElement(element: StoryElement) {
         if (!this.canAddElement(element)) return false;
-        const map = this.getTypeMap(element.type);
+        const map = this.getElementMapByType(element.type);
         switch (element.type) {
             case StoryElementType.character:
                 const char = element as CharacterElement;
@@ -81,42 +81,61 @@ class Story {
     }
 
     cloneAndAddElement(element: StoryElement): Story {
-        this.addElement(element);
-        return this.clone();
+        const cloned = this.clone();
+        cloned.addElement(element);
+        return cloned;
     }
 
     cloneAndAddFlow(flow: ReactFlowJsonObject): Story {
-        this.flow = flow;
-        return this.clone();
+        const cloned = this.clone();
+        cloned.flow = flow;
+        return cloned;
     }
 
-    cloneAndSetScene(id: string, scene: Scene) {
-        this.flow.nodes.find(node => node.id === id)!.data.scene = scene;
-        return this.clone();
+    cloneAndSetScene(id: string, scene: Scene): Story {
+        const cloned = this.clone();
+        cloned.flow.nodes.find(node => node.id === id)!.data.scene = scene;
+        return cloned;
     }
 
-    cloneAndSetChoice(id: string, choices: ChoiceDetails[]) {
-        this.flow.nodes.find(node => node.id === id)!.data.choices = choices;
-        return this.clone();
+    cloneAndSetChoice(id: string, choices: ChoiceDetails[]): Story {
+        const cloned = this.clone();
+        cloned.flow.nodes.find(node => node.id === id)!.data.choices = choices;
+        return cloned;
     }
 
     cloneAndSetElement(id: string, element: StoryElement): Story {
-        this.setElement(id, element);
-        return this.clone();
+        const cloned = this.clone();
+        cloned.setElement(id, element);
+        return cloned;
     }
 
     cloneAndSetTitle(title: string): Story {
-        this.title = title;
-        return this.clone();
+        const cloned = this.clone();
+        cloned.title = title;
+        return cloned;
+    }
+
+    cloneAndSetSummary(summary: string): Story {
+        const cloned = this.clone();
+        cloned.summary = summary;
+        return cloned;
+    }
+
+    cloneAndSetNotes(notes: string): Story {
+        const cloned = this.clone();
+        cloned.notes = notes;
+        return cloned;
     }
 
     cloneAndDeleteElement(id: string): Story {
-        this.deleteElement(id);
-        return this.clone();
+        const cloned = this.clone();
+        cloned.deleteElement(id);
+        return cloned;
     }
 
     setElement(id: string, element: StoryElement) {
-        const iter = this.getTypeMap(element.type);
+        const iter = this.getElementMapByType(element.type);
         iter.set(id, element);
     }
 
@@ -126,21 +145,21 @@ class Story {
         if (this.locations.delete(id)) return;
     }
 
-    getAll(): StoryElement[] {
+    getAllElements(): StoryElement[] {
         return new Array<StoryElement>().concat(
             [...this.characters.values()],
             [...this.objects.values()],
             [...this.locations.values()]);
     }
 
-    getAllMap(): Map<string, StoryElement> {
+    getAllElementsMap(): Map<string, StoryElement> {
         return new Map(new Array<[string, StoryElement]>().concat(
-            [...this.getTypeMap(StoryElementType.character)],
-            [...this.getTypeMap(StoryElementType.object)],
-            [...this.getTypeMap(StoryElementType.location)]));
+            [...this.getElementMapByType(StoryElementType.character)],
+            [...this.getElementMapByType(StoryElementType.object)],
+            [...this.getElementMapByType(StoryElementType.location)]));
     }
   
-    getTypeMap(type: StoryElementType): Map<string, StoryElement> {
+    getElementMapByType(type: StoryElementType): Map<string, StoryElement> {
         switch (type) {
             case StoryElementType.character:
                 return this.characters;
@@ -151,8 +170,8 @@ class Story {
         }
     }
 
-    getTypeIterator(type: StoryElementType): MapIterator<StoryElement> {
-        return this.getTypeMap(type).values();
+    getElementIteratorByType(type: StoryElementType): MapIterator<StoryElement> {
+        return this.getElementMapByType(type).values();
     }
 
     getElementById(id: string): StoryElement | undefined {
@@ -163,12 +182,12 @@ class Story {
         return this.flow.nodes.find(node => node.id === id);
     }
 
-    find(element: StoryElement) {
-        const iter = this.getTypeMap(element.type);
-        for (const [key, value] of iter.entries()) {
-            if (value.equals(element)) return key;
-        }
-        return null;
+    getSceneById(id: string): Scene | undefined {
+        return this.getNodeById(id)?.data.scene as Scene
+    }
+
+    getAllNodes(): Node[] {
+        return this.flow.nodes;
     }
 
     serialize(): SerializedStory {
@@ -192,6 +211,7 @@ class Story {
     }
 
     static fromJSON(json: string): Story {
+        console.log(this.deserialize(JSON.parse(json)))
         return this.deserialize(JSON.parse(json));
     }
 }

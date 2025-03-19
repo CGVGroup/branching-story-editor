@@ -31,17 +31,14 @@ class Scene {
         this.fullText = fullText ?? "";
     }
 
-    copy(): Scene {
-        return new Scene(
-            this.details,
-            this.prompt
-        );
-    }
-
     toJson(): string {  //Renamed to lowercase to avoid JSON.stringify from using this
         return JSON.stringify(this);
     }
 
+    static from(scene: Scene) {
+        return new Scene(scene.details, scene.prompt, scene.fullText);
+    }
+    
     static fromJSON(json: string) {
         try {
             return new Scene(...JSON.parse(json));

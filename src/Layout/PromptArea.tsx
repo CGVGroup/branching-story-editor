@@ -32,7 +32,7 @@ function PromptArea(props: {
 	const [menuSelected, setMenuSelected] = useState<string | undefined>();
 	const [menuTabKey, setMenuTabKey] = useState(StoryElementType.character);
 
-	const allMap = useMemo(() => props.story.getAllMap(), [props.story]);
+	const allMap = useMemo(() => props.story.getAllElementsMap(), [props.story]);
 	const allArray = useMemo(() => [...allMap.entries()], [allMap]);
 	
 	const [match, name] = useMemo(() => {

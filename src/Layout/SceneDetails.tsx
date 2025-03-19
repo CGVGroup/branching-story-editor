@@ -7,6 +7,7 @@ import { SceneDetailsContext } from "../App.tsx";
 import DropdownTextField from "./DropdownTextField.tsx";
 import { ChipList, ElementChip } from "./ElementChip.tsx";
 import BackgroundElementsModal from "./BackgroundElementsModal.tsx";
+import { storyElementTabsArray } from "./StoryElements.tsx";
 
 function SceneDetails(props: {
 	story: Story,
@@ -52,7 +53,7 @@ function SceneDetails(props: {
 				setSelectedObjects={setBackgroundObjects}
 				selectedLocation={backgroundLocations}
 				setSelectedLocation={setBackgroundLocations}
-				noElementTexts={["Nessun Personaggio", "Nessun Oggetto", "Nessun Luogo"]}/>
+				noElementTexts={storyElementTabsArray.map(element => element.noElementsText)}/>
 			<Card.Header>
 				<h4>Dettagli scena</h4>
 			</Card.Header>

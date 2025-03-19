@@ -1,4 +1,4 @@
-import { Button, Card, Col, Container, ListGroup, Row, Spinner, Stack } from "react-bootstrap";
+import { Button, Card, Col, Container, Form, InputGroup, ListGroup, Row, Spinner, Stack } from "react-bootstrap";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Story from "../StoryElements/Story.ts";
@@ -30,7 +30,6 @@ function StoriesDashboard({stories, setStory, addStory, deleteStory}: {
 		}
 		try {
 			for (const file of Array.from(files)) {
-				
 				addStory(Story.fromJSON(await file.text()));
 			}
 		} catch(err) {
@@ -44,6 +43,10 @@ function StoriesDashboard({stories, setStory, addStory, deleteStory}: {
 		addStory(new Story());
 	}, [addStory]);
 
+	const onClickCopy = useCallback((story: Story) => {
+		addStory(story.cloneAndSetTitle(story.title + " (Copia)"));
+	}, [addStory])
+
 	const selectedStory = useMemo(() => stories.get(id!), [stories, id]);
 
 	// Handler for aborting file upload dialog
@@ -51,9 +54,9 @@ function StoriesDashboard({stories, setStory, addStory, deleteStory}: {
 		fileUpload.current?.addEventListener("cancel", () => setFileUploading(false));
 	}, []);
 	
-	useEffect(() => {
+	/*useEffect(() => {
 		setId([...stories.keys()].pop());
-	}, [stories]);
+	}, [stories]);*/
 	
 	return (
 		<Container className="h-100" fluid>
@@ -89,17 +92,14 @@ function StoriesDashboard({stories, setStory, addStory, deleteStory}: {
 								{[...stories.keys()].map(id =>
 									<ListGroup.Item key={id}>
 										<ActionListElement
-											leftSide={
-												<Button variant="danger" onClick={() => onClickDelete(id)}>
-													<i className="bi bi-trash" aria-label="delete" /> 
-												</Button>}
 											rightSide={
 												<Button variant="secondary" onClick={() => navigate(`${id}`)}>
 													<i className="bi bi-pencil-square" aria-label="edit"/>
 												</Button>}>
 											<ListGroup.Item
 												action
-												onClick={() => setId(id)} style={{width:"100%"}}>
+												onClick={() => setId(id)}
+												style={{width:"100%"}}>
 												<span style={{fontStyle: stories.get(id)!.flow.nodes.length === 0 ? "italic" : ""}}>
 													{stories.get(id)!.title}
 												</span>
@@ -113,22 +113,55 @@ function StoriesDashboard({stories, setStory, addStory, deleteStory}: {
 				</Col>
 				<Col className="h-100">
 					<Card className="h-100">
-						{selectedStory ?
+						{id && selectedStory ?
 							<>
 								<Card.Header>
-									<h5>{selectedStory.title}</h5>
+									<InputGroup>
+										<Button variant="danger" onClick={() => onClickDelete(id)}>
+											<i className="bi bi-trash" aria-label="delete" /> 
+										</Button>
+										<Button variant="secondary" onClick={() => onClickCopy(selectedStory)}>
+											<i className="bi bi-copy" aria-label="duplicate" /> 
+										</Button>
+										<Button variant="secondary" onClick={() => navigate(`${id}`)}>
+											<i className="bi bi-pencil-square" aria-label="edit"/>
+										</Button>
+										<Form.Control
+											value={selectedStory.title}
+											onChange={e => setStory(id, selectedStory.cloneAndSetTitle(e.target.value))}/>
+									</InputGroup>
 								</Card.Header>
 								<Card.Body>
 									<Card style={{height:"40%"}}>
-										<StoryFlowChartViewer story={selectedStory} storyId={id!}/>
+										<StoryFlowChartViewer story={selectedStory} storyId={id}/>
 									</Card>
-									<Card style={{width:"50%", height:"60%"}}>
-										<Card.Body className="h-100 custom-tabs" style={{display: "flex", flexDirection: "column"}}>
-											<StoryElements
-												story={selectedStory}
-												readOnly={true} />
-										</Card.Body>
-									</Card>
+									<Row style={{height:"60%"}}>
+										<Col xs={6} className="h-100">
+											<Card className="h-100">
+												<Card.Body className="h-100 custom-tabs" style={{display: "flex", flexDirection: "column"}}>
+													<StoryElements
+														story={selectedStory}
+														readOnly={true} />
+												</Card.Body>
+											</Card>
+										</Col>
+										<Col>
+											<InputGroup className="h-50">
+												<InputGroup.Text>Riassunto:</InputGroup.Text>
+												<Form.Control
+													as="textarea"
+													value={selectedStory.summary}
+													onChange={e => setStory(id, selectedStory.cloneAndSetSummary(e.target.value))}/>
+											</InputGroup>
+											<InputGroup className="h-50">
+												<InputGroup.Text>Note:</InputGroup.Text>
+												<Form.Control
+													as="textarea"
+													value={selectedStory.notes}
+													onChange={e => setStory(id, selectedStory.cloneAndSetNotes(e.target.value))}/>
+											</InputGroup>
+										</Col>
+									</Row>
 								</Card.Body>
 							</>
 						:

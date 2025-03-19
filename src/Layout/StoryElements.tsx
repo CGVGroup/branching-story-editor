@@ -6,9 +6,9 @@ import ElementModal from "./AddElementModal.tsx";
 import Story from "../StoryElements/Story.ts";
 
 const storyElementTabsArray = [
-  {type: StoryElementType.character, className: "character-mention", tabText: "🙋", buttonText: "Personaggi " },
-  {type: StoryElementType.object, className: "object-mention", tabText: "⚱️", buttonText: "Oggetti " },
-  {type: StoryElementType.location, className: "location-mention", tabText: "🏛️", buttonText: "Luoghi " }
+  {type: StoryElementType.character, className: "character-mention", tabText: "🙋", buttonText: "Personaggi ", noElementsText: "Nessun personaggio" },
+  {type: StoryElementType.object, className: "object-mention", tabText: "⚱️", buttonText: "Oggetti ", noElementsText: "Nessun oggetto" },
+  {type: StoryElementType.location, className: "location-mention", tabText: "🏛️", buttonText: "Luoghi ", noElementsText: "Nessun luogo" }
 ]
 
 function StoryElements (props: {
@@ -81,31 +81,38 @@ function StoryElements (props: {
   ), [key, modalAction, modal, selectedElement, onEditElement, onSubmitNewElement]);
 
   const elementList = useCallback((type: StoryElementType, readOnly: boolean, className?: string) => {
+    const elements = [...props.story.getElementMapByType(type)];
     return (
       <ListGroup style={{overflowY: "auto"}} className="story-elements">
-        {[...props.story.getTypeMap(type)].map(([id, elem]) => (
-          <OverlayTrigger
-            key={id}
-            placement={"right"}
-            trigger="focus"
-            overlay={
-              <Tooltip>
-                <ButtonGroup vertical>
-                  <Button variant="secondary" onClick={() => onElementEditButtonClicked(id, elem)}>
-                    <i className="bi bi-pencil" aria-label="edit" /> 
-                  </Button>
-                  <Button variant="danger" onClick={() => onElementDeleteButtonClicked(id)}>
-                    <i className="bi bi-trash" aria-label="delete" /> 
-                  </Button>
-                </ButtonGroup>
-              </Tooltip>}>
-            <ListGroup.Item key={id} action={!readOnly}
-              className={`d-flex flex-grow-1 ${className}`}
-              style={{textWrap:"pretty", justifyContent:"space-evenly"}}>
-              {elem.name}
-            </ListGroup.Item>
-          </OverlayTrigger>
-        ))}
+        {elements.length === 0 ?
+          <ListGroup.Item disabled>
+            {storyElementTabsArray[type].noElementsText}
+          </ListGroup.Item>
+        :
+          elements.map(([id, elem]) => (
+            <OverlayTrigger
+              key={id}
+              placement={"right"}
+              trigger="focus"
+              overlay={
+                <Tooltip>
+                  <ButtonGroup vertical>
+                    <Button variant="secondary" onClick={() => onElementEditButtonClicked(id, elem)}>
+                      <i className="bi bi-pencil" aria-label="edit" /> 
+                    </Button>
+                    <Button variant="danger" onClick={() => onElementDeleteButtonClicked(id)}>
+                      <i className="bi bi-trash" aria-label="delete" /> 
+                    </Button>
+                  </ButtonGroup>
+                </Tooltip>}>
+              <ListGroup.Item key={id} action={!readOnly}
+                className={`d-flex flex-grow-1 ${className}`}
+                style={{textWrap:"pretty", justifyContent:"space-evenly"}}>
+                {elem.name}
+              </ListGroup.Item>
+            </OverlayTrigger>
+          ))
+        }
       </ListGroup>);
   }, [props]);
 

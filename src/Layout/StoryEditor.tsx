@@ -10,6 +10,7 @@ import Scene from "../StoryElements/Scene.ts";
 import SceneEditor from "./SceneEditor.tsx";
 import { ChoiceDetails, NodeType } from "../Flow/StoryNode.tsx";
 import ChoiceEditor from "./ChoiceEditor.tsx";
+import StoryTexts from "./StoryTexts.tsx";
 
 function StoryEditor(props: {
 	stories: Map<string, Story>,
@@ -136,10 +137,10 @@ function StoryEditor(props: {
 							title={<div className="custom-nav-link">Testi</div>}
 							unmountOnExit>
 							<Row className="w-100 h-100 gx-0">
-								<StoryFlowChartEditor
+								<StoryTexts
 									story={localStory}
 									setStory={story => { setDirty(true); setLocalStory(story) }}
-									onClickEditNode={onClickEditNode}/>
+									onClickOpenScene={(id: string) => onClickEditNode(id)}/>
 							</Row>
 						</Tab>
 						{openNodes?.map(nodeId => {

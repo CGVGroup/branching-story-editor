@@ -44,37 +44,25 @@ function StoryFlowChartEditor (props: {
 
   const onSceneNameChanged = useCallback((id: string, newName: string) => {
     setNodes(nodes => nodes.map(
-      node => {
-        if (node.id === id) {
-          return {...node, data: {...node.data, label: newName}};
-        } else {
-          return node;
-        }
-      }
-    ))}, []);
+      node => node.id === id ? {...node, data: {...node.data, label: newName}} : node));
+  }, []);
   
   const onSceneTitleChanged = useCallback((id: string, newTitle: string) => {
     setNodes(nodes => nodes.map(
-      node => {
-        if (node.id === id) {
-          return {
-            ...node,
-            data: {
-              ...node.data,
-              scene: {
-                ...(node.data.scene as Scene),
-                details: {
-                  ...(node.data.scene as Scene).details,
-                  title: newTitle
-                }
+      node => node.id === id ?
+          {...node,
+          data: {
+            ...node.data,
+            scene: {
+              ...(node.data.scene as Scene),
+              details: {
+                ...(node.data.scene as Scene).details,
+                title: newTitle
               }
             }
-          };
-        } else {
-          return node;
+          }
         }
-      }
-    )
+      : node)
   )}, []);
 
   const addNewNode = useCallback((type: NodeType = NodeType.scene) => {
