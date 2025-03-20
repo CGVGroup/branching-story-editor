@@ -1,9 +1,9 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { Button, Card, Col, Collapse, Form, InputGroup } from "react-bootstrap";
+import { debounce } from "throttle-debounce";
 import { ChoiceDetails } from "../Flow/StoryNode.tsx";
 import PromptArea from "./PromptArea.tsx";
 import Story from "../StoryElements/Story.tsx";
-import debouncing from "../Misc/Debouncing.ts";
 
 function ChoiceEditor(props: {
     story: Story,
@@ -12,7 +12,6 @@ function ChoiceEditor(props: {
     readOnly?: boolean
 }) {
     const [localChoices, setLocalChoices] = useState(props.choices);
-    const [timer, setTimer] = useState<NodeJS.Timeout>();
 
     const textWidth = "25%";
 
@@ -36,12 +35,11 @@ function ChoiceEditor(props: {
         setLocalChoices(choices => {[choices[index-1], choices[index]] = [choices[index], choices[index-1]]; return [...choices]});
     }, []);
 
-    const handleSave = useCallback((choices: ChoiceDetails[]) => {
+    const handleSave = useCallback(debounce(250, (choices: ChoiceDetails[]) => {
         props.setChoices(choices);
-    }, [props.setChoices]);
+    }), [props.setChoices]);
 
-    useEffect(() => debouncing(timer, setTimer, () => handleSave(localChoices), 250)
-    , [localChoices, handleSave]);
+    useEffect(() => handleSave(localChoices), [localChoices, handleSave]);
 
     return (
         <Col>

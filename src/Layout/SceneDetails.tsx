@@ -1,11 +1,12 @@
-import React, { useCallback, useContext, useState } from "react";
-import { Button, Card, Col, Form, InputGroup, ListGroup, Modal, Row } from "react-bootstrap";
+import React, { useCallback, useContext, useEffect, useState } from "react";
+import { Button, Card, Col, Form, InputGroup } from "react-bootstrap";
+import { debounce } from 'throttle-debounce';
 import Story from "../StoryElements/Story.ts";
 import { SceneDetails as SceneDetailsType} from "../StoryElements/Scene.ts";
 import { StoryElementType } from "../StoryElements/StoryElement.ts";
 import { SceneDetailsContext } from "../App.tsx";
 import DropdownTextField from "./DropdownTextField.tsx";
-import { ChipList, ElementChip } from "./ElementChip.tsx";
+import { ChipList } from "./ElementChip.tsx";
 import BackgroundElementsModal from "./BackgroundElementsModal.tsx";
 import { storyElementTabsArray } from "./StoryElements.tsx";
 
@@ -30,7 +31,7 @@ function SceneDetails(props: {
 
 	const textWidth = "20%";
 
-	const handleSave = useCallback(() => {
+	const handleSave = useCallback(debounce(100, () =>
 		props.setDetails({
 			title: title,
 			summary: summary,
@@ -39,7 +40,9 @@ function SceneDetails(props: {
 			tone: tone,
 			value: value,
 			backgroundIds: [Array.from(backgroundCharacters), Array.from(backgroundObjects), Array.from(backgroundLocations)]})
-	}, [title, summary, time, weather, tone, value, backgroundCharacters, backgroundObjects, backgroundLocations]);
+	), [title, summary, time, weather, tone, value, backgroundCharacters, backgroundObjects, backgroundLocations]);
+
+	useEffect(() => handleSave(), [handleSave]);
 
 	return (
 		<Card>
@@ -58,7 +61,7 @@ function SceneDetails(props: {
 				<h4>Dettagli scena</h4>
 			</Card.Header>
 			<Card.Body>
-				<Form onBlur={handleSave}>
+				<Form>
 					<InputGroup>
 						<InputGroup.Text style={{ width: textWidth }}>Titolo:</InputGroup.Text>
 						<Form.Control

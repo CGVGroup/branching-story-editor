@@ -211,7 +211,6 @@ class Story {
     }
 
     static fromJSON(json: string): Story {
-        console.log(this.deserialize(JSON.parse(json)))
         return this.deserialize(JSON.parse(json));
     }
 }

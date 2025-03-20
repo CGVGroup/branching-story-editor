@@ -1,12 +1,12 @@
 import "@xyflow/react/dist/style.css";
 import { v4 as uuidv4 } from "uuid";
+import { debounce } from "throttle-debounce";
 import React, { useCallback, useState, useMemo, useEffect, useRef } from "react";
 import { Button, Row } from "react-bootstrap";
 import { ReactFlow, Controls, Background, applyNodeChanges, Panel, ReactFlowInstance, Edge, NodeChange, Node, addEdge, Connection, EdgeChange, applyEdgeChanges, MarkerType } from "@xyflow/react";
 import Story from "../StoryElements/Story.ts";
 import Scene from "../StoryElements/Scene.ts";
 import { ChoiceNodeProps, createNewChoiceNode, createNewSceneNode, NodeType, SceneNodeProps, storyNodeTypes } from "./StoryNode.tsx";
-import debouncing from "../Misc/Debouncing.ts";
 
 function StoryFlowChartEditor (props: {
   story: Story,
@@ -16,7 +16,6 @@ function StoryFlowChartEditor (props: {
   const [nodes, setNodes] = useState<Node[]>([]);
   const [edges, setEdges] = useState<Edge[]>([]);
   const [rfInstance, setRfInstance] = useState<ReactFlowInstance>();
-  const [timer, setTimer] = useState<NodeJS.Timeout>();
 
   const flowRef = useRef(null);
 
@@ -146,13 +145,12 @@ function StoryFlowChartEditor (props: {
     setRfInstance(rfInstance);
   }, [props.story, addExistingNode]);
 
-  const handleSave = useCallback(() => {
+  const handleSave = useCallback(debounce(250, () => {
     if (rfInstance)
       props.setStory(story => story.cloneAndAddFlow({nodes: nodes, edges: edges, viewport: rfInstance.getViewport()}));
-  }, [nodes, edges, rfInstance]);
+  }), [nodes, edges, rfInstance]);
 
-  useEffect(() => debouncing(timer, setTimer, handleSave, 250)
-  , [handleSave]);
+  useEffect(() => handleSave(), [handleSave]);
   
   const nodeTypes = useMemo(() => storyNodeTypes, []);
 

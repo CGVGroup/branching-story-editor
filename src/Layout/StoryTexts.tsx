@@ -1,11 +1,11 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { Accordion, Button, Col, Form, Row, Spinner } from "react-bootstrap";
+import { debounce } from "throttle-debounce";
 import Scene from "../StoryElements/Scene.ts";
 import ChoiceEditor from "./ChoiceEditor.tsx";
 import { ChoiceDetails, ChoiceNodeProps, SceneNodeProps } from "../Flow/StoryNode.tsx";
 import Story from "../StoryElements/Story.ts";
 import PromptArea from "./PromptArea.tsx";
-import debouncing from "../Misc/Debouncing.ts";
 import { sendToLLM } from "../Misc/LLM.ts";
 
 function StoryTexts(props: {
@@ -15,7 +15,6 @@ function StoryTexts(props: {
 }) {
     const [localStory, setLocalStory] = useState<Story>(props.story.clone());
     const [loadings, setLoadings] = useState<boolean[]>(new Array(localStory.flow.nodes.length).fill(false));
-    const [timer, setTimer] = useState<NodeJS.Timeout>();
     
     const onFullTextEdited = useCallback((id: string, newText: string) => {
         setLocalStory(story => {
@@ -46,7 +45,11 @@ function StoryTexts(props: {
         setLoadings(loadings => loadings.map((loading, idx) => idx === index ? false : loading));
     }, [localStory, onFullTextEdited]);
 
-    useEffect(() => debouncing(timer, setTimer, () => props.setStory(localStory), 250), [localStory]);
+    const handleSave = useCallback(debounce(250, () => 
+        props.setStory(localStory)
+    ), [localStory]);
+
+    useEffect(() => handleSave(), [handleSave]);
 
     return (
         <Col className="h-100" style={{overflowY:"auto"}}>
@@ -63,7 +66,7 @@ function StoryTexts(props: {
                             </Accordion.Header>
                             <Accordion.Body>
                                 <Row style={{height:"10em"}}>
-                                    <Col>
+                                    <Col xs={4}>
                                         <PromptArea
                                             story={localStory}
                                             initialText={data.scene?.prompt}
@@ -106,6 +109,7 @@ function StoryTexts(props: {
                             </Accordion.Body>
                         </Accordion.Item>
                     }
+                    return null;
                 })}
             </Accordion>
         </Col>

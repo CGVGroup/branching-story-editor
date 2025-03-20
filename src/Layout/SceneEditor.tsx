@@ -1,10 +1,10 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { Button, Card, Col, Form, Row, Spinner } from "react-bootstrap";
+import { debounce } from 'throttle-debounce';
 import Story from "../StoryElements/Story.ts";
 import Scene, { SceneDetails as SceneDetailsType } from "../StoryElements/Scene.ts";
 import SceneDetails from "./SceneDetails.tsx";
 import PromptArea from "./PromptArea.tsx";
-import debouncing from "../Misc/Debouncing.ts";
 import { sendToLLM } from "../Misc/LLM.ts";
 import UndoStack from "../Misc/UndoStack.ts";
 
@@ -14,14 +14,13 @@ function SceneEditor(props: {
 	scene: Scene,
 	setScene: (newScene: Scene) => void,
 }) {
-	const [timer, setTimer] = useState<NodeJS.Timeout>();
 	const [localScene, setLocalScene] = useState(Scene.from(props.scene));
 	const [loading, setLoading] = useState(false);
 	const [undoStack, setUndoStack] = useState(new UndoStack([localScene.fullText]));
 
-	const handleSave = useCallback((scene: Scene) => {
+	const handleSave = useCallback(debounce(250, (scene: Scene) => {
 		props.setScene(scene);
-	}, []);
+	}), []);
 
 	const handleEditDetails = useCallback((newDetails: SceneDetailsType) => {
 		setLocalScene(scene => new Scene(newDetails, scene.prompt, scene.fullText));
@@ -53,10 +52,11 @@ function SceneEditor(props: {
 		setUndoStack(undoStack => undoStack.redo());
 	}, []);
 
-	useEffect(() => debouncing(timer, setTimer, () => 
-		setLocalScene(localScene => new Scene(localScene.details, localScene.prompt, undoStack.peek())),
-		250
-	), [undoStack]);
+	useEffect(() => 
+		setLocalScene(localScene => new Scene(localScene.details, localScene.prompt, undoStack.peek()))
+	, [undoStack]);
+	
+	useEffect(() => handleSave(localScene), [handleSave, localScene]);
 
 	return (			
 		<Row className="h-100">
@@ -66,7 +66,7 @@ function SceneEditor(props: {
 						<h4>Prompt</h4>
 					</Card.Header>
 					<Card.Body className="h-100">
-						<Col className="h-100" onBlur={() => handleSave(localScene)}>
+						<Col className="h-100">
 							<Row className="h-25 gx-0">
 								<Col>
 									<PromptArea
