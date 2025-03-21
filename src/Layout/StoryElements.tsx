@@ -58,7 +58,7 @@ function StoryElements (props: {
     props.setStory?.(story => story.cloneAndAddElement(newElement));
     onDeselectElement();
     return true;
-  }, [key, props.story, props.setStory]);
+  }, [key, props.story]);
 
   const onEditElement = useCallback((editedElement: StoryElement) => {
     if (selectedElementId) {
@@ -68,7 +68,7 @@ function StoryElements (props: {
     }
     onDeselectElement();
     return false;
-  }, [selectedElementId, key, props.setStory]);
+  }, [selectedElementId, key]);
 
   const dynamicElementModal = useMemo(() => (
     <ElementModal

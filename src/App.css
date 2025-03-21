@@ -162,6 +162,7 @@
 
   .custom-tabs {
     .nav-underline {
+      align-items: end;
       gap: 0.25rem;
     }
     
@@ -194,6 +195,10 @@
 
     li:hover .close-button, .active .close-button{
       visibility: visible;
+    }
+
+    .bi-diagram-2::before {
+      transform: rotate(-90deg);
     }
   }
 
@@ -255,5 +260,14 @@
 
   textarea {
     resize: none;
+  }
+
+  .accordion-item.choice {
+    .accordion-header {
+      background-color: var(--choice-color-light);
+    }
+    .accordion-button {
+      background-color: transparent;
+    }
   }
 }

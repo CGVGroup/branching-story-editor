@@ -37,7 +37,7 @@ function StoryEditor(props: {
 	const handleSave = useCallback((id: string) => {
 		props.setStory(id, localStory);
 		setDirty(false);
-	}, [props.setStory, localStory]);
+	}, [localStory]);
 
 	const onSceneEdited = useCallback((id: string, newScene: Scene) => {
 		setLocalStory(story => story.cloneAndSetScene(id, newScene));
@@ -123,7 +123,8 @@ function StoryEditor(props: {
 						variant="underline">
 						<Tab
 							eventKey="structure"
-							title={<div className="custom-nav-link">Struttura</div>}
+							//title={<div className="custom-nav-link">Struttura</div>}
+							title={<h4 style={{margin: "0"}}><i className="bi bi-diagram-2" style={{marginInline: "0.5em"}} /></h4>}
 							unmountOnExit>
 							<Row className="w-100 h-100 gx-0">
 								<StoryFlowChartEditor
@@ -134,7 +135,8 @@ function StoryEditor(props: {
 						</Tab>
 						<Tab
 							eventKey="texts"
-							title={<div className="custom-nav-link">Testi</div>}
+							//title={<div className="custom-nav-link">Testi</div>}
+							title={<h4 style={{margin: "0"}}><i className="bi bi-list-ol" style={{marginInline: "0.5em"}} /></h4>}
 							unmountOnExit>
 							<Row className="w-100 h-100 gx-0">
 								<StoryTexts
