@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { ListGroup, Tab, Tabs } from "react-bootstrap";
+import { FloatingLabel, Form, ListGroup, Tab, Tabs } from "react-bootstrap";
 import { createPortal } from "react-dom";
 import { RichTextarea, RichTextareaHandle } from "rich-textarea"
 import Story from "../StoryElements/Story.ts";
@@ -209,40 +209,46 @@ function PromptArea(props: {
 
 	return (
 		<div className="prompt-area h-100 w-100">
-			<RichTextarea
-				ref={ref}
-				value={text}
-				className="form-control"
-				style={{width:"100%", height:"100%", left:"0px", background:"white", maxHeight:"100%"}}
-				onBlur={e => {
-					e.preventDefault();
-					if (!e.relatedTarget?.closest(".prompt-area-menu")) {
-						props.onBlur?.(text);
-						closeMenu();
-					}
-				}}
-				onChange={e => {
-					setText(e.target.value);
-					props.setText?.(e.target.value);
-				}}
-				onKeyDown={onKeyDown}
-				onSelectionChange={r => {
-					if (r.focused) {
-						if (MENTION_REGEX.test(text.slice(0, r.selectionStart))) {
-							setPos({
-								top: r.top/* + r.height*/,
-								left: r.left,
-								caret: r.selectionStart
-							});
-							setShowMenu(true);
-						} else {
+			<Form.Floating className="h-100">
+				<RichTextarea
+					ref={ref}
+					value={text}
+					className="form-control"
+					id="prompt-text-area"
+					style={{width:"100%", height:"100%", left:"0px", background:"white", maxHeight:"100%"}}
+					//placeholder='prova'
+					onBlur={e => {
+						e.preventDefault();
+						if (!e.relatedTarget?.closest(".prompt-area-menu")) {
+							props.onBlur?.(text);
 							closeMenu();
 						}
-					}
-				}}
-				disabled={props.readOnly}>
-				{renderer}
-			</RichTextarea>
+					}}
+					onChange={e => {
+						setText(e.target.value);
+						props.setText?.(e.target.value);
+					}}
+					onKeyDown={onKeyDown}
+					onSelectionChange={r => {
+						if (r.focused) {
+							if (MENTION_REGEX.test(text.slice(0, r.selectionStart))) {
+								setPos({
+									top: r.top/* + r.height*/,
+									left: r.left,
+									caret: r.selectionStart
+								});
+								setShowMenu(true);
+							} else {
+								closeMenu();
+							}
+						}
+					}}
+					
+					disabled={props.readOnly}>
+					{renderer}
+				</RichTextarea>
+				{/*<label htmlFor="prompt-text-area">Testo Sintetico:</label>*/}
+			</Form.Floating>
 			{refApp.current && showMenu && !props.readOnly &&
 				createPortal(
 					<div

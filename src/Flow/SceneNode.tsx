@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Button, ButtonGroup, Col, InputGroup } from "react-bootstrap";
+import { Button, ButtonGroup, Col, InputGroup, Stack } from "react-bootstrap";
 import { Handle, NodeProps, NodeToolbar, Position } from "@xyflow/react";
 import Scene from "../StoryElements/Scene.ts";
 import DynamicTextField from "../Layout/DynamicTextField.tsx";
@@ -23,7 +23,7 @@ function SceneNode(props: NodeProps<SceneNodeType>) {
 
   return (
     <StoryNode selected={props.selected} className="scene">
-      <Col>
+      <Stack gap={1}>
         <DynamicTextField 
           initialValue={props.data.label}
           focusOnDoubleClick={true}
@@ -33,6 +33,7 @@ function SceneNode(props: NodeProps<SceneNodeType>) {
             id: "name",
             className: "name",
             size: "sm",
+            style: {maxWidth: "100%"}
           }}/>
         <DynamicTextField
           initialValue={props.data.scene?.details.title}
@@ -44,7 +45,7 @@ function SceneNode(props: NodeProps<SceneNodeType>) {
             size: "sm",
             placeholder: "Nessun Titolo",
           }}/>
-      </Col>
+      </Stack>
       <Handle type="target" position={Position.Left}/>
       <Handle type="source" position={Position.Right}/>
       <NodeToolbar isVisible={props.selected}>

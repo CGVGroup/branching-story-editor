@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { Button, Card, Col, Form, Row, Spinner } from "react-bootstrap";
+import { Button, Card, Col, FloatingLabel, Form, FormFloating, Row, Spinner } from "react-bootstrap";
 import { debounce } from 'throttle-debounce';
 import Story from "../StoryElements/Story.ts";
 import Scene, { SceneDetails as SceneDetailsType } from "../StoryElements/Scene.ts";
@@ -63,7 +63,7 @@ function SceneEditor(props: {
 			<Col xs={6} className="h-100">
 				<Card className="h-100">
 					<Card.Header>
-						<h4>Prompt</h4>
+						<h4>Testo</h4>
 					</Card.Header>
 					<Card.Body className="h-100">
 						<Col className="h-100">
@@ -97,11 +97,14 @@ function SceneEditor(props: {
 								</Col>
 							</Row>
 							<div className="h-75">
-								<Form.Control
-									as="textarea"
-									value={undoStack.peek()}
-									onChange={e => handleEditFullText(e.target.value)}
-									style={{height:"100%"}} />
+								<FloatingLabel className="h-100" label="Testo completo">
+									<Form.Control
+										as="textarea"
+										placeholder="Testo Completo:"
+										value={undoStack.peek()}
+										onChange={e => handleEditFullText(e.target.value)}
+										style={{height:"100%"}} />
+								</FloatingLabel>
 							</div>
 						</Col>
 					</Card.Body>
@@ -114,6 +117,7 @@ function SceneEditor(props: {
 					setDetails={handleEditDetails} />
 			</Col>
 		</Row>
+		
 	);
 }
 

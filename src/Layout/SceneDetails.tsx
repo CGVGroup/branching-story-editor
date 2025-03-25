@@ -4,8 +4,8 @@ import { debounce } from 'throttle-debounce';
 import Story from "../StoryElements/Story.ts";
 import { SceneDetails as SceneDetailsType} from "../StoryElements/Scene.ts";
 import { StoryElementType } from "../StoryElements/StoryElement.ts";
-import { SceneDetailsContext } from "../App.tsx";
-import DropdownTextField from "./DropdownTextField.tsx";
+import { DefaultEnumsContext } from "../App.tsx";
+import DropdownField from "./DropdownField.tsx";
 import { ChipList } from "./ElementChip.tsx";
 import BackgroundElementsModal from "./BackgroundElementsModal.tsx";
 import { storyElementTabsArray } from "./StoryElements.tsx";
@@ -27,7 +27,7 @@ function SceneDetails(props: {
 
 	const [backgroundsModal, setBackgroundsModal] = useState(false);
 
-	const sceneDetailsChoices = useContext(SceneDetailsContext);
+	const sceneDetailsChoices = useContext(DefaultEnumsContext);
 
 	const textWidth = "20%";
 
@@ -77,25 +77,25 @@ function SceneDetails(props: {
 							onChange={e => setSummary(e.target.value)} />
 					</InputGroup>
 					<hr />
-					<DropdownTextField
+					<DropdownField
 						label="Orario"
 						value={time}
 						setValue={setTime}
 						defaultValue="Nessun Orario"
 						choices={sceneDetailsChoices.time} />
-					<DropdownTextField
+					<DropdownField
 						label="Meteo"
 						value={weather}
 						setValue={setWeather}
 						defaultValue="Nessun Meteo"
 						choices={sceneDetailsChoices.weather} />
-					<DropdownTextField
+					<DropdownField
 						label="Tono"
 						value={tone}
 						setValue={setTone}
 						defaultValue="Nessun Tono"
 						choices={sceneDetailsChoices.tone} />
-					<DropdownTextField
+					<DropdownField
 						label="Valore"
 						value={value}
 						setValue={setValue}

@@ -30,7 +30,7 @@ function DynamicTextField(props: {
 				{...props.baseProps}
 				className={`dynamic-text-field ${props.baseProps?.className ?? ""} ${focus ? "nodrag" : ""}`}
 				value={value}
-				plaintext={!focus}
+				//plaintext={!focus}
 				readOnly={!focus}
 				isInvalid={props.isInvalid?.(value)}
 				autoComplete="off"

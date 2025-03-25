@@ -17,6 +17,7 @@
     "react-router-dom": "^7.0.2",
     "react-scripts": "5.0.1",
     "rich-textarea": "^0.26.4",
+    "serve": "^14.2.4",
     "throttle-debounce": "^5.0.2",
     "timers": "^0.1.1",
     "web-vitals": "^2.1.4"

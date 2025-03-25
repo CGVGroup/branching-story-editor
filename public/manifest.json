@@ -1,6 +1,6 @@
 {
-  "short_name": "React App",
-  "name": "Create React App Sample",
+  "short_name": "MEI Story Editor",
+  "name": "Editor di Storie Interattive",
   "icons": [
     {
       "src": "favicon.ico",

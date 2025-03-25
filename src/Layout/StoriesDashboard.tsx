@@ -1,27 +1,39 @@
-import { Button, Card, Col, Container, Form, InputGroup, ListGroup, Row, Spinner, Stack } from "react-bootstrap";
+import { Button, Card, Col, Container, FloatingLabel, Form, Image, InputGroup, ListGroup, Row, Spinner, Stack } from "react-bootstrap";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Story from "../StoryElements/Story.ts";
-import ActionListElement from "./ActionListElement.tsx";
 import StoryFlowChartViewer from "../Flow/StoryFlowChartViewer.tsx";
 import StoryElements from "./StoryElements.tsx";
 
-function StoriesDashboard({stories, setStory, addStory, deleteStory}: {
+function StoriesDashboard(props: {
 	stories: Map<string, Story>,
 	setStory: (id: string, newStory: Story) => void,
-	addStory: (newStory: Story) => void,
+	addStory: (newStory: Story) => string,
 	deleteStory: (id: string) => void,
+	lastOpenStory: string | null,
+	setLastOpenStory: (id: string) => void
 }) {	
-	const [id, setId] = useState<string | undefined>([...stories.keys()]?.[0]);
-	const [fileUploading, setFileUploading] = useState(false);
-
 	const navigate = useNavigate();
+	
+	const [selectedId, setSelectedId] = useState<string | null>(props.lastOpenStory);
+	const [fileUploading, setFileUploading] = useState(false);
 
 	const fileUpload = useRef<HTMLInputElement>(null);
 
+	const addStory = useCallback((story: Story) => {
+		const newId = props.addStory(story);
+		setSelectedId(newId);
+	}, [props.addStory])
+
 	const onClickDelete = useCallback((id: string) => {
-		deleteStory(id);
-	}, [deleteStory]);
+		props.deleteStory(id);
+	}, [props.deleteStory]);
+
+	const onClickEdit = useCallback((id: string) => {
+		navigate(`${id}`);
+		setSelectedId(id);
+		props.setLastOpenStory(id);
+	}, []);
 	
 	const onUpload = useCallback(async (files?: FileList | null) => {
 		if (!files) {
@@ -47,11 +59,15 @@ function StoriesDashboard({stories, setStory, addStory, deleteStory}: {
 		addStory(story.cloneAndSetTitle(story.title + " (Copia)"));
 	}, [addStory])
 
-	const selectedStory = useMemo(() => stories.get(id!), [stories, id]);
+	const selectedStory = useMemo(() => props.stories.get(selectedId!), [props.stories, selectedId]);
 
 	// Handler for aborting file upload dialog
 	useEffect(() => {
 		fileUpload.current?.addEventListener("cancel", () => setFileUploading(false));
+	}, []);
+	
+	useEffect(() => {
+		document.title = "Story Editor";
 	}, []);
 	
 	/*useEffect(() => {
@@ -89,22 +105,24 @@ function StoriesDashboard({stories, setStory, addStory, deleteStory}: {
 						</Card.Header>
 						<Card.Body style={{padding:"0", maxHeight:"100%", overflow:"auto"}}>
 							<ListGroup variant="flush">
-								{[...stories.keys()].map(id =>
+								{[...props.stories.keys()].map(id =>
 									<ListGroup.Item key={id}>
-										<ActionListElement
-											rightSide={
-												<Button variant="secondary" onClick={() => navigate(`${id}`)}>
-													<i className="bi bi-pencil-square" aria-label="edit"/>
-												</Button>}>
+										<ListGroup horizontal>
 											<ListGroup.Item
 												action
-												onClick={() => setId(id)}
-												style={{width:"100%"}}>
-												<span style={{fontStyle: stories.get(id)!.flow.nodes.length === 0 ? "italic" : ""}}>
-													{stories.get(id)!.title}
-												</span>
+												onClick={() => setSelectedId(id)}
+												className={id === selectedId ? "active" : ""}
+												style={{fontStyle: props.stories.get(id)!.flow.nodes.length === 0 ? "italic" : ""}}>
+												{props.stories.get(id)!.title}
 											</ListGroup.Item>
-										</ActionListElement>
+											<ListGroup.Item
+												action
+												variant="secondary"
+												onClick={() => onClickEdit(id)}
+												style={{width:"3em"}}>
+												<i className="bi bi-pencil-square" aria-label="edit"/>
+											</ListGroup.Item>
+										</ListGroup>
 									</ListGroup.Item>
 								)}
 							</ListGroup>
@@ -113,27 +131,27 @@ function StoriesDashboard({stories, setStory, addStory, deleteStory}: {
 				</Col>
 				<Col className="h-100">
 					<Card className="h-100">
-						{id && selectedStory ?
+						{selectedId && selectedStory ?
 							<>
 								<Card.Header>
 									<InputGroup>
-										<Button variant="danger" onClick={() => onClickDelete(id)}>
+										<Button variant="danger" onClick={() => onClickDelete(selectedId)}>
 											<i className="bi bi-trash" aria-label="delete" /> 
 										</Button>
 										<Button variant="secondary" onClick={() => onClickCopy(selectedStory)}>
 											<i className="bi bi-copy" aria-label="duplicate" /> 
 										</Button>
-										<Button variant="secondary" onClick={() => navigate(`${id}`)}>
+										<Button variant="secondary" onClick={() => onClickEdit(selectedId)}>
 											<i className="bi bi-pencil-square" aria-label="edit"/>
 										</Button>
 										<Form.Control
 											value={selectedStory.title}
-											onChange={e => setStory(id, selectedStory.cloneAndSetTitle(e.target.value))}/>
+											onChange={e => props.setStory(selectedId, selectedStory.cloneAndSetTitle(e.target.value))}/>
 									</InputGroup>
 								</Card.Header>
 								<Card.Body>
 									<Card style={{height:"40%"}}>
-										<StoryFlowChartViewer story={selectedStory} storyId={id}/>
+										<StoryFlowChartViewer story={selectedStory} storyId={selectedId}/>
 									</Card>
 									<Row style={{height:"60%"}}>
 										<Col xs={6} className="h-100">
@@ -146,27 +164,40 @@ function StoriesDashboard({stories, setStory, addStory, deleteStory}: {
 											</Card>
 										</Col>
 										<Col>
-											<InputGroup className="h-50">
-												<InputGroup.Text>Riassunto:</InputGroup.Text>
+											<FloatingLabel className="h-50" label="Riassunto:">
 												<Form.Control
 													as="textarea"
+													placeholder="Riassunto"
+													className="h-100"
 													value={selectedStory.summary}
-													onChange={e => setStory(id, selectedStory.cloneAndSetSummary(e.target.value))}/>
-											</InputGroup>
-											<InputGroup className="h-50">
-												<InputGroup.Text>Note:</InputGroup.Text>
+													onChange={e => props.setStory(selectedId, selectedStory.cloneAndSetSummary(e.target.value))}/>
+											</FloatingLabel>
+											<FloatingLabel className="h-50" label="Note:">
 												<Form.Control
 													as="textarea"
+													placeholder="Note"
+													className="h-100"
 													value={selectedStory.notes}
-													onChange={e => setStory(id, selectedStory.cloneAndSetNotes(e.target.value))}/>
-											</InputGroup>
+													onChange={e => props.setStory(selectedId, selectedStory.cloneAndSetNotes(e.target.value))}/>
+											</FloatingLabel>
 										</Col>
 									</Row>
 								</Card.Body>
 							</>
 						:
-							<Card.Body>
-								Aggiungi una Storia
+							<Card.Body className="p-0 d-flex flex-column">
+								<div style={{
+									width:"100%",
+									height:"100%",
+									backgroundImage:"url(/Desert.jpg)",
+									backgroundSize:"cover",
+									opacity:"0.15"}}>
+								</div>
+								<Col style={{position:"absolute", top:"33%", width:"100%", fontSize:"x-large", alignContent:"center"}}>
+									<span>
+										Crea o seleziona una Storia
+									</span>
+								</Col>
 							</Card.Body>
 						}
 					</Card>

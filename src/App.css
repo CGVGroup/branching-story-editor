@@ -18,6 +18,45 @@
   padding: 8px 16px;
   overflow: hidden;
 
+  /*Overrides*/
+
+  --bs-list-group-active-bg: black;
+  
+  textarea {
+    resize: none;
+  }
+
+  .form-control:focus, select:focus{
+    box-shadow: none;
+  }
+
+  .tab-content {
+    flex-grow: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+
+  .tab-pane {
+    height: 100%;
+  }
+
+  /*Custom Classes*/
+
+  .accordion-item.choice {
+    .accordion-header {
+      background-color: var(--choice-color-light);
+    }
+    .accordion-button {
+      background-color: transparent;
+    }
+  }
+
+  /*.list-group-item.active {
+    background-color: #d0d0ff;
+  }*/
+
+  /*Custom Elements*/
+
   .story-title {
     font-size: xx-large;
     font-weight: 500;
@@ -95,7 +134,7 @@
 
   .dynamic-text-field {
     padding: 0;
-    border: 0;
+    background-color: transparent;
     text-align: center;
     text-wrap: pretty;
     text-overflow: ellipsis;
@@ -148,16 +187,6 @@
   .no-mention {
     background: #eee;
     color: #000;
-  }
-
-  .tab-content {
-    flex-grow: 1;
-    overflow-y: auto;
-    overflow-x: hidden;
-  }
-
-  .tab-pane {
-    height: 100%;
   }
 
   .custom-tabs {
@@ -256,18 +285,5 @@
 
   .full-text:disabled {
     cursor: wait;
-  }
-
-  textarea {
-    resize: none;
-  }
-
-  .accordion-item.choice {
-    .accordion-header {
-      background-color: var(--choice-color-light);
-    }
-    .accordion-button {
-      background-color: transparent;
-    }
   }
 }

@@ -70,6 +70,11 @@ function StoryEditor(props: {
 		setStoryElementsWidth(element.clientWidth - parseFloat(computedStyle.paddingLeft) - parseFloat(computedStyle.paddingRight));
 	}, []);
 
+	// Applies initial title
+	useEffect(() => {
+		document.title = `${dirty ? "* " : ""}${localStory.title}`;
+	}, [localStory, dirty]);
+
 	return (
 		<Container className="h-100" fluid>
 			<Row style={{alignItems: "center", height: "10%"}}>
@@ -112,6 +117,7 @@ function StoryEditor(props: {
 				<Col className="pe-0 custom-tabs d-flex flex-column h-100" style={{position:"relative"}}>
 					<Button
 						size="lg"
+						variant={sideTab ? "outline-secondary" : "outline-primary"}
 						onClick={() => setSideTab(s => !s)}
 						style={{position:"absolute", left:"-1em", top:"5%", zIndex:"10"}}>
 						<i className="bi bi-person-lines-fill" />
@@ -146,16 +152,18 @@ function StoryEditor(props: {
 							</Row>
 						</Tab>
 						{openNodes?.map(nodeId => {
-							const node = localStory.getNodeById(nodeId)!;
+							const node = localStory.getNodeById(nodeId);
+							if (node === undefined) return <></>;
 							let className: string;
 							switch (node.type) {
 								case (NodeType.scene):
-								default:
 									className = "scene";
 								break;
 								case (NodeType.choice):
 									className = "choice";
 								break;
+								default:
+									return <></>;
 							} 
 							return (
 							<Tab eventKey={nodeId} key={nodeId} title={
