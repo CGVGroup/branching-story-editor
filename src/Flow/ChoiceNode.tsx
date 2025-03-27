@@ -20,17 +20,20 @@ function ChoiceNode(props: NodeProps<ChoiceNodeType>) {
   return (
     <StoryNode selected={props.selected} className="choice">
       <Handle type="target" position={Position.Left} />
-      <Col className="px-0">
-        <DynamicTextField
-          initialValue={props.data.label}
-          focusOnDoubleClick={true}
-          onSubmit={handleSubmitChoiceName}
-          isInvalid={label => label === ""}
-          baseProps={{
-            id: "name",
-            className: "name",
-            size: "sm",
-          }} />
+      <Col className="w-100 px-0">
+        <div className="w-100 px-1">
+          <DynamicTextField
+            initialValue={props.data.label}
+            focusOnDoubleClick={true}
+            onSubmit={handleSubmitChoiceName}
+            isInvalid={label => label === ""}
+            baseProps={{
+              id: "name",
+              className: "name",
+              size: "sm",
+              style: {marginBottom: "0.5em"}
+            }} />
+        </div>
         {choices.length > 0 && 
           choices.map((choice, idx) =>
             <div key={idx}>
@@ -45,13 +48,13 @@ function ChoiceNode(props: NodeProps<ChoiceNodeType>) {
           )
         }
       </Col>
-      <NodeToolbar isVisible={props.selected}>
+      <NodeToolbar isVisible={props.selected} className="nodrag nopan">
         <InputGroup>
           <ButtonGroup>
-            <Button variant="secondary" onClick={() => props.data.onClickEdit()}>
+            <Button variant="secondary" onClick={() => props.data.onClickEdit()} title="Modifica">
               <i className="bi bi-pencil" aria-label="edit" />
             </Button>
-            <Button variant="danger" onClick={handleDelete}>
+            <Button variant="danger" onClick={handleDelete} title="Elimina">
               <i className="bi bi-trash3" aria-label="delete" />
             </Button>
           </ButtonGroup>

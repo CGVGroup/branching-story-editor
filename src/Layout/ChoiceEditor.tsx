@@ -59,13 +59,13 @@ function ChoiceEditor(props: {
                                     disabled={props.readOnly} />
                                 {!props.readOnly &&
                                     <>
-                                        <Button variant="danger" onClick={() => deleteChoice(choiceIndex)}>
+                                        <Button variant="danger" onClick={() => deleteChoice(choiceIndex)} title="Elimina">
                                             <i className="bi bi-trash" aria-label="delete" /> 
                                         </Button>
-                                        <Button variant="secondary" onClick={() => moveChoiceLeft(choiceIndex)} disabled={choiceIndex === 0} >
+                                        <Button variant="secondary" onClick={() => moveChoiceLeft(choiceIndex)} disabled={choiceIndex === 0} title="Sposta a sinistra">
                                             <i className="bi bi-chevron-left" aria-label="move left" /> 
                                         </Button>
-                                        <Button variant="secondary" onClick={() => moveChoiceRight(choiceIndex)} disabled={choiceIndex === choices.length - 1}>
+                                        <Button variant="secondary" onClick={() => moveChoiceRight(choiceIndex)} disabled={choiceIndex === choices.length - 1} title="Sposta a destra">
                                             <i className="bi bi-chevron-right" aria-label="move right" /> 
                                         </Button>
                                     </>
@@ -79,7 +79,7 @@ function ChoiceEditor(props: {
                                     <Button
                                         variant={choice.wrong ? "danger" : "success"}
                                         onClick={() => setChoice(choiceIndex, {...localChoices[choiceIndex], wrong: !localChoices[choiceIndex].wrong})}
-                                        disabled={props.readOnly} >
+                                        disabled={props.readOnly}>
                                         {choice.wrong ? <i className="bi bi-x-lg"/> : <i className="bi bi-check-lg"/>}
                                     </Button>
                                 </InputGroup>

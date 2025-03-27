@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Button, ButtonGroup, Col, InputGroup, Stack } from "react-bootstrap";
+import { Button, ButtonGroup, InputGroup, Stack } from "react-bootstrap";
 import { Handle, NodeProps, NodeToolbar, Position } from "@xyflow/react";
 import Scene from "../StoryElements/Scene.ts";
 import DynamicTextField from "../Layout/DynamicTextField.tsx";
@@ -23,7 +23,7 @@ function SceneNode(props: NodeProps<SceneNodeType>) {
 
   return (
     <StoryNode selected={props.selected} className="scene">
-      <Stack gap={1}>
+      <Stack className="px-1" gap={1}>
         <DynamicTextField 
           initialValue={props.data.label}
           focusOnDoubleClick={true}
@@ -48,7 +48,7 @@ function SceneNode(props: NodeProps<SceneNodeType>) {
       </Stack>
       <Handle type="target" position={Position.Left}/>
       <Handle type="source" position={Position.Right}/>
-      <NodeToolbar isVisible={props.selected}>
+      <NodeToolbar isVisible={props.selected} className="nodrag nopan">
         <InputGroup>
           {props.data.scene?.details.summary && 
             <InputGroup.Text className="story-node-summary">
@@ -56,10 +56,10 @@ function SceneNode(props: NodeProps<SceneNodeType>) {
             </InputGroup.Text>
           }
           <ButtonGroup vertical={!!props.data.scene?.details.summary}>
-            <Button variant="secondary" onClick={() => props.data.onClickEdit(scene, setScene)}>
+            <Button variant="secondary" onClick={() => props.data.onClickEdit(scene, setScene)} title="Modifica">
               <i className="bi bi-pencil" aria-label="edit" />
             </Button>
-            <Button variant="danger" onClick={handleDelete}>
+            <Button variant="danger" onClick={handleDelete} title="Elimina">
               <i className="bi bi-trash3" aria-label="delete" />
             </Button>
           </ButtonGroup>

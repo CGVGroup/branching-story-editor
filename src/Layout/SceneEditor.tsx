@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { Button, Card, Col, FloatingLabel, Form, FormFloating, Row, Spinner } from "react-bootstrap";
+import { Button, Card, Col, FloatingLabel, Form, Row, Spinner } from "react-bootstrap";
 import { debounce } from 'throttle-debounce';
 import Story from "../StoryElements/Story.ts";
 import Scene, { SceneDetails as SceneDetailsType } from "../StoryElements/Scene.ts";
@@ -37,10 +37,11 @@ function SceneEditor(props: {
 	const onSendButton = useCallback(async () => {
 		setLoading(true);
 		const response = await sendToLLM("");
-		if (response.ok) {
+		/*if (response.ok) {
 			const responseText = await response.text();
 			setUndoStack(undoStack => undoStack.push(responseText));
-		}
+		}*/
+		setUndoStack(undoStack => undoStack.push(response));
 		setLoading(false);
 	}, []);
 
@@ -75,7 +76,7 @@ function SceneEditor(props: {
 										setText={handleEditPrompt} />
 								</Col>
 								<Col xs={1}>
-									<Button onClick={onSendButton} disabled={loading}>
+									<Button onClick={onSendButton} disabled={loading} title="Invia all'IA">
 										{loading ? 
 											<Spinner size="sm"/>
 										:
@@ -85,22 +86,24 @@ function SceneEditor(props: {
 									<Button
 										variant="secondary"
 										disabled={!undoStack.canUndo()}
-										onClick={onUndoButton}>
+										onClick={onUndoButton}
+										title="Risposta precedente">
 										<i className="bi bi-arrow-90deg-left" />
 									</Button>
 									<Button
 										variant="secondary"
 										disabled={!undoStack.canRedo()}
-										onClick={onRedoButton}>
+										onClick={onRedoButton}
+										title="Risposta successiva">
 										<i className="bi bi-arrow-90deg-right" />
 									</Button>
 								</Col>
 							</Row>
 							<div className="h-75">
-								<FloatingLabel className="h-100" label="Testo completo">
+								<FloatingLabel className="h-100" label="Testo completo:">
 									<Form.Control
 										as="textarea"
-										placeholder="Testo Completo:"
+										placeholder="Testo Completo"
 										value={undoStack.peek()}
 										onChange={e => handleEditFullText(e.target.value)}
 										style={{height:"100%"}} />

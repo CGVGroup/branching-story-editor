@@ -124,8 +124,8 @@ function SceneDetails(props: {
 								className="location-mention"
 								noElementsText="Nessun Luogo" />
 						</Col>
-						<Button onClick={() => setBackgroundsModal(true)}>
-							<i className="bi bi-pencil" />
+						<Button onClick={() => setBackgroundsModal(true)} title="Modifica elementi di sfondo">
+							<i className="bi bi-pencil" aria-label="edit" />
 						</Button>
 					</InputGroup>
 					

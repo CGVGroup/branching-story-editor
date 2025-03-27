@@ -2,7 +2,7 @@ import "@xyflow/react/dist/style.css";
 import { v4 as uuidv4 } from "uuid";
 import { debounce } from "throttle-debounce";
 import React, { useCallback, useState, useMemo, useEffect, useRef } from "react";
-import { Button, Row } from "react-bootstrap";
+import { Button, Row, Stack } from "react-bootstrap";
 import { ReactFlow, Controls, Background, applyNodeChanges, Panel, ReactFlowInstance, Edge, NodeChange, Node, addEdge, Connection, EdgeChange, applyEdgeChanges, MarkerType } from "@xyflow/react";
 import Story from "../StoryElements/Story.ts";
 import Scene from "../StoryElements/Scene.ts";
@@ -171,14 +171,14 @@ function StoryFlowChartEditor (props: {
         minZoom={0.2}
         fitView >
         <Panel position="top-right">
-          <Button variant="primary" onClick={() => addNewNode(NodeType.scene)}>
-              {"Aggiungi Scena "}
-              <i className="bi bi-plus-square"/>
-          </Button>
-          <Button variant="primary" onClick={() => addNewNode(NodeType.choice)}>
-              {"Aggiungi Scelta "}
-              <i className="bi bi-plus-square"/>
-          </Button>
+          <Stack direction="vertical" gap={1}>
+            <Button variant="primary" size="lg" onClick={() => addNewNode(NodeType.scene)} title="Aggiungi Scena">
+                <i className="bi bi-textarea" aria-label="scene"/>
+            </Button>
+            <Button variant="primary" size="lg" onClick={() => addNewNode(NodeType.choice)} title="Aggiungi Scelta">
+                <i className="bi bi-question-square" aria-label="choice"/>
+            </Button>
+          </Stack>
         </Panel>
         <Controls />
         <Background />

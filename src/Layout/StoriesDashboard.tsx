@@ -1,4 +1,4 @@
-import { Button, Card, Col, Container, FloatingLabel, Form, Image, InputGroup, ListGroup, Row, Spinner, Stack } from "react-bootstrap";
+import { Button, Card, Col, Container, FloatingLabel, Form, InputGroup, ListGroup, Row, Spinner, Stack } from "react-bootstrap";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Story from "../StoryElements/Story.ts";
@@ -85,10 +85,10 @@ function StoriesDashboard(props: {
 						<Card.Header>
 							<Stack gap={1} direction="horizontal">
 								<h5> Storie Salvate </h5>
-								<Button variant="primary" className={"ms-auto"} onClick={onAddNew}>
+								<Button variant="primary" className={"ms-auto"} onClick={onAddNew} title="Crea una nuova storia">
 									<i className="bi bi-file-earmark-plus"/>
 								</Button>
-								<Button variant="primary" onClick={() => {setFileUploading(true); fileUpload.current?.click()}}>							
+								<Button variant="primary" onClick={() => {setFileUploading(true); fileUpload.current?.click()}} title="Carica una storia da file">							
 									{fileUploading ?
 										<Spinner size="sm" /> : <i className="bi bi-cloud-upload" />}
 								</Button>
@@ -110,6 +110,7 @@ function StoriesDashboard(props: {
 										<ListGroup horizontal>
 											<ListGroup.Item
 												action
+												title="Visualizza"
 												onClick={() => setSelectedId(id)}
 												className={id === selectedId ? "active" : ""}
 												style={{fontStyle: props.stories.get(id)!.flow.nodes.length === 0 ? "italic" : ""}}>
@@ -118,6 +119,7 @@ function StoriesDashboard(props: {
 											<ListGroup.Item
 												action
 												variant="secondary"
+												title="Modifica"
 												onClick={() => onClickEdit(id)}
 												style={{width:"3em"}}>
 												<i className="bi bi-pencil-square" aria-label="edit"/>
@@ -135,13 +137,13 @@ function StoriesDashboard(props: {
 							<>
 								<Card.Header>
 									<InputGroup>
-										<Button variant="danger" onClick={() => onClickDelete(selectedId)}>
-											<i className="bi bi-trash" aria-label="delete" /> 
+										<Button variant="danger" onClick={() => onClickDelete(selectedId)} title="Elimina">
+											<i className="bi bi-trash" aria-label="delete"/> 
 										</Button>
-										<Button variant="secondary" onClick={() => onClickCopy(selectedStory)}>
-											<i className="bi bi-copy" aria-label="duplicate" /> 
+										<Button variant="secondary" onClick={() => onClickCopy(selectedStory)} title="Duplica">
+											<i className="bi bi-copy" aria-label="duplicate"/> 
 										</Button>
-										<Button variant="secondary" onClick={() => onClickEdit(selectedId)}>
+										<Button variant="secondary" onClick={() => onClickEdit(selectedId)} title="Modifica">
 											<i className="bi bi-pencil-square" aria-label="edit"/>
 										</Button>
 										<Form.Control

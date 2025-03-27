@@ -1,5 +1,5 @@
 import React from "react";
-import { Form, InputGroup } from "react-bootstrap";
+import { FloatingLabel, Form } from "react-bootstrap";
 import { CharacterElement, LocationElement, ObjectElement, StoryElementType, StoryElement } from "../StoryElements/StoryElement.ts";
 
 function StoryElementInputForm(props: {
@@ -9,27 +9,27 @@ function StoryElementInputForm(props: {
 }) {
     const commonFields = (
         <>
-            <InputGroup className="mb-2">
-                <InputGroup.Text>Nome:</InputGroup.Text>
+            <FloatingLabel label="Nome:">
                 <Form.Control
                     value={props.element.name}
+                    placeholder="Nome"
                     onChange={e => props.setElement({...props.element, name: e.target.value})}
                     isInvalid={props.element.name.length === 0}
                     autoFocus />
-            </InputGroup>
-            <InputGroup className="mb-2">
+            </FloatingLabel>
+            {/*<InputGroup className="mb-2">
                 <InputGroup.Text>Variabile:</InputGroup.Text>
                 <Form.Switch checked={props.element.isVariable} onChange={e => props.setElement({...props.element, isVariable: e.target.checked})} />
-            </InputGroup>
+            </InputGroup>*/}
         </>
     );
     const commonNotes = (
-        <InputGroup className="mb-2">
-            <InputGroup.Text>Note:</InputGroup.Text>
+        <FloatingLabel label="Note:">
             <Form.Control
                 value={props.element.notes}
+                placeholder="Note"
                 onChange={e => props.setElement({...props.element, notes: e.target.value})} />
-        </InputGroup>
+        </FloatingLabel>
     );
     switch (props.type) {
         case StoryElementType.character:
@@ -37,18 +37,18 @@ function StoryElementInputForm(props: {
                 <>
                     {commonFields}
                     <hr />
-                    <InputGroup className="mb-2">
-                        <InputGroup.Text>Bio:</InputGroup.Text>
+                    <FloatingLabel label="Bio:">
                         <Form.Control
                             value={(props.element as CharacterElement).bio}
+                            placeholder="Bio"
                             onChange={e => props.setElement({...props.element, bio: e.target.value})} />
-                    </InputGroup>
-                    <InputGroup className="mb-2">
-                        <InputGroup.Text>Obiettivo:</InputGroup.Text>
+                    </FloatingLabel>
+                    <FloatingLabel label="Obiettivo:">
                         <Form.Control
                             value={(props.element as CharacterElement).objective}
+                            placeholder="Obiettivo"
                             onChange={e => props.setElement({...props.element, objective: e.target.value})} />
-                    </InputGroup>
+                    </FloatingLabel>
                     <hr />
                     {commonNotes}
                 </>
@@ -58,12 +58,12 @@ function StoryElementInputForm(props: {
                 <>
                     {commonFields}
                     <hr />
-                    <InputGroup className="mb-2">
-                        <InputGroup.Text>Funzione:</InputGroup.Text>
+                    <FloatingLabel label="Funzione:">
                         <Form.Control
                             value={(props.element as ObjectElement).use}
+                            placeholder="Funzione"
                             onChange={e => props.setElement({...props.element, use: e.target.value})} />
-                    </InputGroup>
+                    </FloatingLabel>
                     <hr />
                     {commonNotes}
                 </>
@@ -73,12 +73,12 @@ function StoryElementInputForm(props: {
                 <>
                     {commonFields}
                     <hr />
-                    <InputGroup className="mb-2">
-                        <InputGroup.Text>Scopo:</InputGroup.Text>
+                    <FloatingLabel label="Scopo:">
                         <Form.Control
                             value={(props.element as LocationElement).purpose}
+                            placeholder="Scopo"
                             onChange={e => props.setElement({...props.element, purpose: e.target.value})} />
-                    </InputGroup>
+                    </FloatingLabel>
                     <hr />
                     {commonNotes}
                 </>

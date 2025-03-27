@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { FloatingLabel, Form, ListGroup, Tab, Tabs } from "react-bootstrap";
+import { ListGroup, Tab, Tabs } from "react-bootstrap";
 import { createPortal } from "react-dom";
 import { RichTextarea, RichTextareaHandle } from "rich-textarea"
 import Story from "../StoryElements/Story.ts";
@@ -59,6 +59,99 @@ function PromptArea(props: {
 				.startsWith(name.toLowerCase()))
 	, [allArray, name]);
 
+	const closeMenu = useCallback(() => {
+		setShowMenu(false);
+		setMenuTabKey(StoryElementType.character);
+	}, []);
+
+	const changeTab = useCallback((key?: string | null) => {
+		if (key !== undefined) {
+			setMenuTabKey(Number.parseInt(key ?? "0"));
+		} else {
+			setMenuTabKey(key => (key+1)%StoryElementTypeString.length);
+		}
+		setMenuSelected(undefined);
+	}, []);
+
+	const complete = useCallback((id: string | undefined) => {
+		if (!ref.current || !pos || !id) return;
+		const previousWord = [...text.matchAll(highlight_all)].find(m => m.index === match?.index)?.[0];
+		const wordStart = pos.caret - name.length - 1;
+		const wordEnd = previousWord ? wordStart + previousWord.length : pos.caret; 
+		ref.current.setRangeText(
+			`@${allMap.get(id)!.name}`,
+			wordStart,
+			wordEnd,
+			"end");
+		setShowMenu(false);
+	},[ref, pos, text, name, match, highlight_all, allMap]);
+
+	const onKeyDown = useCallback((e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+		if (!pos || !filtered.length || !showMenu || allArray.length === 0) return;
+		switch (e.code) {
+			case "ArrowUp":
+			case "ArrowDown":
+				e.preventDefault();
+				setMenuSelected(selected => {
+					const list = filtered.length > maxElementsShown ? filtered.filter(([_, element]) => element.type === menuTabKey) : filtered;
+					const idx = list.findIndex(([id, _]) => id === selected);
+					if (e.code === "ArrowUp") return list[idx <= 0 ? list.length - 1 : idx - 1][0];
+					if (e.code === "ArrowDown") return list[idx >= list.length - 1 ? 0 : idx + 1][0];
+				});
+			break;
+			case "Enter":
+				e.preventDefault();
+				complete(menuSelected);
+			break;
+			case "Tab":
+				e.preventDefault();
+				changeTab();
+			break;
+			case "Escape":
+				e.preventDefault();
+				closeMenu();
+			break;
+			default:
+			break;
+		}
+	}, [pos, filtered, showMenu, allArray, complete, menuSelected, menuTabKey, changeTab, closeMenu]);
+
+	const textSplitter = useCallback((text: string, spaces: boolean) => {
+		const split = allArray.length > 0 ? text.split(highlight_all) : [text];
+		let retArr: string[];
+		if (!spaces) retArr = split;
+		else {
+			retArr = split
+				.reduce((acc, spl) => {
+					if (spl.match(highlight_all))
+						return acc.concat(spl);
+					else
+						return acc.concat(spl.split(/(\s)/g));
+				}, new Array<string>());
+		}
+		return retArr.filter(s => s !== "");
+	}, [allArray, highlight_all]);
+
+	const mentionMatcher = useCallback((mention: string) => {
+		if (mention.match(highlight_characters)) return StoryElementType.character;
+		if (mention.match(highlight_objects)) return StoryElementType.object;
+		if (mention.match(highlight_locations)) return StoryElementType.location;
+		return null;
+	}, [highlight_characters, highlight_objects, highlight_locations]);
+
+	const renderer = useCallback((text: string) => {
+		return textSplitter(text, true)
+			.map((word, idx) => {
+				if (word.startsWith("@")) {
+					const mentionType = mentionMatcher(word);
+					const mentionClass = `${mentionType === null ? "no" : StoryElementTypeString[mentionType]}-mention`
+					return <span key={idx} className={mentionClass} style={{borderRadius: "3px" }}>{word}</span>
+				}
+				return word;
+			}
+		);
+	}, [textSplitter, mentionMatcher]);
+
 	const elements = useMemo(() => {
 		if (allArray.length === 0) {
 		  return <ListGroup>
@@ -109,146 +202,51 @@ function PromptArea(props: {
 			  </Tab>
 			)}
 		</Tabs>
-	)}, [allArray, filtered, menuTabKey, menuSelected, selectedRef]);
-
-	const complete = useCallback((id: string | undefined) => {
-		if (!ref.current || !pos || !id) return;
-		const previousWord = [...text.matchAll(highlight_all)].find(m => m.index === match?.index)?.[0];
-		const wordStart = pos.caret - name.length - 1;
-		const wordEnd = previousWord ? wordStart + previousWord.length : pos.caret; 
-		ref.current.setRangeText(
-			`@${allMap.get(id)!.name}`,
-			wordStart,
-			wordEnd,
-			"end");
-		setShowMenu(false);
-	},[ref.current, pos, text, name, match, highlight_all, allMap]);
-
-	const onKeyDown = useCallback((e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-		if (!pos || !filtered.length || !showMenu || allArray.length === 0) return;
-		switch (e.code) {
-			case "ArrowUp":
-			case "ArrowDown":
-				e.preventDefault();
-				setMenuSelected(selected => {
-					const list = filtered.length > maxElementsShown ? filtered.filter(([_, element]) => element.type === menuTabKey) : filtered;
-					const idx = list.findIndex(([id, _]) => id === selected);
-					if (e.code === "ArrowUp") return list[idx <= 0 ? list.length - 1 : idx - 1][0];
-					if (e.code === "ArrowDown") return list[idx >= list.length - 1 ? 0 : idx + 1][0];
-				});
-			break;
-			case "Enter":
-				e.preventDefault();
-				complete(menuSelected);
-			case "Tab":
-				e.preventDefault();
-				changeTab();
-			break;
-			case "Escape":
-				e.preventDefault();
-				closeMenu();
-			break;
-			default:
-			break;
-		}
-	}, [pos, filtered, showMenu, allArray, complete, refApp, menuSelected, menuTabKey]);
-
-	const textSplitter = useCallback((text: string, spaces: boolean) => {
-		const split = allArray.length > 0 ? text.split(highlight_all) : [text];
-		let retArr: string[];
-		if (!spaces) retArr = split;
-		else {
-			retArr = split
-				.reduce((acc, spl) => {
-					if (spl.match(highlight_all))
-						return acc.concat(spl);
-					else
-						return acc.concat(spl.split(/(\s)/g));
-				}, new Array<string>());
-		}
-		return retArr.filter(s => s !== "");
-	}, [allArray, highlight_all]);
-
-	const mentionMatcher = useCallback((mention: string) => {
-		if (mention.match(highlight_characters)) return StoryElementType.character;
-		if (mention.match(highlight_objects)) return StoryElementType.object;
-		if (mention.match(highlight_locations)) return StoryElementType.location;
-		return null;
-	}, [highlight_characters, highlight_objects, highlight_locations]);
-
-	const renderer = useCallback((text: string) => {
-		return textSplitter(text, true)
-			.map((word, idx) => {
-				if (word.startsWith("@")) {
-					const mentionType = mentionMatcher(word);
-					const mentionClass = `${mentionType === null ? "no" : StoryElementTypeString[mentionType]}-mention`
-					return <span key={idx} className={mentionClass} style={{borderRadius: "3px" }}>{word}</span>
-				}
-				return word;
-			}
-		);
-	}, [textSplitter, mentionMatcher]);
-
-	const closeMenu = useCallback(() => {
-		setShowMenu(false);
-		setMenuTabKey(StoryElementType.character);
-	}, []);
-
-	const changeTab = useCallback((key?: string | null) => {
-		if (key !== undefined) {
-			setMenuTabKey(Number.parseInt(key ?? "0"));
-		} else {
-			setMenuTabKey(key => (key+1)%StoryElementTypeString.length);
-		}
-		setMenuSelected(undefined);
-	}, [])
+	)}, [allArray, filtered, menuTabKey, menuSelected, selectedRef, changeTab, complete]);
 
 	useEffect(() => setText(props.initialText ?? ""), [props.initialText]);
 	useEffect(() => {if (filtered.length > 0) setMenuSelected(filtered[0][0])}, [filtered]);
-	useEffect(() => selectedRef.current?.scrollIntoView({block:"end"}), [selectedRef.current]);
+	useEffect(() => selectedRef.current?.scrollIntoView({block:"end"}), [selectedRef]);
 
 	return (
 		<div className="prompt-area h-100 w-100">
-			<Form.Floating className="h-100">
-				<RichTextarea
-					ref={ref}
-					value={text}
-					className="form-control"
-					id="prompt-text-area"
-					style={{width:"100%", height:"100%", left:"0px", background:"white", maxHeight:"100%"}}
-					//placeholder='prova'
-					onBlur={e => {
-						e.preventDefault();
-						if (!e.relatedTarget?.closest(".prompt-area-menu")) {
-							props.onBlur?.(text);
+			<RichTextarea
+				ref={ref}
+				value={text}
+				className="form-control"
+				id="prompt-text-area"
+				placeholder='Usa "@" per citare gli elementi della storia'
+				style={{width:"100%", height:"100%", left:"0px", background:"white", maxHeight:"100%"}}
+				onBlur={e => {
+					e.preventDefault();
+					if (!e.relatedTarget?.closest(".prompt-area-menu")) {
+						props.onBlur?.(text);
+						closeMenu();
+					}
+				}}
+				onChange={e => {
+					setText(e.target.value);
+					props.setText?.(e.target.value);
+				}}
+				onKeyDown={onKeyDown}
+				onSelectionChange={r => {
+					if (r.focused) {
+						if (MENTION_REGEX.test(text.slice(0, r.selectionStart))) {
+							setPos({
+								top: r.top/* + r.height*/,
+								left: r.left,
+								caret: r.selectionStart
+							});
+							setShowMenu(true);
+						} else {
 							closeMenu();
 						}
-					}}
-					onChange={e => {
-						setText(e.target.value);
-						props.setText?.(e.target.value);
-					}}
-					onKeyDown={onKeyDown}
-					onSelectionChange={r => {
-						if (r.focused) {
-							if (MENTION_REGEX.test(text.slice(0, r.selectionStart))) {
-								setPos({
-									top: r.top/* + r.height*/,
-									left: r.left,
-									caret: r.selectionStart
-								});
-								setShowMenu(true);
-							} else {
-								closeMenu();
-							}
-						}
-					}}
-					
-					disabled={props.readOnly}>
-					{renderer}
-				</RichTextarea>
-				{/*<label htmlFor="prompt-text-area">Testo Sintetico:</label>*/}
-			</Form.Floating>
+					}
+				}}
+				
+				disabled={props.readOnly}>
+				{renderer}
+			</RichTextarea>
 			{refApp.current && showMenu && !props.readOnly &&
 				createPortal(
 					<div

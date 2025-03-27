@@ -82,7 +82,9 @@ function ElementModal(props: {
         return;
     }
 
-    useEffect(() => setElement(props.initialElement ?? blankElement), [props.initialElement, props.elementType]);
+    useEffect(() => 
+        setElement(props.initialElement ?? blankElement)
+    , [props.initialElement, props.elementType]);
     
     return (
         <Modal show={props.modal} onHide={handleModalClose}>

@@ -113,6 +113,7 @@
       position: relative;
       font-size: xx-small;
       text-align: end;
+      text-overflow: clip;
     }
 
     &:hover {
@@ -134,11 +135,17 @@
 
   .dynamic-text-field {
     padding: 0;
-    background-color: transparent;
     text-align: center;
     text-wrap: pretty;
     text-overflow: ellipsis;
     flex-wrap: nowrap;
+    &.focus {
+      background-color: white;
+    }
+    &:not(.focus) {
+      background-color: #00000008;
+      border-color: #00000020;
+    }
   }
 
   .mention-chip {

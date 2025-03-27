@@ -28,7 +28,7 @@ function DynamicTextField(props: {
 		<Form onSubmit={e => { e.preventDefault(); handleSubmit(value); }}>
 			<Form.Control
 				{...props.baseProps}
-				className={`dynamic-text-field ${props.baseProps?.className ?? ""} ${focus ? "nodrag" : ""}`}
+				className={`dynamic-text-field ${props.baseProps?.className ?? ""} ${focus ? "focus nodrag" : ""}`}
 				value={value}
 				//plaintext={!focus}
 				readOnly={!focus}

@@ -37,14 +37,15 @@ function StoryTexts(props: {
         const index = localStory.getAllNodes().findIndex(node => node.id === id);
         setLoadings(loadings => loadings.map((loading, idx) => idx === index ? true : loading));
         const response = await sendToLLM("");
-        if (response.ok) {
+        /*if (response.ok) {
             const responseText = await response.text();
             onFullTextEdited(id, responseText);
-        }
+            }*/
+        onFullTextEdited(id, response);
         setLoadings(loadings => loadings.map((loading, idx) => idx === index ? false : loading));
     }, [localStory, onFullTextEdited]);
 
-    const handleSave = useCallback(debounce(10000, () => 
+    const handleSave = useCallback(debounce(250, () => 
         props.setStory(localStory)
     ), [localStory]);
 
@@ -68,11 +69,10 @@ function StoryTexts(props: {
                                         setText={(text: string) => onPromptTextEdited(id, text)} />
                                 </Col>
                                 <Col xs={1} style={{alignContent:"center"}}>
-                                    <Button onClick={() => props.onClickOpenScene(id)}>
+                                    <Button onClick={() => props.onClickOpenScene(id)} title="Vai alla scena">
                                         <i className="bi bi-box-arrow-up-right" />
                                     </Button>
-                                    <Button variant="secondary"
-                                        onClick={() => onSendButtonClicked(id)} disabled={loadings[idx]}>
+                                    <Button variant="secondary" onClick={() => onSendButtonClicked(id)} disabled={loadings[idx]} title="Invia all'IA">
                                         {loadings[idx] ? 
                                             <Spinner size="sm"/>
                                         :
@@ -109,8 +109,9 @@ function StoryTexts(props: {
                     </Accordion.Body>
                 </Accordion.Item>
             }
+            return <></>
         }
-    ), [localStory]);
+    ), [localStory, loadings, onChoiceEdited, onFullTextEdited, onPromptTextEdited, onSendButtonClicked]);
 
     useEffect(() => handleSave(), [handleSave]);
 

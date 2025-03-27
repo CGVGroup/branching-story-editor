@@ -97,10 +97,10 @@ function StoryElements (props: {
               overlay={
                 <Tooltip>
                   <ButtonGroup vertical>
-                    <Button variant="secondary" onClick={() => onElementEditButtonClicked(id, elem)}>
+                    <Button variant="secondary" onClick={() => onElementEditButtonClicked(id, elem)} title="Modifica">
                       <i className="bi bi-pencil" aria-label="edit" /> 
                     </Button>
-                    <Button variant="danger" onClick={() => onElementDeleteButtonClicked(id)}>
+                    <Button variant="danger" onClick={() => onElementDeleteButtonClicked(id)} title="Elimina">
                       <i className="bi bi-trash" aria-label="delete" /> 
                     </Button>
                   </ButtonGroup>
@@ -114,7 +114,7 @@ function StoryElements (props: {
           ))
         }
       </ListGroup>);
-  }, [props]);
+  }, [props, onElementEditButtonClicked, onElementDeleteButtonClicked]);
 
   const badges = useMemo(() => [props.story.characters.size, props.story.objects.size, props.story.locations.size], [props.story]);
 

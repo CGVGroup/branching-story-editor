@@ -80,14 +80,14 @@ function StoryEditor(props: {
 			<Row style={{alignItems: "center", height: "10%"}}>
 				<Col xs={2}>
 					<ButtonGroup size="lg">
-						<Button variant="tertiary" onClick={() => navigate("/stories")}>
-							<i className="bi bi-house" />
+						<Button variant="tertiary" onClick={() => navigate("/stories")} title="Torna a tutte le storie">
+							<i className="bi bi-house" aria-label="home" />
 						</Button>
-						<Button variant={dirty ? "primary" : "tertiary"} onClick={() => handleSave(id!)}>
-							<i className="bi bi-floppy" />
+						<Button variant={dirty ? "primary" : "tertiary"} onClick={() => handleSave(id!)} title="Salva">
+							<i className="bi bi-floppy" aria-label="save" />
 						</Button>
-						<Button variant="tertiary" onClick={() => saveToDisk(localStory.toJSON(), `${localStory.title}.story`, "application/json")}>
-							<i className="bi bi-download" />
+						<Button variant="tertiary" onClick={() => saveToDisk(localStory.toJSON(), `${localStory.title}.story`, "application/json")} title="Scarica">
+							<i className="bi bi-download" aria-label="download" />
 						</Button>
 					</ButtonGroup>
 				</Col>
@@ -117,9 +117,10 @@ function StoryEditor(props: {
 				<Col className="pe-0 custom-tabs d-flex flex-column h-100" style={{position:"relative"}}>
 					<Button
 						size="lg"
-						variant={sideTab ? "outline-secondary" : "outline-primary"}
+						variant={sideTab ? "secondary" : "primary"}
+						title={`${sideTab ? "Nascondi" : "Mostra"} menu laterale`}
 						onClick={() => setSideTab(s => !s)}
-						style={{position:"absolute", left:"-1em", top:"5%", zIndex:"10"}}>
+						style={{position:"absolute", left:"0", top:"5%", zIndex:"10", translate: "-100%"}}>
 						<i className="bi bi-person-lines-fill" />
 					</Button>
 					<Tabs
@@ -129,7 +130,6 @@ function StoryEditor(props: {
 						variant="underline">
 						<Tab
 							eventKey="structure"
-							//title={<div className="custom-nav-link">Struttura</div>}
 							title={<h4 style={{margin: "0"}}><i className="bi bi-diagram-2" style={{marginInline: "0.5em"}} /></h4>}
 							unmountOnExit>
 							<Row className="w-100 h-100 gx-0">
@@ -141,7 +141,6 @@ function StoryEditor(props: {
 						</Tab>
 						<Tab
 							eventKey="texts"
-							//title={<div className="custom-nav-link">Testi</div>}
 							title={<h4 style={{margin: "0"}}><i className="bi bi-list-ol" style={{marginInline: "0.5em"}} /></h4>}
 							unmountOnExit>
 							<Row className="w-100 h-100 gx-0">
@@ -169,7 +168,14 @@ function StoryEditor(props: {
 							<Tab eventKey={nodeId} key={nodeId} title={
 								<div className="custom-nav-link">
 									{node.data.label as string}
-									<i className="bi bi-x-lg close-button" onClick={(e) => {e.preventDefault(); e.stopPropagation(); onClickTabClose(nodeId)}} style={{pointerEvents:"all"}} />
+									<i className="bi bi-x-lg close-button"
+										onClick={(e) => {
+											e.preventDefault();
+											e.stopPropagation();
+											onClickTabClose(nodeId)
+										}}
+										style={{pointerEvents:"all"}}
+										title="Chiudi"/>
 								</div>}
 								tabClassName={className}
 								unmountOnExit>
