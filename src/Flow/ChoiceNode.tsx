@@ -1,15 +1,12 @@
-import React, { useState } from "react";
+import React from "react";
 import { Handle, NodeProps, NodeToolbar, Position } from "@xyflow/react";
-import { Button, ButtonGroup, Col, InputGroup } from "react-bootstrap";
-import { ChoiceDetails, ChoiceNodeType, StoryNode } from "./StoryNode.tsx";
+import { Button, ButtonGroup, Col, InputGroup, OverlayTrigger, Tooltip } from "react-bootstrap";
+import { ChoiceNodeType, StoryNode } from "./StoryNode.tsx";
 import { LabeledHandle } from "./LabeledHandle.tsx";
 import DynamicTextField from "../Layout/DynamicTextField.tsx";
 
 function ChoiceNode(props: NodeProps<ChoiceNodeType>) {
-  const [choices, setChoices] = useState<ChoiceDetails[]>(props.data.choices);
-
   const handleDelete = () => {
-    setChoices([]);
     props.data.onClickDelete();
   }
 
@@ -34,8 +31,8 @@ function ChoiceNode(props: NodeProps<ChoiceNodeType>) {
               style: {marginBottom: "0.5em"}
             }} />
         </div>
-        {choices.length > 0 && 
-          choices.map((choice, idx) =>
+        {props.data.choices.length > 0 && 
+          props.data.choices.map((choice, idx) =>
             <div key={idx}>
               {idx > 0 && <hr className="my-1"/>}
               <LabeledHandle
@@ -51,12 +48,27 @@ function ChoiceNode(props: NodeProps<ChoiceNodeType>) {
       <NodeToolbar isVisible={props.selected} className="nodrag nopan">
         <InputGroup>
           <ButtonGroup>
-            <Button variant="secondary" onClick={() => props.data.onClickEdit()} title="Modifica">
+            <Button variant="secondary" onClick={props.data.onClickEdit} title="Modifica">
               <i className="bi bi-pencil" aria-label="edit" />
             </Button>
-            <Button variant="danger" onClick={handleDelete} title="Elimina">
-              <i className="bi bi-trash3" aria-label="delete" />
-            </Button>
+            <OverlayTrigger
+              key={"delete"}
+              placement={"right"}
+              trigger="focus"
+              overlay={<Tooltip>
+                <ButtonGroup vertical>
+                  <Button variant="danger" onClick={handleDelete} title="Conferma">
+                    <i className="bi bi-check-lg" aria-label="edit" />
+                  </Button>
+                  <Button variant="secondary" title="Annulla">
+                    <i className="bi bi-x-lg" aria-label="delete" />
+                  </Button>
+                </ButtonGroup>
+              </Tooltip>}>
+                <Button variant="danger" title="Elimina">
+                  <i className="bi bi-trash3" aria-label="delete" />
+                </Button>
+            </OverlayTrigger>
           </ButtonGroup>
         </InputGroup>
       </NodeToolbar>

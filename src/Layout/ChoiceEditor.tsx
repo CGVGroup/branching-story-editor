@@ -35,11 +35,11 @@ function ChoiceEditor(props: {
         setLocalChoices(choices => {[choices[index-1], choices[index]] = [choices[index], choices[index-1]]; return [...choices]});
     }, []);
 
-    const handleSave = useCallback(debounce(250, () => {
+    const handleSave = useCallback(debounce(250, (localChoices: ChoiceDetails[]) => {
         props.setChoices(localChoices);
-    }), [localChoices]);
+    }), []);
 
-    useEffect(() => handleSave(), [handleSave]);
+    useEffect(() => handleSave(localChoices), [handleSave, localChoices]);
 
     return (
         <Col>

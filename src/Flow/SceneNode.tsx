@@ -1,15 +1,11 @@
-import React, { useState } from "react";
-import { Button, ButtonGroup, InputGroup, Stack } from "react-bootstrap";
+import React from "react";
+import { Button, ButtonGroup, InputGroup, OverlayTrigger, Stack, Tooltip } from "react-bootstrap";
 import { Handle, NodeProps, NodeToolbar, Position } from "@xyflow/react";
-import Scene from "../StoryElements/Scene.ts";
 import DynamicTextField from "../Layout/DynamicTextField.tsx";
 import { SceneNodeType, StoryNode } from "./StoryNode.tsx";
 
 function SceneNode(props: NodeProps<SceneNodeType>) {
-  const [scene, setScene] = useState<Scene | undefined>(undefined);
-
   const handleDelete = () => {
-    setScene(undefined);
     props.data.onClickDelete();
   }
 
@@ -56,12 +52,28 @@ function SceneNode(props: NodeProps<SceneNodeType>) {
             </InputGroup.Text>
           }
           <ButtonGroup vertical={!!props.data.scene?.details.summary}>
-            <Button variant="secondary" onClick={() => props.data.onClickEdit(scene, setScene)} title="Modifica">
+            <Button variant="secondary" onClick={props.data.onClickEdit} title="Modifica">
               <i className="bi bi-pencil" aria-label="edit" />
             </Button>
-            <Button variant="danger" onClick={handleDelete} title="Elimina">
-              <i className="bi bi-trash3" aria-label="delete" />
-            </Button>
+            <OverlayTrigger
+                key={"delete"}
+                placement={"right"}
+                trigger="focus"
+                overlay={
+                  <Tooltip>
+                    <ButtonGroup vertical>
+                      <Button variant="danger" onClick={handleDelete} title="Conferma">
+                        <i className="bi bi-check-lg" aria-label="edit" /> 
+                      </Button>
+                      <Button variant="secondary" title="Annulla">
+                        <i className="bi bi-x-lg" aria-label="delete" /> 
+                      </Button>
+                    </ButtonGroup>
+                  </Tooltip>}>
+              <Button variant="danger"title="Elimina">
+                <i className="bi bi-trash3" aria-label="delete" />
+              </Button>
+            </OverlayTrigger>
           </ButtonGroup>
         </InputGroup>
       </NodeToolbar>

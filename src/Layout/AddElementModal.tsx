@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { Alert, Button, Form, Modal } from "react-bootstrap";
 import { CharacterElement, LocationElement, ObjectElement, StoryElementType, StoryElement } from "../StoryElements/StoryElement.ts";
 import StoryElementInputForm from "./StoryElementInputForm.tsx";
@@ -52,14 +52,14 @@ function ElementModal(props: {
     const [alert, setAlert] = useState(false);
     const [alertText, setAlertText] = useState("");
 
-    const handleModalClose = () => {
+    const handleModalClose = useCallback(() => {
         props.setModal(false);
         setElement(initElement);
         setAlert(false);
         setAlertText("");
-    }
+    }, [props.setModal, initElement]);
 
-    const onConfirm = () => {
+    const onConfirm = useCallback(() => {
         const errorMessage = checkElementInvalid(element);
         if (errorMessage) {
             setAlertText(errorMessage);
@@ -74,16 +74,16 @@ function ElementModal(props: {
 
         setAlertText(`Un ${typeString} con questo nome esiste già.`);
         setAlert(true);
-    }
+    }, [handleModalClose, element]);
 
-    const checkElementInvalid = (element: StoryElement) => {
+    const checkElementInvalid = useCallback((element: StoryElement) => {
         if (!element) throw new Error("Element is undefined");
         if (!element.name || element.name === "") return "Il nome non può essere vuoto";
         return;
-    }
+    }, []);
 
     useEffect(() => 
-        setElement(props.initialElement ?? blankElement)
+        setElement(props.initialElement ?? blankElement)    //Do NOT add blankElement as a dependency
     , [props.initialElement, props.elementType]);
     
     return (

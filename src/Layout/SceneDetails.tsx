@@ -31,7 +31,17 @@ function SceneDetails(props: {
 
 	const textWidth = "20%";
 
-	const handleSave = useCallback(debounce(100, () =>
+	const handleSave = useCallback(debounce(250, (
+		title: string,
+		summary: string,
+		time: string,
+		weather: string,
+		tone: string,
+		value: string,
+		backgroundCharacters: Set<string>,
+		backgroundObjects: Set<string>,
+		backgroundLocations: Set<string>
+	) => {
 		props.setDetails({
 			title: title,
 			summary: summary,
@@ -39,10 +49,12 @@ function SceneDetails(props: {
 			weather: weather,
 			tone: tone,
 			value: value,
-			backgroundIds: [Array.from(backgroundCharacters), Array.from(backgroundObjects), Array.from(backgroundLocations)]})
-	), [title, summary, time, weather, tone, value, backgroundCharacters, backgroundObjects, backgroundLocations]);
+			backgroundIds: [Array.from(backgroundCharacters), Array.from(backgroundObjects), Array.from(backgroundLocations)]
+		});
+	}), []);
 
-	useEffect(() => handleSave(), [handleSave]);
+	useEffect(() => handleSave(title, summary, time, weather, tone, value, backgroundCharacters, backgroundObjects, backgroundLocations)
+	, [handleSave, title, summary, time, weather, tone, value, backgroundCharacters, backgroundObjects, backgroundLocations]);
 
 	return (
 		<Card>

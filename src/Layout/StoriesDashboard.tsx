@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import Story from "../StoryElements/Story.ts";
 import StoryFlowChartViewer from "../Flow/StoryFlowChartViewer.tsx";
 import StoryElements from "./StoryElements.tsx";
+import { ModalContents } from "./GenericModal.tsx";
 
 function StoriesDashboard(props: {
 	stories: Map<string, Story>,
@@ -11,7 +12,8 @@ function StoriesDashboard(props: {
 	addStory: (newStory: Story) => string,
 	deleteStory: (id: string) => void,
 	lastOpenStory: string | null,
-	setLastOpenStory: (id: string) => void
+	setLastOpenStory: (id: string) => void,
+	setModal: (contents: ModalContents) => void,
 }) {	
 	const navigate = useNavigate();
 	
@@ -26,8 +28,14 @@ function StoriesDashboard(props: {
 	}, [props.addStory])
 
 	const onClickDelete = useCallback((id: string) => {
-		props.deleteStory(id);
-	}, [props.deleteStory]);
+		props.setModal({
+			title:`Eliminare "${props.stories.get(id)?.title}"?`,
+			okProps: {variant:"danger", onClick: () => props.deleteStory(id)},
+			okText: "Elimina",
+			cancelProps: {variant: "secondary"},
+			cancelText: "Annulla"
+		});
+	}, [props.stories, props.deleteStory]);
 
 	const onClickEdit = useCallback((id: string) => {
 		navigate(`${id}`);
@@ -63,7 +71,9 @@ function StoriesDashboard(props: {
 
 	// Handler for aborting file upload dialog
 	useEffect(() => {
-		fileUpload.current?.addEventListener("cancel", () => setFileUploading(false));
+		const onCancelDialog = () => setFileUploading(false)
+		fileUpload.current?.addEventListener("cancel", onCancelDialog);
+		return () => fileUpload.current?.removeEventListener("cancel", onCancelDialog);
 	}, []);
 	
 	useEffect(() => {

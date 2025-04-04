@@ -6,6 +6,7 @@ import { Navigate, Route, BrowserRouter as Router, Routes } from "react-router-d
 import StoriesDashboard from "./Layout/StoriesDashboard.tsx";
 import StoryEditor from "./Layout/StoryEditor.tsx";
 import Story from "./StoryElements/Story.ts";
+import GenericModal, { ModalContents } from "./Layout/GenericModal.tsx";
 
 export const DefaultEnumsContext = createContext({
   time: ["Alba", "Mattina", "Mezzogiorno", "Pomeriggio", "Tramonto", "Sera", "Notte"],
@@ -17,6 +18,8 @@ export const DefaultEnumsContext = createContext({
 function App() {
   const [stories, setStories] = useState(new Map<string, Story>());
   const [lastOpenStory, setLastOpenStory] = useState<string | null>(null);
+  const [showModal, setShowModal] = useState<boolean>(false);
+  const [modalContents, setModalContents] = useState<ModalContents>({});
 
   const setStory = useCallback((id: string, newStory: Story) => {
     setStories(stories => {stories.set(id, newStory); return new Map(stories);});
@@ -31,6 +34,11 @@ function App() {
   const deleteStory = useCallback((id: string) => {
     setStories(stories => {stories.delete(id); return new Map(stories);});
   }, []);
+  
+  const setModal = useCallback((contents: ModalContents) => {
+    setModalContents(contents);
+    setShowModal(true);
+  }, []);
 
   /*useEffect(() => {
     const handleContextmenu = (e: MouseEvent) => e.preventDefault();
@@ -40,6 +48,7 @@ function App() {
 
   return (
     <div className="App">
+      <GenericModal show={showModal} setShow={setShowModal} {...modalContents}/>
       <Router>
         <Routes>
           <Route path="/" element={<Navigate to="/stories"/>} />
@@ -50,9 +59,14 @@ function App() {
               addStory={addStory}
               deleteStory={deleteStory}
               lastOpenStory={lastOpenStory}
-              setLastOpenStory={setLastOpenStory}/>
+              setLastOpenStory={setLastOpenStory}
+              setModal={setModal} />
           } />
-          <Route path="/stories/:id" element={<StoryEditor stories={stories} setStory={setStory}/>} />
+          <Route path="/stories/:id" element={
+            <StoryEditor
+              stories={stories}
+              setStory={setStory}
+              setModal={setModal} />} />
         </Routes>
       </Router>
     </div>

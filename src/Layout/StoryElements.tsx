@@ -25,33 +25,33 @@ function StoryElements (props: {
 
   const readOnly = props.readOnly ?? false;
 
-  const onSelectElement = (id: string, element: StoryElement) => {
+  const onSelectElement = useCallback((id: string, element: StoryElement) => {
     setSelectedElementId(id);
     setSelectedElement(element);
-  }
+  }, []);
 
-  const onDeselectElement = () => {
+  const onDeselectElement = useCallback(() => {
     setSelectedElementId(undefined);
     setSelectedElement(undefined);
-  }
+  }, []);
 
-  const onAddButtonClicked = () => {
+  const onAddButtonClicked = useCallback(() => {
     setModalAction("add");
     setModal(true);
     setSelectedElementId(undefined);
     setSelectedElement(undefined);
-  }
+  }, []);
 
-  const onElementEditButtonClicked = (id: string, element: StoryElement) => {
+  const onElementEditButtonClicked = useCallback((id: string, element: StoryElement) => {
     onSelectElement(id, element)
     setModalAction("edit");
     setModal(true);
-  }
+  }, [onSelectElement]);
 
-  const onElementDeleteButtonClicked = (id: string) => {
+  const onElementDeleteButtonClicked = useCallback((id: string) => {
     props.setStory?.(story => story.cloneAndDeleteElement(id));
     onDeselectElement();
-  }
+  }, [onDeselectElement]);
 
   const onSubmitNewElement = useCallback((newElement: StoryElement) => {
     if (!props.story.canAddElement(newElement)) return false;

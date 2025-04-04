@@ -2,8 +2,8 @@ import "@xyflow/react/dist/style.css";
 import { v4 as uuidv4 } from "uuid";
 import { debounce } from "throttle-debounce";
 import React, { useCallback, useState, useMemo, useEffect, useRef } from "react";
-import { Button, Row, Stack } from "react-bootstrap";
-import { ReactFlow, Controls, Background, applyNodeChanges, Panel, ReactFlowInstance, Edge, NodeChange, Node, addEdge, Connection, EdgeChange, applyEdgeChanges, MarkerType } from "@xyflow/react";
+import { Button, Card, Stack } from "react-bootstrap";
+import { ReactFlow, Controls, Background, applyNodeChanges, Panel, ReactFlowInstance, Edge, NodeChange, Node, addEdge, Connection, EdgeChange, applyEdgeChanges, MarkerType, Viewport } from "@xyflow/react";
 import Story from "../StoryElements/Story.ts";
 import Scene from "../StoryElements/Scene.ts";
 import { ChoiceNodeProps, createNewChoiceNode, createNewSceneNode, NodeType, SceneNodeProps, storyNodeTypes } from "./StoryNode.tsx";
@@ -15,7 +15,8 @@ function StoryFlowChartEditor (props: {
 }) {
   const [nodes, setNodes] = useState<Node[]>([]);
   const [edges, setEdges] = useState<Edge[]>([]);
-  const [rfInstance, setRfInstance] = useState<ReactFlowInstance>();
+  const [viewport, setViewport] = useState<Viewport>({x: 0, y: 0, zoom: 1})
+  const [rfInstance, setRfInstance] = useState<ReactFlowInstance | null>();
 
   const flowRef = useRef(null);
 
@@ -26,6 +27,10 @@ function StoryFlowChartEditor (props: {
   const onEdgesChange = useCallback((changes: EdgeChange[]) => {
     setEdges(edges => applyEdgeChanges(changes, edges));
   }, []);
+
+  const onViewportChange = useCallback((newViewport: Viewport) => {
+    setViewport(newViewport);
+  }, [])
   
   const onConnect = useCallback((connection: Connection) =>
     setEdges(eds => addEdge({ ...connection, markerEnd: {type: MarkerType.ArrowClosed, width: 20, height: 20} }, eds),
@@ -73,13 +78,15 @@ function StoryFlowChartEditor (props: {
         if (!max || n > max) return n;
         return max;}, 0) + 1;
 
-    const position = 
-      (rfInstance && flowRef.current) ? 
+    const boundingClientRect = flowRef.current ? (flowRef.current as Element).getBoundingClientRect() : null;
+
+    const position =
+      (rfInstance && boundingClientRect) ? 
         rfInstance.screenToFlowPosition({
-          x: (flowRef.current as Element).getBoundingClientRect().width/2,
-          y: (flowRef.current as Element).getBoundingClientRect().height/2})
+          x: boundingClientRect.width/2,
+          y: boundingClientRect.height/2})
         :
-        {x: 0, y: 0};
+          {x: 0, y: 0};
 
     let newNode: Node;
     
@@ -106,7 +113,7 @@ function StoryFlowChartEditor (props: {
       break;
     }
     setNodes(nodes => [...nodes, newNode]);
-  }, [rfInstance, flowRef, nodes, setNodes, onClickEdit, onClickDelete, onSceneNameChanged, onSceneTitleChanged]);
+  }, [flowRef, nodes, setNodes, onClickEdit, onClickDelete, onSceneNameChanged, onSceneTitleChanged]);
 
   const addExistingNode = useCallback((node: Node) => {
     let newNode: Node;
@@ -141,35 +148,39 @@ function StoryFlowChartEditor (props: {
   const handleInit = useCallback((rfInstance: ReactFlowInstance) => {
     props.story.flow.nodes.forEach(node => addExistingNode(node));
     setEdges(props.story.flow.edges);
-    rfInstance.fitView();
+    setViewport(props.story.flow.viewport);
     setRfInstance(rfInstance);
   }, [props.story, addExistingNode]);
 
-  const handleSave = useCallback(debounce(250, () => {
-    if (rfInstance)
-      props.setStory(story => story.cloneAndAddFlow({nodes: nodes, edges: edges, viewport: rfInstance.getViewport()}));
-  }), [nodes, edges, rfInstance]);
+  const handleSave = useCallback(debounce(250, (
+    nodes: Node[],
+    edges: Edge[],
+    viewport: Viewport
+  ) => {
+    props.setStory(story => story.cloneAndAddFlow({nodes: nodes, edges: edges, viewport: viewport}));
+  }), []);
 
-  useEffect(() => handleSave(), [handleSave]);
+  useEffect(() => handleSave(nodes, edges, viewport)
+  , [handleSave, nodes, edges, viewport]);
   
   const nodeTypes = useMemo(() => storyNodeTypes, []);
 
   return (
-    <Row className="gx-0 h-100">
+    <Card className="p-0 h-100">
       <ReactFlow
         nodes={nodes}
         edges={edges}
-        nodeTypes={nodeTypes}
-        onConnect={onConnect}
+        viewport={viewport}
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
+        onViewportChange={onViewportChange}
+        nodeTypes={nodeTypes}
+        onConnect={onConnect}
         onInit={handleInit}
         deleteKeyCode={['Backspace', 'Delete']}
-        style={{ border: "1px solid black" }}
         className="gx-0 h-100"
         ref={flowRef}
-        minZoom={0.2}
-        fitView >
+        minZoom={0.2} >
         <Panel position="top-right">
           <Stack direction="vertical" gap={1}>
             <Button variant="primary" size="lg" onClick={() => addNewNode(NodeType.scene)} title="Aggiungi Scena">
@@ -183,7 +194,7 @@ function StoryFlowChartEditor (props: {
         <Controls />
         <Background />
       </ReactFlow>
-    </Row>
+    </Card>
   );
 };
 

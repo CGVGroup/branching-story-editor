@@ -20,7 +20,7 @@ export type ChoiceDetails = {
 };
 
 export type SceneFunctionProps = {
-    onClickEdit: (scene: Scene | undefined, setScene: React.Dispatch<React.SetStateAction<Scene | undefined>>) => void;
+    onClickEdit: () => void;
     onClickDelete: () => void;
     onSceneNameChanged: (name: string) => void
     onSceneTitleChanged: (title: string) => void
