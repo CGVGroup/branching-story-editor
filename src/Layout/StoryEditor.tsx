@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { Button, ButtonGroup, Col, Collapse, Container, Row, Tab, Tabs } from "react-bootstrap";
 import { useNavigate, useParams } from "react-router";
 import StoryFlowChartEditor from "../Flow/StoryFlowChartEditor.tsx";
@@ -75,15 +75,6 @@ function StoryEditor(props: {
 	useEffect(() => {document.title = localStory.title}, [localStory.title]);
 
 	useEffect(() => handleSave(id!, localStory), [handleSave, id, localStory]);
-
-	useEffect(() => {
-		const onBeforeUnload = (e: Event) => {
-			e.preventDefault();
-			return true;
-		}
-		window.addEventListener('beforeunload', onBeforeUnload);
-		return () => window.removeEventListener('beforeunload', onBeforeUnload);
-	}, []);
 
 	return (
 		<Container className="h-100" fluid>
@@ -189,7 +180,8 @@ function StoryEditor(props: {
 											story={localStory}
 											setStory={setLocalStory}
 											scene={node.data.scene as Scene}
-											setScene={newScene => onSceneEdited(nodeId, newScene)}/>}
+											setScene={newScene => onSceneEdited(nodeId, newScene)}
+											setModal={props.setModal}/>}
 									{node.type === NodeType.choice &&
 										<ChoiceEditor 
 											story={localStory}

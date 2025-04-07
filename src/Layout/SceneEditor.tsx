@@ -7,12 +7,14 @@ import SceneDetails from "./SceneDetails.tsx";
 import PromptArea from "./PromptArea.tsx";
 import { sendToLLM } from "../Misc/LLM.ts";
 import UndoStack from "../Misc/UndoStack.ts";
+import { ModalContents } from "./GenericModal.tsx";
 
 function SceneEditor(props: {
 	story: Story,
 	setStory: React.Dispatch<React.SetStateAction<Story>>,
 	scene: Scene,
 	setScene: (newScene: Scene) => void,
+	setModal: (contents: ModalContents) => void
 }) {
 	const [localScene, setLocalScene] = useState(Scene.from(props.scene));
 	const [loading, setLoading] = useState(false);
@@ -33,8 +35,8 @@ function SceneEditor(props: {
 	const handleEditFullText = useCallback((newText: string) => {
 		setUndoStack(undoStack => undoStack.set(newText));
 	}, []);
-	
-	const onSendButton = useCallback(async () => {
+
+	const onSendToLLM = useCallback(async () => {
 		setLoading(true);
 		const response = await sendToLLM("");
 		/*if (response.ok) {
@@ -44,6 +46,16 @@ function SceneEditor(props: {
 		setUndoStack(undoStack => undoStack.push(response));
 		setLoading(false);
 	}, []);
+
+	const onSendButton = useCallback(() => {
+		props.setModal({
+			title: "Vuoi richiedere un altro testo?",
+			body: <span>È possibile ritornare alle proposte precedenti e successive con i tasti <i className="bi bi-arrow-90deg-left"/> e <i className="bi bi-arrow-90deg-right"/>.</span>,
+			okProps: {variant:"primary", onClick: onSendToLLM},
+			okText:"Sì",
+			cancelProps: {variant:"secondary"},
+			cancelText:"No"})
+	}, [onSendToLLM])
 
 	const onUndoButton = useCallback(() => {
 		setUndoStack(undoStack => undoStack.undo());

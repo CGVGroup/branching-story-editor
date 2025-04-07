@@ -1,7 +1,7 @@
 import "./App.css";
 import "bootstrap-icons/font/bootstrap-icons.css";
 import { v4 as uuidv4 } from "uuid";
-import React, { createContext, useCallback, useState } from "react";
+import React, { createContext, useCallback, useEffect, useRef, useState } from "react";
 import { Navigate, Route, BrowserRouter as Router, Routes } from "react-router-dom";
 import StoriesDashboard from "./Layout/StoriesDashboard.tsx";
 import StoryEditor from "./Layout/StoryEditor.tsx";
@@ -17,6 +17,7 @@ export const DefaultEnumsContext = createContext({
 
 function App() {
   const [stories, setStories] = useState(new Map<string, Story>());
+  const storiesRef = useRef(stories);
   const [lastOpenStory, setLastOpenStory] = useState<string | null>(null);
   const [showModal, setShowModal] = useState<boolean>(false);
   const [modalContents, setModalContents] = useState<ModalContents>({});
@@ -46,6 +47,27 @@ function App() {
     return () => document.removeEventListener('contextmenu', handleContextmenu);
   }, []);*/
 
+  useEffect(() => {
+    const savedStories = localStorage.getItem("stories");
+    if (savedStories) {
+      const parsedStories = JSON.parse(savedStories);
+      if (parsedStories?.length) {
+        console.log("parsedStories", parsedStories)
+        setStories(new Map(parsedStories.map(([id, story]) => [id, Story.fromJSON(story)])));
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    const onBeforeUnload = (e: Event) => {
+			localStorage.setItem("stories", JSON.stringify([...storiesRef.current.entries()]));
+		}
+		window.addEventListener('beforeunload', onBeforeUnload);
+		return () => window.removeEventListener('beforeunload', onBeforeUnload);
+	}, []);
+
+  useEffect(() => {storiesRef.current = stories}, [stories]);
+  
   return (
     <div className="App">
       <GenericModal show={showModal} setShow={setShowModal} {...modalContents}/>

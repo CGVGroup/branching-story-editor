@@ -83,7 +83,7 @@ function StoryTexts(props: {
                                         </Button>
                                     </Col>
                                     <Col>
-                                        <FloatingLabel label="Testo completo:">
+                                        <FloatingLabel className="h-100 w-100" label="Testo completo:">
                                             <Form.Control
                                                 as="textarea"
                                                 value={data.scene?.fullText}
