@@ -15,7 +15,7 @@ function ChoiceNode(props: NodeProps<ChoiceNodeType>) {
   }
 
   return (
-    <StoryNode selected={props.selected} className="choice">
+    <StoryNode selected={props.selected || props.data.indirectSelected} className="choice">
       <Handle type="target" position={Position.Left} />
       <Col className="w-100 px-0">
         <div className="w-100 px-1">
@@ -45,7 +45,7 @@ function ChoiceNode(props: NodeProps<ChoiceNodeType>) {
           )
         }
       </Col>
-      <NodeToolbar isVisible={props.selected} className="nodrag nopan">
+      <NodeToolbar isVisible={props.selected && !props.data.indirectSelected} className="nodrag nopan">
         <InputGroup>
           <ButtonGroup>
             <Button variant="secondary" onClick={props.data.onClickEdit} title="Modifica">

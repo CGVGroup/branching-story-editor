@@ -33,10 +33,12 @@ export type ChoiceFunctionProps = {
 
 export type SceneNodeProps = {
     label: string;
+    indirectSelected?: boolean;
     scene?: Scene;
 } & SceneFunctionProps;
 export type ChoiceNodeProps = {
     label: string;
+    indirectSelected?: boolean;
     choices: ChoiceDetails[];
 } & ChoiceFunctionProps;
 
@@ -107,11 +109,11 @@ export function createNewChoiceNode(
 
 export const StoryNode = React.forwardRef<
   HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement> & {selected?: boolean}
->(({ className, selected, ...props }, ref) => (
+  React.HTMLAttributes<HTMLDivElement> & {selected?: boolean, indirectSelected?: boolean}
+>(({ className, selected, indirectSelected, ...props }, ref) => (
   <div
     ref={ref}
-    className={`story-node px-0 py-2 ${className ?? ""} ${selected ? "shadow selected" : ""}`}
+    className={`story-node px-0 py-2 ${className ?? ""} ${selected || indirectSelected ? "shadow selected" : ""}`}
     style={{display: "flex", position: "relative"}}
     tabIndex={0}
     {...props}

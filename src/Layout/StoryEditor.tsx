@@ -1,18 +1,19 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { Button, ButtonGroup, Col, Collapse, Container, Row, Tab, Tabs } from "react-bootstrap";
+import { Button, ButtonGroup, Col, Collapse, Container, Row, Spinner, Tab, Tabs } from "react-bootstrap";
 import { useNavigate, useParams } from "react-router";
 import StoryFlowChartEditor from "../Flow/StoryFlowChartEditor.tsx";
 import StoryElements from "./StoryElements.tsx";
 import Story from "../StoryElements/Story.ts";
 import DynamicTextField from "./DynamicTextField.tsx";
 import saveToDisk from "../Misc/SaveToDisk.ts";
-import Scene from "../StoryElements/Scene.ts";
+import Scene, { SceneDetails } from "../StoryElements/Scene.ts";
 import SceneEditor from "./SceneEditor.tsx";
-import { ChoiceDetails, NodeType } from "../Flow/StoryNode.tsx";
+import { ChoiceDetails, NodeType, SceneNodeType } from "../Flow/StoryNode.tsx";
 import ChoiceEditor from "./ChoiceEditor.tsx";
 import StoryTexts from "./StoryTexts.tsx";
 import { ModalContents } from "./GenericModal.tsx";
 import { debounce } from "throttle-debounce";
+import { sendToLLM } from "../Misc/LLM.ts";
 
 function StoryEditor(props: {
 	stories: Map<string, Story>,
@@ -27,6 +28,8 @@ function StoryEditor(props: {
 
 	const [sideTab, setSideTab] = useState(true);
 	const [storyElementsWidth, setStoryElementsWidth] = useState(0);
+
+	const [loading, setLoading] = useState(false);
 
 	const navigate = useNavigate();
 
@@ -60,6 +63,25 @@ function StoryEditor(props: {
 		setCurrentTab(id);
 	}, [localStory]);
 
+	const onConfirmGenerateAll = useCallback(async () => {
+		setLoading(true);
+		const newStory = await localStory.sendToLLM();
+		setLocalStory(newStory);
+		console.log(newStory);
+		setLoading(false);
+	}, [localStory]);
+
+	const onClickGenerateAll = useCallback(() => {
+		props.setModal({
+			title: "Generare i testi per tutta la storia?",
+			body: "Eventuali testi già presenti verranno sovrascritti.",
+			okText: "Continua",
+			okProps: {variant:"primary", onClick: () => onConfirmGenerateAll()},
+			cancelText: "Annulla",
+			cancelProps: {variant: "secondary"}
+		});
+	}, [onConfirmGenerateAll]);
+
 	const handleSave = useCallback(debounce(250, (id: string, localStory: Story) => {
 		props.setStory(id, localStory);
 	}), []);
@@ -81,7 +103,7 @@ function StoryEditor(props: {
 			<Row style={{alignItems: "center", height: "10%"}}>
 				<Col xs={2}>
 					<ButtonGroup size="lg">
-						<Button variant="tertiary" onClick={() => {window.dispatchEvent(new Event("beforeunload")); navigate("/stories")}} title="Torna a tutte le storie">
+						<Button variant="tertiary" onClick={() => navigate("/stories")} title="Torna a tutte le storie">
 							<i className="bi bi-house" aria-label="home" />
 						</Button>
 						<Button variant="tertiary" onClick={() => saveToDisk(localStory.toJSON(), `${localStory.title}.story`, "application/json")} title="Scarica">
@@ -91,7 +113,13 @@ function StoryEditor(props: {
 							variant={"tertiary"}
 							title={`${sideTab ? "Nascondi" : "Mostra"} menu laterale`}
 							onClick={() => setSideTab(s => !s)}>
-							<i className="bi bi-person-lines-fill" />
+							{sideTab ? <i className="bi bi-layout-sidebar" /> : <i className="bi bi-layout-sidebar-inset" />}
+						</Button>
+						<Button
+							variant={"tertiary"}
+							title={"Genera tutti i testi"}
+							onClick={onClickGenerateAll}>
+							{loading ? <Spinner size="sm" /> : <i className="bi bi-send-fill" />}
 						</Button>
 					</ButtonGroup>
 				</Col>

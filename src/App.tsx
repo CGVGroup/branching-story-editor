@@ -52,7 +52,6 @@ function App() {
     if (savedStories) {
       const parsedStories = JSON.parse(savedStories);
       if (parsedStories?.length) {
-        console.log("parsedStories", parsedStories)
         setStories(new Map(parsedStories.map(([id, story]) => [id, Story.fromJSON(story)])));
       }
     }

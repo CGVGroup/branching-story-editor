@@ -38,7 +38,7 @@ function SceneEditor(props: {
 
 	const onSendToLLM = useCallback(async () => {
 		setLoading(true);
-		const response = await sendToLLM("");
+		//const response = await sendToLLM("");
 		/*if (response.ok) {
 			const responseText = await response.text();
 			setUndoStack(undoStack => undoStack.push(responseText));

@@ -3,7 +3,7 @@ import { v4 as uuidv4 } from "uuid";
 import { debounce } from "throttle-debounce";
 import React, { useCallback, useState, useMemo, useEffect, useRef } from "react";
 import { Button, Card, Stack } from "react-bootstrap";
-import { ReactFlow, Controls, Background, applyNodeChanges, Panel, ReactFlowInstance, Edge, NodeChange, Node, addEdge, Connection, EdgeChange, applyEdgeChanges, MarkerType, Viewport } from "@xyflow/react";
+import { ReactFlow, Controls, Background, applyNodeChanges, Panel, ReactFlowInstance, Edge, NodeChange, Node, addEdge, Connection, EdgeChange, applyEdgeChanges, MarkerType, Viewport, NodeSelectionChange } from "@xyflow/react";
 import Story from "../StoryElements/Story.ts";
 import Scene from "../StoryElements/Scene.ts";
 import { ChoiceNodeProps, createNewChoiceNode, createNewSceneNode, NodeType, SceneNodeProps, storyNodeTypes } from "./StoryNode.tsx";
@@ -22,7 +22,22 @@ function StoryFlowChartEditor (props: {
 
   const onNodesChange = useCallback((changes: NodeChange[]) => {
     setNodes(nodes => applyNodeChanges(changes, nodes));
-  }, []);
+    changes.filter(change => change.type === "select").forEach(change => {
+      if (rfInstance) {
+        const nodeConnections = rfInstance.getNodeConnections({nodeId: change.id, type: "source"});
+        setNodes(nodes => nodes.map(node => {
+          if (nodeConnections.map(conn => conn.target).includes(node.id))
+            return {...node, data: {...node.data, indirectSelected: change.selected}};
+          return node;
+        }));
+        setEdges(edges => edges.map(edge => {
+          if (nodeConnections.map(conn => conn.edgeId).includes(edge.id))
+            return {...edge, animated: change.selected};
+          return edge;
+        }));
+      }
+    });
+  }, [rfInstance]);
 
   const onEdgesChange = useCallback((changes: EdgeChange[]) => {
     setEdges(edges => applyEdgeChanges(changes, edges));
@@ -141,6 +156,7 @@ function StoryFlowChartEditor (props: {
           node.data as ChoiceNodeProps);
       break;
     }
+    newNode.selected = node.selected;
     setNodes(nodes => [...nodes, newNode]);
         
   }, [onClickEdit, onClickDelete, onSceneNameChanged, onSceneTitleChanged])

@@ -18,7 +18,7 @@ function SceneNode(props: NodeProps<SceneNodeType>) {
   }
 
   return (
-    <StoryNode selected={props.selected} className="scene">
+    <StoryNode selected={props.selected || props.data.indirectSelected} className="scene">
       <Stack className="px-1" gap={1}>
         <DynamicTextField 
           initialValue={props.data.label}
@@ -44,7 +44,7 @@ function SceneNode(props: NodeProps<SceneNodeType>) {
       </Stack>
       <Handle type="target" position={Position.Left}/>
       <Handle type="source" position={Position.Right}/>
-      <NodeToolbar isVisible={props.selected} className="nodrag nopan">
+      <NodeToolbar isVisible={props.selected && !props.data.indirectSelected} className="nodrag nopan">
         <InputGroup>
           {props.data.scene?.details.summary && 
             <InputGroup.Text className="story-node-summary">

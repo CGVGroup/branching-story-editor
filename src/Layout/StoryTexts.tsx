@@ -3,7 +3,7 @@ import { Accordion, Button, Card, Col, FloatingLabel, Form, Row, Spinner } from 
 import { debounce } from "throttle-debounce";
 import Scene from "../StoryElements/Scene.ts";
 import ChoiceEditor from "./ChoiceEditor.tsx";
-import { ChoiceDetails, ChoiceNodeProps, SceneNodeProps } from "../Flow/StoryNode.tsx";
+import { ChoiceDetails, ChoiceNodeProps, NodeType, SceneNodeProps } from "../Flow/StoryNode.tsx";
 import Story from "../StoryElements/Story.ts";
 import PromptArea from "./PromptArea.tsx";
 import { sendToLLM } from "../Misc/LLM.ts";
@@ -36,12 +36,12 @@ function StoryTexts(props: {
     const onSendButtonClicked = useCallback(async (id: string) => {
         const index = localStory.getAllNodes().findIndex(node => node.id === id);
         setLoadings(loadings => loadings.map((loading, idx) => idx === index ? true : loading));
-        const response = await sendToLLM("");
+        //const response = await sendToLLM("");
         /*if (response.ok) {
             const responseText = await response.text();
             onFullTextEdited(id, responseText);
             }*/
-        onFullTextEdited(id, response);
+        onFullTextEdited(id, "response");
         setLoadings(loadings => loadings.map((loading, idx) => idx === index ? false : loading));
     }, [localStory, onFullTextEdited]);
 
@@ -55,7 +55,7 @@ function StoryTexts(props: {
             .sort((n1, n2) => n1.position.x - n2.position.x)
             .map((node, idx) => {
                 const id = node.id;
-                if (node.type === "sceneNode") {
+                if (node.type === NodeType.scene) {
                     const data = node.data as SceneNodeProps;
                     return (
                         <Accordion.Item eventKey={id} key={idx}>
@@ -99,7 +99,7 @@ function StoryTexts(props: {
                             </Accordion.Body>
                         </Accordion.Item>
                     );
-                } else if (node.type === "choiceNode") {
+                } else if (node.type === NodeType.choice) {
                     const data = node.data as ChoiceNodeProps;
                     return <Accordion.Item eventKey={id} key={idx} className="choice">
                         <Accordion.Header>

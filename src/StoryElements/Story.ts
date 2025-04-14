@@ -2,7 +2,8 @@ import {v4 as uuidv4} from "uuid";
 import { Node, ReactFlowJsonObject } from "@xyflow/react";
 import { CharacterElement, LocationElement, ObjectElement, StoryElementType, StoryElement } from "./StoryElement.ts";
 import Scene from "./Scene.ts";
-import { ChoiceDetails } from "../Flow/StoryNode.tsx";
+import { ChoiceDetails, NodeType } from "../Flow/StoryNode.tsx";
+import { sendToLLM } from "../Misc/LLM.ts";
 
 type SerializedStory = {
     characters: [string, CharacterElement][],
@@ -213,6 +214,99 @@ class Story {
     static fromJSON(json: string): Story {
         return this.deserialize(JSON.parse(json));
     }
+
+    async sendToLLM(): Promise<Story> {
+        // TODO CHIARIRE TESTO E TITOLO DEL NODO DI SCELTA
+        const payloadObject = {
+            argomenti_storia: {
+                titolo: this.title,
+                personaggi: [...this.characters.values()].map(char => {return {
+                    nome: char.name,
+                    bio: char.bio,
+                    obbiettivi: [char.objective]
+                }}),
+                oggetti: [...this.objects.values()].map(obj => {return {
+                    nome: obj.name,
+                    uso: obj.use,
+                    note: obj.notes
+                }}),
+                luoghi: [...this.locations.values()].map(loc => {return {
+                    nome: loc.name,
+                    finalita: loc.purpose,
+                    note: loc.notes
+                }})
+            },
+            scene: this.flow.nodes.map(node => {
+                if (node.type === NodeType.scene) return {
+                    nome: node.data.label,
+                    id_scena: (node.data.scene as Scene).details.title,
+                    descrizione: (node.data.scene as Scene).prompt,
+                    next_scene: {
+                        scena: this.flow.nodes.find?.(node => 
+                            node.id === this.flow.edges.find(
+                                edge => edge.source === node.id)?.target)?.data.label ?? null,
+                        scelta: null
+                    },
+                    prev_scene: this.flow.nodes.find?.(node => 
+                        node.id === this.flow.edges.find(
+                            edge => edge.target === node.id)?.source)?.data.label ?? null,
+                    num_frasi: 3,
+                    mood: (node.data.scene as Scene).details.tone
+                };
+                else if (node.type === NodeType.choice) return {
+                    nome: node.data.label,
+                    id_scena: node.data.label,
+                    descrizione: (node.data.choices as ChoiceDetails[]).map(choice => choice.title).join(" / "),
+                    next_scene: (node.data.choices as ChoiceDetails[]).map(choice => {return {
+                        scena: this.flow.edges
+                            .filter(edge => edge.source === node.id)
+                            .map(edge => this.flow.nodes.find(node => node.id === edge.target)!.data.label),
+                        scelta: choice.choice
+                    }}),
+                    prev_scene: this.flow.nodes.find?.(node => 
+                        node.id === this.flow.edges.find(
+                            edge => edge.target === node.id)?.source)?.data.label ?? null,
+                    num_frasi: 3,
+                    mood: "scelta"
+                };
+        })}
+        console.log(payloadObject);
+
+        try {
+            const response = JSON.parse(await sendToLLM(payloadObject));
+            if (response?.length) {
+                response.forEach((label: string, text: string) => {
+                    const correspondingNode = this.flow.nodes.find(node => node.data.label === label);
+                    if (correspondingNode && correspondingNode.type === NodeType.scene)
+                        (correspondingNode.data.scene as Scene).fullText = text;
+                });
+            }
+        } catch (e) {
+            console.error(e);
+        }
+        return this.clone();
+    }
+
+    /*async sendToLLM(): Promise<Story> {
+        const sceneNodes = this.flow.nodes.filter(node => node.type === NodeType.scene);
+        await Promise.all(
+			sceneNodes.map(
+				node => new Promise(resolve => 
+					resolve(this.sendSceneToLLM(node.id)))
+                    .then(fullText => {
+                        const newScene = Scene.from(node.data.scene as Scene);
+                        newScene.fullText = (fullText as string);
+                        console.log(newScene)
+                        return this.cloneAndSetScene(node.id, newScene);
+                    })
+            )
+        );
+        return this.clone();
+    }
+
+    sendSceneToLLM(id: string): Promise<string> {
+        return sendToLLM((this.getSceneById(id)!).prompt);
+    }*/
 }
 
 export default Story;
