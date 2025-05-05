@@ -6,14 +6,15 @@ import StoryElements from "./StoryElements.tsx";
 import Story from "../StoryElements/Story.ts";
 import DynamicTextField from "./DynamicTextField.tsx";
 import saveToDisk from "../Misc/SaveToDisk.ts";
-import Scene, { SceneDetails } from "../StoryElements/Scene.ts";
+import Scene from "../StoryElements/Scene.ts";
 import SceneEditor from "./SceneEditor.tsx";
-import { ChoiceDetails, NodeType, SceneNodeType } from "../Flow/StoryNode.tsx";
+import { ChoiceDetails, NodeType } from "../Flow/StoryNode.tsx";
 import ChoiceEditor from "./ChoiceEditor.tsx";
 import StoryTexts from "./StoryTexts.tsx";
 import { ModalContents } from "./GenericModal.tsx";
 import { debounce } from "throttle-debounce";
-import { sendToLLM } from "../Misc/LLM.ts";
+// @ts-ignore
+import {ReactComponent as AiPen} from "../img/ai-pen.svg";
 
 function StoryEditor(props: {
 	stories: Map<string, Story>,
@@ -67,7 +68,6 @@ function StoryEditor(props: {
 		setLoading(true);
 		const newStory = await localStory.sendToLLM();
 		setLocalStory(newStory);
-		console.log(newStory);
 		setLoading(false);
 	}, [localStory]);
 
@@ -90,7 +90,7 @@ function StoryEditor(props: {
 	useEffect(() => {
 		const element = document.getElementById("story-elements-holder")!;
 		const computedStyle = getComputedStyle(element);
-		setStoryElementsWidth(element.clientWidth - parseFloat(computedStyle.paddingLeft) - parseFloat(computedStyle.paddingRight));
+		setStoryElementsWidth(element.clientWidth - parseFloat(computedStyle.paddingLeft) - parseFloat(computedStyle.paddingRight) - 1);
 	}, []);
 
 	// Keeps page title updated with story title
@@ -102,7 +102,7 @@ function StoryEditor(props: {
 		<Container className="h-100" fluid>
 			<Row style={{alignItems: "center", height: "10%"}}>
 				<Col xs={2}>
-					<ButtonGroup size="lg">
+					<ButtonGroup size="lg" className="flex-wrap">
 						<Button variant="tertiary" onClick={() => navigate("/stories")} title="Torna a tutte le storie">
 							<i className="bi bi-house" aria-label="home" />
 						</Button>
@@ -113,13 +113,13 @@ function StoryEditor(props: {
 							variant={"tertiary"}
 							title={`${sideTab ? "Nascondi" : "Mostra"} menu laterale`}
 							onClick={() => setSideTab(s => !s)}>
-							{sideTab ? <i className="bi bi-layout-sidebar" /> : <i className="bi bi-layout-sidebar-inset" />}
+							{sideTab ? <i className="bi bi-layout-sidebar" aria-label="sidebar not shown"/> : <i className="bi bi-layout-sidebar-inset" aria-label="sidebar shown"/>}
 						</Button>
 						<Button
 							variant={"tertiary"}
 							title={"Genera tutti i testi"}
 							onClick={onClickGenerateAll}>
-							{loading ? <Spinner size="sm" /> : <i className="bi bi-send-fill" />}
+							{loading ? <Spinner size="sm" /> : <AiPen/>}
 						</Button>
 					</ButtonGroup>
 				</Col>

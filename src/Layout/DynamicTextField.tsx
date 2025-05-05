@@ -30,6 +30,7 @@ function DynamicTextField(props: {
 				{...props.baseProps}
 				className={`dynamic-text-field ${props.baseProps?.className ?? ""} ${focus ? "focus nodrag" : ""}`}
 				value={value}
+				title={value}
 				//plaintext={!focus}
 				readOnly={!focus}
 				isInvalid={props.isInvalid?.(value)}

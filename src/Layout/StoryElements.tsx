@@ -6,9 +6,9 @@ import ElementModal from "./AddElementModal.tsx";
 import Story from "../StoryElements/Story.ts";
 
 const storyElementTabsArray = [
-  {type: StoryElementType.character, className: "character-mention", tabText: "🙋", buttonText: "Personaggi ", noElementsText: "Nessun personaggio" },
-  {type: StoryElementType.object, className: "object-mention", tabText: "⚱️", buttonText: "Oggetti ", noElementsText: "Nessun oggetto" },
-  {type: StoryElementType.location, className: "location-mention", tabText: "🏛️", buttonText: "Luoghi ", noElementsText: "Nessun luogo" }
+  {type: StoryElementType.character, className: "character-mention", tabContents: <img src={require("../img/character.png")} title="Personaggi" style={{height:"3em"}}/>, buttonText: "Personaggi ", noElementsText: "Nessun personaggio" },
+  {type: StoryElementType.object, className: "object-mention", tabContents: <img src={require("../img/object.png")} title="Oggetti" style={{height:"3em"}}/>, buttonText: "Oggetti ", noElementsText: "Nessun oggetto" },
+  {type: StoryElementType.location, className: "location-mention", tabContents: <img src={require("../img/location.png")} title="Luoghi" style={{height:"3em"}}/>, buttonText: "Luoghi ", noElementsText: "Nessun luogo" }
 ]
 
 function StoryElements (props: {
@@ -124,7 +124,8 @@ function StoryElements (props: {
       <Tabs
         activeKey={key}
         onSelect={k => setKey(Number.parseInt(k ?? "0"))}
-        className="mb-2">
+        className="mb-2 flex-nowrap"
+        fill>
         {storyElementTabsArray.map((tab, idx) =>
           <Tab
             eventKey={tab.type}
@@ -133,8 +134,8 @@ function StoryElements (props: {
             tabClassName={tab.className}
             title={
               <>
-                <span style={{fontSize:"2em", pointerEvents:"none"}}>
-                  {tab.tabText}
+                <span style={{width:"2em"}}>
+                  {tab.tabContents}
                 </span>
                 <Badge className={tab.className + " selected"} bg="" pill>
                   {badges[idx]}

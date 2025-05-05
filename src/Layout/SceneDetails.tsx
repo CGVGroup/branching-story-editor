@@ -116,26 +116,29 @@ function SceneDetails(props: {
 					<hr/>
 					<InputGroup>
 						<InputGroup.Text style={{ width: textWidth }}>Sfondo:</InputGroup.Text>
-						<Col className="px-2">
-							<ChipList 
-								values={backgroundCharacters}
-								setValues={setBackgroundCharacters}
-								allValues={props.story.characters}
-								className="character-mention"
-								noElementsText="Nessun Personaggio" />
-							<ChipList 
-								values={backgroundObjects}
-								setValues={setBackgroundObjects}
-								allValues={props.story.objects}
-								className="object-mention"
-								noElementsText="Nessun Oggetto" />
-							<ChipList 
-								values={backgroundLocations}
-								setValues={setBackgroundLocations}
-								allValues={props.story.locations}
-								className="location-mention"
-								noElementsText="Nessun Luogo" />
-						</Col>
+						{backgroundCharacters.size || backgroundObjects.size || backgroundLocations.size ?
+							<Col className="px-2">
+								{!!backgroundCharacters.size && <ChipList 
+									values={backgroundCharacters}
+									setValues={setBackgroundCharacters}
+									allValues={props.story.characters}
+									className="character-mention"
+									noElementsText="Nessun Personaggio" />}
+								{!!backgroundObjects.size && <ChipList 
+									values={backgroundObjects}
+									setValues={setBackgroundObjects}
+									allValues={props.story.objects}
+									className="object-mention"
+									noElementsText="Nessun Oggetto" />}
+								{!!backgroundLocations.size && <ChipList 
+									values={backgroundLocations}
+									setValues={setBackgroundLocations}
+									allValues={props.story.locations}
+									className="location-mention"
+									noElementsText="Nessun Luogo" />}
+							</Col>
+						:
+							<Form.Control disabled defaultValue="Nessun Elemento di Sfondo" style={{backgroundColor: "transparent", opacity: "66%"}}/>}
 						<Button onClick={() => setBackgroundsModal(true)} title="Modifica elementi di sfondo">
 							<i className="bi bi-pencil" aria-label="edit" />
 						</Button>

@@ -153,7 +153,7 @@ function StoriesDashboard(props: {
 										<Button variant="secondary" onClick={() => onClickCopy(selectedStory)} title="Duplica">
 											<i className="bi bi-copy" aria-label="duplicate"/> 
 										</Button>
-										<Button variant="secondary" onClick={() => onClickEdit(selectedId)} title="Modifica">
+										<Button variant="primary" onClick={() => onClickEdit(selectedId)} title="Modifica">
 											<i className="bi bi-pencil-square" aria-label="edit"/>
 										</Button>
 										<Form.Control

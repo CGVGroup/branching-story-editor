@@ -1,16 +1,22 @@
 import { v4 as uuidv4 } from "uuid";
 import React from "react";
-import { Node, XYPosition } from "@xyflow/react";
+import { Node, ReactFlowInstance, XYPosition } from "@xyflow/react";
 import Scene from "../StoryElements/Scene.ts";
 import SceneNode from "./SceneNode.tsx";
 import ChoiceNode from "./ChoiceNode.tsx";
+import ButtonEdge from "./ButtonEdge.tsx";
 
 export enum NodeType {
     scene = "sceneNode",
     choice = "choiceNode"
 }
 
+export enum EdgeType {
+    button = "buttonEdge"
+}
+
 export const storyNodeTypes = {sceneNode: SceneNode, choiceNode: ChoiceNode};
+export const storyEdgeTypes = {buttonEdge: ButtonEdge}
 
 export type ChoiceDetails = {
     title: string;
@@ -19,38 +25,36 @@ export type ChoiceDetails = {
     wrong: boolean;
 };
 
-export type SceneFunctionProps = {
+export type StoryNodeFunctionProps = {
     onClickEdit: () => void;
-    onClickDelete: () => void;
-    onSceneNameChanged: (name: string) => void
-    onSceneTitleChanged: (title: string) => void
 }
-export type ChoiceFunctionProps = {
-    onClickEdit: () => void;
-    onClickDelete: () => void;
-    onChoiceNameChanged: (name: string) => void
-};
 
-export type SceneNodeProps = {
+export type StoryNodeProps = {
     label: string;
     indirectSelected?: boolean;
-    scene?: Scene;
-} & SceneFunctionProps;
-export type ChoiceNodeProps = {
-    label: string;
-    indirectSelected?: boolean;
-    choices: ChoiceDetails[];
-} & ChoiceFunctionProps;
+}
 
-export type SceneNodeObject = {
+export type SceneNodeProps =
+    StoryNodeProps &
+    StoryNodeFunctionProps & {
+        scene: Scene;
+    };
+export type ChoiceNodeProps =
+    StoryNodeProps & 
+    StoryNodeFunctionProps & {
+        choices: ChoiceDetails[];
+    };
+
+export type StoryNodeObject = {
     id: string;
     position: XYPosition
+}
+
+export type SceneNodeObject = StoryNodeObject & {
     data: SceneNodeProps;
     type: NodeType.scene
 };
-export type ChoiceNodeObject = {
-    id: string;
-    position: XYPosition
+export type ChoiceNodeObject = StoryNodeObject & {
     data: ChoiceNodeProps;
     type: NodeType.choice
 };
@@ -64,9 +68,22 @@ export type ChoiceNodeType = Node<
     "ChoiceNode"
 >;
 
+export function deleteStoryNode(rfInstance: ReactFlowInstance, id: string) {
+    rfInstance.setNodes(nodes => nodes.filter(node => node.id !== id));
+};
+
+export function changeStoryNodeName(rfInstance: ReactFlowInstance, id: string, name: string) {
+    rfInstance.setNodes(nodes => nodes.map(
+        node => node.id === id ?
+            {...node, data: {...node.data, label: name}}
+        :
+            node
+    ));
+};
+
 export function createNewSceneNode(
     id: string,
-    callbacks: SceneFunctionProps,
+    onClickEdit: () => void,
     label?: string,
     position?: XYPosition,
     data?: SceneNodeProps
@@ -77,10 +94,7 @@ export function createNewSceneNode(
         data: {
             label: label ?? data?.label ?? "Scena senza nome",
             scene: data?.scene ?? new Scene(undefined),
-            onClickEdit: callbacks.onClickEdit,
-            onClickDelete: callbacks.onClickDelete,
-            onSceneNameChanged: callbacks.onSceneNameChanged,
-            onSceneTitleChanged: callbacks.onSceneTitleChanged
+            onClickEdit: onClickEdit,
         },
         type: NodeType.scene
     };
@@ -88,7 +102,7 @@ export function createNewSceneNode(
 
 export function createNewChoiceNode(
     id: string,
-    callbacks: ChoiceFunctionProps,
+    onClickEdit: () => void,
     label?: string,
     position?: XYPosition,
     data?: ChoiceNodeProps
@@ -99,9 +113,7 @@ export function createNewChoiceNode(
         data: {
             label: label ?? data?.label ?? "Scelta senza nome",
             choices: data?.choices ?? [{title: "A", choice: "", consequence: "", wrong: false}, {title: "B", choice: "", consequence: "", wrong: false}],
-            onClickEdit: callbacks.onClickEdit,
-            onClickDelete: callbacks.onClickDelete,
-            onChoiceNameChanged: callbacks.onChoiceNameChanged,
+            onClickEdit: onClickEdit,
         },
         type: NodeType.choice
     };
@@ -113,7 +125,7 @@ export const StoryNode = React.forwardRef<
 >(({ className, selected, indirectSelected, ...props }, ref) => (
   <div
     ref={ref}
-    className={`story-node px-0 py-2 ${className ?? ""} ${selected || indirectSelected ? "shadow selected" : ""}`}
+    className={`story-node px-0 py-2 ${className ?? ""} ${selected ? "shadow selected" : ""} ${indirectSelected ? "indirect-selected" : ""}`}
     style={{display: "flex", position: "relative"}}
     tabIndex={0}
     {...props}

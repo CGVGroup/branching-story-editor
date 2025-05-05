@@ -8,6 +8,8 @@ import PromptArea from "./PromptArea.tsx";
 import { sendToLLM } from "../Misc/LLM.ts";
 import UndoStack from "../Misc/UndoStack.ts";
 import { ModalContents } from "./GenericModal.tsx";
+// @ts-ignore
+import {ReactComponent as AiPen} from "../img/ai-pen.svg";
 
 function SceneEditor(props: {
 	story: Story,
@@ -43,7 +45,7 @@ function SceneEditor(props: {
 			const responseText = await response.text();
 			setUndoStack(undoStack => undoStack.push(responseText));
 		}*/
-		setUndoStack(undoStack => undoStack.push(response));
+		//setUndoStack(undoStack => undoStack.push(response));
 		setLoading(false);
 	}, []);
 
@@ -92,7 +94,7 @@ function SceneEditor(props: {
 										{loading ? 
 											<Spinner size="sm"/>
 										:
-											<i className="bi bi-send" />
+											<AiPen/>
 										}
 									</Button>
 									<Button

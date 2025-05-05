@@ -1,0 +1,8 @@
+Politecnico di Torino, 2024-2025
+
+Flow Charts by ReactFlow: https://reactflow.dev/
+
+Image credit:
+    Desert: https://pixabay.com/photos/camels-sand-dunes-desert-sahara-4134934/
+    Characters/Objects/Locations Icons: https://www.flaticon.com/packs/anthropologist-17869996
+    AI write Icon: fluent:pen-sparkle

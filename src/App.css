@@ -13,6 +13,9 @@
 
   --story-node-color: #f2f2f5;
 
+  --node-highlight-color: #ff0072;
+  --node-indirect-highlight-color: #ff509f;
+
   text-align: center;
   height: 100vh;
   padding: 8px 16px;
@@ -72,7 +75,11 @@
     width: 10em;
 
     &.selected {
-      border-color: #ff0072;      /* theme.primary */
+      border-color: var(--node-highlight-color);
+    }
+
+    &.indirect-selected {
+      border-color: var(--node-indirect-highlight-color);
     }
 
     &.choice {
@@ -94,16 +101,19 @@
     .react-flow__handle {
       &.source {
         border: 1px solid #000;
+        padding: 3px;
         background: #fff;
       }
 
       &.right-choice {
         border-radius: 0%;
+        height: 1.5em;
         background: #bfffbf;
       }
 
       &.wrong-choice {
         border-radius: 0%;
+        height: 1.5em;
         background: #ffbfbf;
       }
     }
@@ -119,6 +129,18 @@
     &:hover {
       box-shadow: var(--box-shadow-sm);
     }
+  }
+
+  .story-edge-button {
+    width: 20px;
+    height: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 1em;
+    padding: 0px;
+    border-radius: 50%;
+    opacity: 50%;
   }
 
   .story-node-summary {

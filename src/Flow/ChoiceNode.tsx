@@ -1,21 +1,23 @@
 import React from "react";
-import { Handle, NodeProps, NodeToolbar, Position } from "@xyflow/react";
+import { Handle, NodeProps, NodeToolbar, Position, useReactFlow } from "@xyflow/react";
 import { Button, ButtonGroup, Col, InputGroup, OverlayTrigger, Tooltip } from "react-bootstrap";
-import { ChoiceNodeType, StoryNode } from "./StoryNode.tsx";
+import { changeStoryNodeName, ChoiceNodeType, deleteStoryNode, StoryNode } from "./StoryNode.tsx";
 import { LabeledHandle } from "./LabeledHandle.tsx";
 import DynamicTextField from "../Layout/DynamicTextField.tsx";
 
 function ChoiceNode(props: NodeProps<ChoiceNodeType>) {
+  const rfInstance = useReactFlow();
+  
   const handleDelete = () => {
-    props.data.onClickDelete();
+    deleteStoryNode(rfInstance, props.id);
   }
 
   const handleSubmitChoiceName = (name: string) => {
-    props.data.onChoiceNameChanged(name);
+    changeStoryNodeName(rfInstance, props.id, name);
   }
 
   return (
-    <StoryNode selected={props.selected || props.data.indirectSelected} className="choice">
+    <StoryNode selected={props.selected} indirectSelected={props.data.indirectSelected} className="choice">
       <Handle type="target" position={Position.Left} />
       <Col className="w-100 px-0">
         <div className="w-100 px-1">

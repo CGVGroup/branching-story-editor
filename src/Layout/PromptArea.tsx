@@ -186,7 +186,15 @@ function PromptArea(props: {
 			onMouseDown={e => {e.preventDefault(); ref?.current?.focus()}}
 			className="custom-tabs">
 			{storyElementTabsArray.map(tab => 
-			  <Tab eventKey={tab.type} title={tab.tabText} key={tab.type} tabClassName={tab.className}>
+			  <Tab
+			  	eventKey={tab.type}
+					key={tab.type}
+					tabClassName={tab.className}
+					title={
+							<span style={{fontSize:"0.5em"}}>
+								{tab.tabContents}
+							</span>
+						}>
 				<ListGroup style={{height:"100%", overflowY:"auto"}} className="story-elements">
 				  {filtered.filter(([_, element]) => element.type === tab.type).map(([id, element], idx) => 
 					<PromptAreaMenuElement

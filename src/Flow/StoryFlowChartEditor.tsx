@@ -3,10 +3,9 @@ import { v4 as uuidv4 } from "uuid";
 import { debounce } from "throttle-debounce";
 import React, { useCallback, useState, useMemo, useEffect, useRef } from "react";
 import { Button, Card, Stack } from "react-bootstrap";
-import { ReactFlow, Controls, Background, applyNodeChanges, Panel, ReactFlowInstance, Edge, NodeChange, Node, addEdge, Connection, EdgeChange, applyEdgeChanges, MarkerType, Viewport, NodeSelectionChange } from "@xyflow/react";
+import { ReactFlow, Controls, Background, applyNodeChanges, Panel, ReactFlowInstance, Edge, NodeChange, Node, addEdge, Connection, EdgeChange, applyEdgeChanges, Viewport, MarkerType} from "@xyflow/react";
 import Story from "../StoryElements/Story.ts";
-import Scene from "../StoryElements/Scene.ts";
-import { ChoiceNodeProps, createNewChoiceNode, createNewSceneNode, NodeType, SceneNodeProps, storyNodeTypes } from "./StoryNode.tsx";
+import { ChoiceNodeProps, createNewChoiceNode, createNewSceneNode, EdgeType, NodeType, SceneNodeProps, storyEdgeTypes, storyNodeTypes } from "./StoryNode.tsx";
 
 function StoryFlowChartEditor (props: {
   story: Story,
@@ -22,67 +21,75 @@ function StoryFlowChartEditor (props: {
 
   const onNodesChange = useCallback((changes: NodeChange[]) => {
     setNodes(nodes => applyNodeChanges(changes, nodes));
-    changes.filter(change => change.type === "select").forEach(change => {
-      if (rfInstance) {
-        const nodeConnections = rfInstance.getNodeConnections({nodeId: change.id, type: "source"});
-        setNodes(nodes => nodes.map(node => {
-          if (nodeConnections.map(conn => conn.target).includes(node.id))
-            return {...node, data: {...node.data, indirectSelected: change.selected}};
+    //New node added
+    changes.filter(change => change.type === "dimensions").forEach(change => {
+      setNodes(nodes => nodes.map(node => {
+        if (node.id === change.id) 
           return node;
-        }));
-        setEdges(edges => edges.map(edge => {
-          if (nodeConnections.map(conn => conn.edgeId).includes(edge.id))
-            return {...edge, animated: change.selected};
-          return edge;
-        }));
-      }
+        else
+          return {...node, selected: false, data: {...node.data, indirectSelected: false}}
+      }));
+      setEdges(edges => edges.map(edge => {return {...edge, animated: false}}));
+    });
+    changes.filter(change => change.type === "select").forEach(change => {  
+      const timeout = change.selected ? 50 : 0;
+      setTimeout(() => {
+        if (rfInstance) {
+          const nodeConnections = rfInstance.getNodeConnections({nodeId: change.id});
+          const outgoing = nodeConnections.filter(nc => nc.source === change.id).map(nc => nc.target);
+          const incoming = nodeConnections.filter(nc => nc.target === change.id).map(nc => nc.source);
+          setNodes(nodes => nodes.map(node => {
+            if (outgoing.includes(node.id) || incoming.includes(node.id))
+              return {...node, data: {...node.data, indirectSelected: change.selected}};
+            return node;
+          }));
+          setEdges(edges => edges.map(edge => {
+            if (nodeConnections.map(conn => conn.edgeId).includes(edge.id))
+              return {...edge, animated: change.selected};
+            return edge;
+          }));
+        }
+      }, timeout);
     });
   }, [rfInstance]);
 
   const onEdgesChange = useCallback((changes: EdgeChange[]) => {
     setEdges(edges => applyEdgeChanges(changes, edges));
-  }, []);
+    changes.filter(change => change.type === "select").forEach(change => {
+      const timeout = change.selected ? 50 : 0;
+      setTimeout(() => {
+        if (rfInstance) {
+          setEdges(edges => edges.map(edge => {
+            if (edge.id === change.id)
+              return {...edge, animated: change.selected};
+            return edge;
+          }));
+          setNodes(nodes => nodes.map(node => {
+            if (node.id === rfInstance.getEdge(change.id)?.source || node.id === rfInstance.getEdge(change.id)?.target)
+              return {...node, data: {...node.data, indirectSelected: change.selected}};
+            return node;
+          }));
+        }
+      }, timeout);
+    });
+  }, [rfInstance]);
 
   const onViewportChange = useCallback((newViewport: Viewport) => {
     setViewport(newViewport);
-  }, [])
+  }, []);
+
+  const onPaneClick = useCallback(() => {
+    setNodes(nodes => nodes.map(node => {return {...node, selected: false, data: {...node.data, indirectSelected: false}}}));
+    setEdges(edges => edges.map(edge => {return {...edge, animated: false}}));
+  }, []);
   
-  const onConnect = useCallback((connection: Connection) =>
-    setEdges(eds => addEdge({ ...connection, markerEnd: {type: MarkerType.ArrowClosed, width: 20, height: 20} }, eds),
-  ), []);
+  const onConnect = useCallback((connection: Connection) => {
+    setEdges(edges => addEdge(connection, edges));
+  }, []);
 
   const onClickEdit = useCallback((id: string) => {
     props.onClickEditNode(id);
   }, [props.onClickEditNode]);
-
-  const onClickDelete = useCallback((nodeId: string) => {
-    setNodes(nodes => nodes.filter(
-      node => node.id !== nodeId
-    ));
-  }, []);
-
-  const onSceneNameChanged = useCallback((id: string, newName: string) => {
-    setNodes(nodes => nodes.map(
-      node => node.id === id ? {...node, data: {...node.data, label: newName}} : node));
-  }, []);
-  
-  const onSceneTitleChanged = useCallback((id: string, newTitle: string) => {
-    setNodes(nodes => nodes.map(
-      node => node.id === id ?
-          {...node,
-          data: {
-            ...node.data,
-            scene: {
-              ...(node.data.scene as Scene),
-              details: {
-                ...(node.data.scene as Scene).details,
-                title: newTitle
-              }
-            }
-          }
-        }
-      : node)
-  )}, []);
 
   const addNewNode = useCallback((type: NodeType = NodeType.scene) => {
     const id = uuidv4();
@@ -110,25 +117,21 @@ function StoryFlowChartEditor (props: {
       default:
         newNode = createNewSceneNode(
           id,
-          {onClickEdit: () => onClickEdit(id),
-          onClickDelete: () => onClickDelete(id),
-          onSceneNameChanged: (name: string) => onSceneNameChanged(id, name),
-          onSceneTitleChanged: (title: string) => onSceneTitleChanged(id, title)},
+          () => onClickEdit(id),
           "Scena " + maxLabel,
           position);
       break;
       case NodeType.choice:
         newNode = createNewChoiceNode(
           id,
-          {onClickEdit: () => onClickEdit(id),
-            onClickDelete: () => onClickDelete(id),
-            onChoiceNameChanged: (name: string) => onSceneNameChanged(id, name)},
+          () => onClickEdit(id),
           "Scelta " + maxLabel,
           position);
       break;
     }
+    newNode.selected = true;
     setNodes(nodes => [...nodes, newNode]);
-  }, [flowRef, nodes, setNodes, onClickEdit, onClickDelete, onSceneNameChanged, onSceneTitleChanged]);
+  }, [flowRef, nodes, setNodes, onClickEdit]);
 
   const addExistingNode = useCallback((node: Node) => {
     let newNode: Node;
@@ -137,10 +140,7 @@ function StoryFlowChartEditor (props: {
       default:
         newNode = createNewSceneNode(
           node.id,
-          {onClickEdit: () => onClickEdit(node.id),
-          onClickDelete: () => onClickDelete(node.id),
-          onSceneNameChanged: (name: string) => onSceneNameChanged(node.id, name),
-          onSceneTitleChanged: (title: string) => onSceneTitleChanged(node.id, title)},
+          () => onClickEdit(node.id),
           undefined,
           node.position,
           node.data as SceneNodeProps);
@@ -148,18 +148,16 @@ function StoryFlowChartEditor (props: {
       case NodeType.choice:
         newNode = createNewChoiceNode(
           node.id,
-          {onClickEdit: () => onClickEdit(node.id),
-          onClickDelete: () => onClickDelete(node.id),
-          onChoiceNameChanged: (name: string) => onSceneNameChanged(node.id, name)},
+          () => onClickEdit(node.id),
           undefined,
           node.position,
           node.data as ChoiceNodeProps);
       break;
     }
-    newNode.selected = node.selected;
+    newNode.selected = false;
+    newNode.data.indirectSelected = false;
     setNodes(nodes => [...nodes, newNode]);
-        
-  }, [onClickEdit, onClickDelete, onSceneNameChanged, onSceneTitleChanged])
+  }, [onClickEdit]);
 
   const handleInit = useCallback((rfInstance: ReactFlowInstance) => {
     props.story.flow.nodes.forEach(node => addExistingNode(node));
@@ -180,6 +178,7 @@ function StoryFlowChartEditor (props: {
   , [handleSave, nodes, edges, viewport]);
   
   const nodeTypes = useMemo(() => storyNodeTypes, []);
+  const edgeTypes = useMemo(() => storyEdgeTypes, []);
 
   return (
     <Card className="p-0 h-100">
@@ -187,13 +186,17 @@ function StoryFlowChartEditor (props: {
         nodes={nodes}
         edges={edges}
         viewport={viewport}
+        nodeTypes={nodeTypes}
+        edgeTypes={edgeTypes}
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         onViewportChange={onViewportChange}
-        nodeTypes={nodeTypes}
+        onPaneClick={onPaneClick}
         onConnect={onConnect}
         onInit={handleInit}
         deleteKeyCode={['Backspace', 'Delete']}
+        multiSelectionKeyCode={'Control'}
+        defaultEdgeOptions={{type: EdgeType.button, markerEnd: {type: MarkerType.ArrowClosed, width: 20, height: 20}}}
         className="gx-0 h-100"
         ref={flowRef}
         minZoom={0.2} >

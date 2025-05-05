@@ -1,24 +1,43 @@
 import React from "react";
 import { Button, ButtonGroup, InputGroup, OverlayTrigger, Stack, Tooltip } from "react-bootstrap";
-import { Handle, NodeProps, NodeToolbar, Position } from "@xyflow/react";
+import { Handle, NodeProps, NodeToolbar, Position, useReactFlow } from "@xyflow/react";
 import DynamicTextField from "../Layout/DynamicTextField.tsx";
-import { SceneNodeType, StoryNode } from "./StoryNode.tsx";
+import { changeStoryNodeName, deleteStoryNode, SceneNodeType, StoryNode } from "./StoryNode.tsx";
+import Scene from "../StoryElements/Scene.ts";
 
 function SceneNode(props: NodeProps<SceneNodeType>) {
+  const rfInstance = useReactFlow();
+  
   const handleDelete = () => {
-    props.data.onClickDelete();
+    deleteStoryNode(rfInstance, props.id);
   }
 
   const handleSubmitSceneName = (name: string) => {
-    props.data.onSceneNameChanged(name);
+    changeStoryNodeName(rfInstance, props.id, name);
   }
 
   const handleSubmitSceneTitle = (title: string) => {
-    props.data.onSceneTitleChanged(title);
+    rfInstance.setNodes(nodes => nodes.map(
+      node => node.id === props.id ?
+        {...node,
+          data: {
+            ...node.data,
+            scene: {
+              ...(node.data.scene as Scene),
+              details: {
+                ...(node.data.scene as Scene).details,
+                title: title
+              }
+            }
+          }
+        }
+      :
+        node
+    ));
   }
 
   return (
-    <StoryNode selected={props.selected || props.data.indirectSelected} className="scene">
+    <StoryNode selected={props.selected} indirectSelected={props.data.indirectSelected} className="scene">
       <Stack className="px-1" gap={1}>
         <DynamicTextField 
           initialValue={props.data.label}
