@@ -80,10 +80,6 @@ function StoriesDashboard(props: {
 		document.title = "Story Editor";
 	}, []);
 	
-	/*useEffect(() => {
-		setId([...stories.keys()].pop());
-	}, [stories]);*/
-	
 	return (
 		<Container className="h-100" fluid>
 			<Row style={{height:"10%", alignItems:"center"}}>

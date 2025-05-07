@@ -43,8 +43,34 @@ function StoryEditor(props: {
 		setLocalStory(story => story.cloneAndSetScene(id, newScene));
 	}, []);
 
+	const onChoiceMoved = useCallback((id: string, oldIdx: number, newIdx: number) => {
+		setLocalStory(story => {
+			const node = story.getNodeById(id);
+			if (!node) return story;
+			const oldHandle = `source-${oldIdx}`;
+			const newHandle = `source-${newIdx}`;
+			
+			return story.cloneAndSetFlow({...story.flow, edges: story.flow.edges.map(edge => {
+				if (edge.source !== node.id) return edge;
+				if (edge.sourceHandle === oldHandle) return {...edge, sourceHandle: newHandle}
+				if (edge.sourceHandle === newHandle) return {...edge, sourceHandle: oldHandle}
+				return edge;
+			})});
+		});
+	}, []);
+
 	const onChoiceEdited = useCallback((id: string, newChoice: ChoiceDetails[]) => {
 		setLocalStory(story => story.cloneAndSetChoice(id, newChoice));
+	}, []);
+
+	const onChoiceDeleted = useCallback((id: string, idx: number) => {
+		setLocalStory(story => {
+			const node = story.getNodeById(id);
+			if (!node) return story;
+			return story.cloneAndSetFlow({...story.flow, edges: story.flow.edges.filter(edge => 
+				edge.source !== node.id || edge.sourceHandle !== `source-${idx}`)
+			})
+		});
 	}, []);
 
 	const onClickTabClose = useCallback((id: string) => {
@@ -214,7 +240,9 @@ function StoryEditor(props: {
 										<ChoiceEditor 
 											story={localStory}
 											choices={node.data.choices as ChoiceDetails[]}
-											setChoices={newChoice => onChoiceEdited(nodeId, newChoice)} />}
+											setChoices={newChoice => onChoiceEdited(nodeId, newChoice)}
+											onChoiceMoved={(oldIdx, newIdx) => onChoiceMoved(nodeId, oldIdx, newIdx)}
+											onChoiceDeleted={idx => onChoiceDeleted(nodeId, idx)}/>}
 								</Tab>
 							)}
 						)}

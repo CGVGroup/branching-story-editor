@@ -90,32 +90,36 @@ function SceneDetails(props: {
 					</InputGroup>
 					<hr />
 					<DropdownField
-						label="Orario"
+						label="Orario:"
 						value={time}
 						setValue={setTime}
 						defaultValue="Nessun Orario"
+						labelWidth={textWidth}
 						choices={sceneDetailsChoices.time} />
 					<DropdownField
-						label="Meteo"
+						label="Meteo:"
 						value={weather}
 						setValue={setWeather}
 						defaultValue="Nessun Meteo"
+						labelWidth={textWidth}
 						choices={sceneDetailsChoices.weather} />
 					<DropdownField
-						label="Tono"
+						label="Tono:"
 						value={tone}
 						setValue={setTone}
 						defaultValue="Nessun Tono"
+						labelWidth={textWidth}
 						choices={sceneDetailsChoices.tone} />
 					<DropdownField
-						label="Valore"
+						label="Valore:"
 						value={value}
 						setValue={setValue}
 						defaultValue="Nessun Valore"
+						labelWidth={textWidth}
 						choices={sceneDetailsChoices.value} />
 					<hr/>
 					<InputGroup>
-						<InputGroup.Text style={{ width: textWidth }}>Sfondo:</InputGroup.Text>
+						<InputGroup.Text style={{ width: textWidth, overflow: "hidden" }}>Sfondo:</InputGroup.Text>
 						{backgroundCharacters.size || backgroundObjects.size || backgroundLocations.size ?
 							<Col className="px-2">
 								{!!backgroundCharacters.size && <ChipList 
@@ -139,7 +143,10 @@ function SceneDetails(props: {
 							</Col>
 						:
 							<Form.Control disabled defaultValue="Nessun Elemento di Sfondo" style={{backgroundColor: "transparent", opacity: "66%"}}/>}
-						<Button onClick={() => setBackgroundsModal(true)} title="Modifica elementi di sfondo">
+						<Button
+							onClick={() => setBackgroundsModal(true)}
+							title="Modifica elementi di sfondo"
+							variant="secondary">
 							<i className="bi bi-pencil" aria-label="edit" />
 						</Button>
 					</InputGroup>

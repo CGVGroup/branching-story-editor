@@ -3,26 +3,26 @@ import { BaseEdge, EdgeLabelRenderer, getBezierPath, useReactFlow, type EdgeProp
 import { Button } from 'react-bootstrap';
  
 export default function ButtonEdge({
-  id,
-  selected,
-  sourceX,
-  sourceY,
-  targetX,
-  targetY,
-  sourcePosition,
-  targetPosition,
-  style = {},
+	id,
+	selected,
+	sourceX,
+	sourceY,
+	targetX,
+	targetY,
+	sourcePosition,
+	targetPosition,
+	style = {},
 	markerEnd,
 }: EdgeProps) {
-  const rfInstance = useReactFlow();
-  const [edgePath, labelX, labelY] = getBezierPath({sourceX, sourceY, sourcePosition, targetX, targetY, targetPosition});
- 
-  const onEdgeClick = () => {
-    rfInstance.setEdges(edges => edges.filter(edge => edge.id !== id));
-  };
- 
-  return (
-    <>
+	const rfInstance = useReactFlow();
+	const [edgePath, labelX, labelY] = getBezierPath({sourceX, sourceY, sourcePosition, targetX, targetY, targetPosition});
+	
+	const onEdgeClick = () => {
+		rfInstance.setEdges(edges => edges.filter(edge => edge.id !== id));
+	};
+	
+	return (
+		<>
 			<BaseEdge path={edgePath} markerEnd={markerEnd} style={style} />
 			<EdgeLabelRenderer>
 				<div
@@ -42,6 +42,6 @@ export default function ButtonEdge({
 						</Button>}
 				</div>
 			</EdgeLabelRenderer>
-    </>
-  );
+		</>
+	);
 }

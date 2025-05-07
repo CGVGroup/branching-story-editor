@@ -4,11 +4,11 @@ import { StoryElementType, StoryElement } from "../StoryElements/StoryElement.ts
 import Story from "../StoryElements/Story.ts";
 
 function ElementList (props: {
-        allElements: Map<string, StoryElement>,
-        selected: Set<string>,
-        setSelected: React.Dispatch<React.SetStateAction<Set<string>>>,
-        checkboxType: "checkbox" | "radio",
-        noElementsText: string
+    allElements: Map<string, StoryElement>,
+    selected: Set<string>,
+    setSelected: React.Dispatch<React.SetStateAction<Set<string>>>,
+    checkboxType: "checkbox" | "radio",
+    noElementsText: string
 }) {
     return <ListGroup>
         <Form.Check

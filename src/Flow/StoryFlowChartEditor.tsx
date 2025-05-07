@@ -19,17 +19,19 @@ function StoryFlowChartEditor (props: {
 
   const flowRef = useRef(null);
 
+  const setNodeProperties = useCallback((check: (node: Node) => boolean, properties: Partial<Node>) => {
+    setNodes(nodes => nodes.map(node => check(node) ? {...node, ...properties, data: {...node.data, ...properties.data}} : node ));
+  }, [])
+  const setEdgeProperties = useCallback((check: (edge: Edge) => boolean, properties: Partial<Edge>) => {
+    setEdges(edges => edges.map(edge => check(edge) ? {...edge, ...properties} : edge));
+  }, [])
+
   const onNodesChange = useCallback((changes: NodeChange[]) => {
     setNodes(nodes => applyNodeChanges(changes, nodes));
     //New node added
     changes.filter(change => change.type === "dimensions").forEach(change => {
-      setNodes(nodes => nodes.map(node => {
-        if (node.id === change.id) 
-          return node;
-        else
-          return {...node, selected: false, data: {...node.data, indirectSelected: false}}
-      }));
-      setEdges(edges => edges.map(edge => {return {...edge, animated: false}}));
+      setNodeProperties(node => node.id === change.id, {selected: false, data: {indirectSelected: false}})
+      setEdgeProperties(_ => true, {animated: false});
     });
     changes.filter(change => change.type === "select").forEach(change => {  
       const timeout = change.selected ? 50 : 0;
@@ -38,16 +40,8 @@ function StoryFlowChartEditor (props: {
           const nodeConnections = rfInstance.getNodeConnections({nodeId: change.id});
           const outgoing = nodeConnections.filter(nc => nc.source === change.id).map(nc => nc.target);
           const incoming = nodeConnections.filter(nc => nc.target === change.id).map(nc => nc.source);
-          setNodes(nodes => nodes.map(node => {
-            if (outgoing.includes(node.id) || incoming.includes(node.id))
-              return {...node, data: {...node.data, indirectSelected: change.selected}};
-            return node;
-          }));
-          setEdges(edges => edges.map(edge => {
-            if (nodeConnections.map(conn => conn.edgeId).includes(edge.id))
-              return {...edge, animated: change.selected};
-            return edge;
-          }));
+          setNodeProperties(node => outgoing.includes(node.id) || incoming.includes(node.id), {data: {indirectSelected: change.selected}});
+          setEdgeProperties(edge => nodeConnections.map(conn => conn.edgeId).includes(edge.id), {animated: change.selected});
         }
       }, timeout);
     });
@@ -55,20 +49,21 @@ function StoryFlowChartEditor (props: {
 
   const onEdgesChange = useCallback((changes: EdgeChange[]) => {
     setEdges(edges => applyEdgeChanges(changes, edges));
+    changes.filter(change => change.type === "remove").forEach(change => {
+      if (rfInstance) {
+        setNodeProperties(
+          node => node.id === rfInstance.getEdge(change.id)?.source || node.id === rfInstance.getEdge(change.id)?.target,
+          {selected: false, data: {indirectSelected: false}});
+      }
+    });
     changes.filter(change => change.type === "select").forEach(change => {
       const timeout = change.selected ? 50 : 0;
       setTimeout(() => {
         if (rfInstance) {
-          setEdges(edges => edges.map(edge => {
-            if (edge.id === change.id)
-              return {...edge, animated: change.selected};
-            return edge;
-          }));
-          setNodes(nodes => nodes.map(node => {
-            if (node.id === rfInstance.getEdge(change.id)?.source || node.id === rfInstance.getEdge(change.id)?.target)
-              return {...node, data: {...node.data, indirectSelected: change.selected}};
-            return node;
-          }));
+          setEdgeProperties(edge => edge.id === change.id, {animated: change.selected});
+          setNodeProperties(
+            node => node.id === rfInstance.getEdge(change.id)?.source || node.id === rfInstance.getEdge(change.id)?.target,
+            {data: {indirectSelected: change.selected}});
         }
       }, timeout);
     });
@@ -79,12 +74,19 @@ function StoryFlowChartEditor (props: {
   }, []);
 
   const onPaneClick = useCallback(() => {
-    setNodes(nodes => nodes.map(node => {return {...node, selected: false, data: {...node.data, indirectSelected: false}}}));
-    setEdges(edges => edges.map(edge => {return {...edge, animated: false}}));
+    setNodeProperties(_ => true, {selected: false, data: {indirectSelected: false}});
+    setEdgeProperties(_ => true, {animated: false});
   }, []);
   
   const onConnect = useCallback((connection: Connection) => {
     setEdges(edges => addEdge(connection, edges));
+    if (rfInstance) {
+      if (rfInstance.getNode(connection.source)?.selected)
+        setNodeProperties(node => node.id === connection.target, {data: {indirectSelected: true}});
+      
+      if (rfInstance.getNode(connection.target)?.selected)
+        setNodeProperties(node => node.id === connection.source, {data: {indirectSelected: true}});
+    }
   }, []);
 
   const onClickEdit = useCallback((id: string) => {
@@ -171,7 +173,7 @@ function StoryFlowChartEditor (props: {
     edges: Edge[],
     viewport: Viewport
   ) => {
-    props.setStory(story => story.cloneAndAddFlow({nodes: nodes, edges: edges, viewport: viewport}));
+    props.setStory(story => story.cloneAndSetFlow({nodes: nodes, edges: edges, viewport: viewport}));
   }), []);
 
   useEffect(() => handleSave(nodes, edges, viewport)

@@ -79,10 +79,11 @@ function PromptArea(props: {
 		const wordStart = pos.caret - name.length - 1;
 		const wordEnd = previousWord ? wordStart + previousWord.length : pos.caret; 
 		ref.current.setRangeText(
-			`@${allMap.get(id)!.name}`,
+			`@${allMap.get(id)!.name} `,
 			wordStart,
 			wordEnd,
 			"end");
+		ref.current.focus();
 		setShowMenu(false);
 	},[ref, pos, text, name, match, highlight_all, allMap]);
 

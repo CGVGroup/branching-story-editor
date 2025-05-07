@@ -17,10 +17,6 @@ function StoryElementInputForm(props: {
                     isInvalid={props.element.name.length === 0}
                     autoFocus />
             </FloatingLabel>
-            {/*<InputGroup className="mb-2">
-                <InputGroup.Text>Variabile:</InputGroup.Text>
-                <Form.Switch checked={props.element.isVariable} onChange={e => props.setElement({...props.element, isVariable: e.target.checked})} />
-            </InputGroup>*/}
         </>
     );
     const commonNotes = (

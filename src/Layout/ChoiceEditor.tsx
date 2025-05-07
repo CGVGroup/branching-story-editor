@@ -9,6 +9,8 @@ function ChoiceEditor(props: {
     story: Story,
     choices: ChoiceDetails[],
     setChoices: (choices: ChoiceDetails[]) => void,
+    onChoiceMoved: (oldIdx: number, newIdx: number) => void,
+    onChoiceDeleted: (idx: number) => void,
     readOnly?: boolean
 }) {
     const [localChoices, setLocalChoices] = useState(props.choices);
@@ -21,7 +23,8 @@ function ChoiceEditor(props: {
 
     const deleteChoice = useCallback((index: number) => {
         setLocalChoices(choices => choices.filter((_, idx) => idx !== index));
-    }, []);
+        props.onChoiceDeleted(index);
+    }, [props.onChoiceDeleted]);
 
     const setChoice = useCallback((idx: number, choice: ChoiceDetails) => {
         setLocalChoices(choices => choices.map((c, cIdx) => idx === cIdx ? choice : c)); 
@@ -29,11 +32,13 @@ function ChoiceEditor(props: {
 
     const moveChoiceRight = useCallback((index: number) => {
         setLocalChoices(choices => {[choices[index], choices[index+1]] = [choices[index+1], choices[index]]; return [...choices]});
-    }, []);
+        props.onChoiceMoved(index + 1, index);
+    }, [props.onChoiceMoved]);
     
     const moveChoiceLeft = useCallback((index: number) => {
         setLocalChoices(choices => {[choices[index-1], choices[index]] = [choices[index], choices[index-1]]; return [...choices]});
-    }, []);
+        props.onChoiceMoved(index, index - 1);
+    }, [props.onChoiceMoved]);
 
     const handleSave = useCallback(debounce(250, (localChoices: ChoiceDetails[]) => {
         props.setChoices(localChoices);

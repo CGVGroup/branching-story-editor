@@ -6,12 +6,11 @@ function DropdownField(props: {
     value: string,
     setValue: React.Dispatch<React.SetStateAction<string>>,
     defaultValue: string,
+    labelWidth: string,
     choices: string[],
 }) {
-    const textWidth = "20%";
-
     return <InputGroup>
-        <InputGroup.Text style={{width: textWidth}}>{props.label}:</InputGroup.Text>
+        <InputGroup.Text style={{width: props.labelWidth}}>{props.label}</InputGroup.Text>
         <Form.Select
             value={props.value === "" ? props.defaultValue : props.value}
             onChange={e => props.setValue(e.target.value)}>

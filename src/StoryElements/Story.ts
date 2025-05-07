@@ -87,7 +87,7 @@ class Story {
         return cloned;
     }
 
-    cloneAndAddFlow(flow: ReactFlowJsonObject): Story {
+    cloneAndSetFlow(flow: ReactFlowJsonObject): Story {
         const cloned = this.clone();
         cloned.flow = flow;
         return cloned;

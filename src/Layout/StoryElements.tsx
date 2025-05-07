@@ -6,9 +6,9 @@ import ElementModal from "./AddElementModal.tsx";
 import Story from "../StoryElements/Story.ts";
 
 const storyElementTabsArray = [
-  {type: StoryElementType.character, className: "character-mention", tabContents: <img src={require("../img/character.png")} title="Personaggi" style={{height:"3em"}}/>, buttonText: "Personaggi ", noElementsText: "Nessun personaggio" },
-  {type: StoryElementType.object, className: "object-mention", tabContents: <img src={require("../img/object.png")} title="Oggetti" style={{height:"3em"}}/>, buttonText: "Oggetti ", noElementsText: "Nessun oggetto" },
-  {type: StoryElementType.location, className: "location-mention", tabContents: <img src={require("../img/location.png")} title="Luoghi" style={{height:"3em"}}/>, buttonText: "Luoghi ", noElementsText: "Nessun luogo" }
+  {type: StoryElementType.character, className: "character-mention", tabContents: <img src={require("../img/character.png")} title="Personaggi" alt="characters" style={{height:"3em"}}/>, buttonText: "Personaggi ", noElementsText: "Nessun personaggio" },
+  {type: StoryElementType.object, className: "object-mention", tabContents: <img src={require("../img/object.png")} title="Oggetti" alt="objects" style={{height:"3em"}}/>, buttonText: "Oggetti ", noElementsText: "Nessun oggetto" },
+  {type: StoryElementType.location, className: "location-mention", tabContents: <img src={require("../img/location.png")} title="Luoghi" alt="locations" style={{height:"3em"}}/>, buttonText: "Luoghi ", noElementsText: "Nessun luogo" }
 ]
 
 function StoryElements (props: {
@@ -106,8 +106,8 @@ function StoryElements (props: {
                   </ButtonGroup>
                 </Tooltip>}>
               <ListGroup.Item key={id} action={!readOnly}
-                className={`d-flex flex-grow-1 ${className}`}
-                style={{textWrap:"pretty", justifyContent:"space-evenly"}}>
+                className={`d-flex flex-grow-1 ${className} ${readOnly ? "disabled" : ""}`}
+                style={{textWrap:"pretty", justifyContent:"space-evenly", pointerEvents: readOnly ? "none" : undefined}}>
                 {elem.name}
               </ListGroup.Item>
             </OverlayTrigger>
