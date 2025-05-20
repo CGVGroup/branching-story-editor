@@ -1,4 +1,3 @@
-import React from "react";
 import { FloatingLabel, Form } from "react-bootstrap";
 import { CharacterElement, LocationElement, ObjectElement, StoryElementType, StoryElement } from "../StoryElements/StoryElement.ts";
 

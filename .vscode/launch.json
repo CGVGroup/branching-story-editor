@@ -8,7 +8,7 @@
         },
         {
             "name": "Launch Flask",
-            "command": "cd api; C:\\Users\\mattc\\miniconda3\\envs\\flowchart\\Scripts\\flask.exe run --no-debugger",
+            "command": "cd api; C:\\Users\\mattc\\miniconda3\\envs\\museum\\Scripts\\flask.exe run --no-debugger",
             "request": "launch",
             "type": "node-terminal"
         }

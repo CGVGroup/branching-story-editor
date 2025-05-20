@@ -1,55 +1,74 @@
-import React, { useCallback, useEffect, useState } from "react";
-import { Button, Card, Col, Collapse, Form, InputGroup } from "react-bootstrap";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { Button, Card, Col, Form, InputGroup, Stack } from "react-bootstrap";
 import { debounce } from "throttle-debounce";
-import { ChoiceDetails } from "../Flow/StoryNode.tsx";
-import PromptArea from "./PromptArea.tsx";
 import Story from "../StoryElements/Story.tsx";
+import Choice, { ChoiceDetails } from "../StoryElements/Choice.ts";
+import DynamicTextField from "./DynamicTextField.tsx";
+import { getConnectedEdges, getOutgoers } from "@xyflow/react";
 
 function ChoiceEditor(props: {
     story: Story,
-    choices: ChoiceDetails[],
-    setChoices: (choices: ChoiceDetails[]) => void,
+    nodeId: string,
+    choice: Choice,
+    setChoice: (choice: Choice) => void,
     onChoiceMoved: (oldIdx: number, newIdx: number) => void,
     onChoiceDeleted: (idx: number) => void,
+    onClickEditNode: (id: string) => void,
     readOnly?: boolean
 }) {
-    const [localChoices, setLocalChoices] = useState(props.choices);
-
-    const textWidth = "25%";
+    const [localChoice, setLocalChoice] = useState(Choice.from(props.choice));
 
     const addNewChoice = useCallback(() => {
-        setLocalChoices(choices => [...choices, {title: "", choice: "", consequence: "", wrong: false}]);
+        setLocalChoice(choice => choice.cloneAndAddChoice());
     }, []);
 
     const deleteChoice = useCallback((index: number) => {
-        setLocalChoices(choices => choices.filter((_, idx) => idx !== index));
+        setLocalChoice(choice => choice.cloneAndDeleteAtIndex(index));
         props.onChoiceDeleted(index);
     }, [props.onChoiceDeleted]);
 
-    const setChoice = useCallback((idx: number, choice: ChoiceDetails) => {
-        setLocalChoices(choices => choices.map((c, cIdx) => idx === cIdx ? choice : c)); 
+    const setChoiceText = useCallback((idx: number, text: string) => {
+        setLocalChoice(choice => choice.cloneAndSetChoiceText(idx, text)); 
     }, []);
 
-    const moveChoiceRight = useCallback((index: number) => {
-        setLocalChoices(choices => {[choices[index], choices[index+1]] = [choices[index+1], choices[index]]; return [...choices]});
-        props.onChoiceMoved(index + 1, index);
+    const setTitle = useCallback((title: string) => {
+        setLocalChoice(choice => choice.cloneAndSetTitle(title));
+    }, []);
+
+    const moveChoiceDown = useCallback((index: number) => {
+        setLocalChoice(choice => choice.cloneAndMoveChoice(index, index + 1));
+        props.onChoiceMoved(index, index + 1);
     }, [props.onChoiceMoved]);
     
-    const moveChoiceLeft = useCallback((index: number) => {
-        setLocalChoices(choices => {[choices[index-1], choices[index]] = [choices[index], choices[index-1]]; return [...choices]});
+    const moveChoiceUp = useCallback((index: number) => {
+        setLocalChoice(choice => choice.cloneAndMoveChoice(index, index - 1));
         props.onChoiceMoved(index, index - 1);
     }, [props.onChoiceMoved]);
 
-    const handleSave = useCallback(debounce(250, (localChoices: ChoiceDetails[]) => {
-        props.setChoices(localChoices);
+    const handleSave = useCallback(debounce(250, (localChoice: Choice) => {
+        props.setChoice(localChoice);
     }), []);
 
-    useEffect(() => handleSave(localChoices), [handleSave, localChoices]);
+    const nextSceneIds = useMemo(() => {
+        const thisNode = props.story.getNodeById(props.nodeId)!;
+        const outgoingEdges = getConnectedEdges([thisNode], props.story.flow.edges).filter(edge => edge.source === thisNode.id);
+        return localChoice.choices.map((_, idx) => outgoingEdges.find(edge => edge.sourceHandle === `source-${idx}`)?.target ?? null);
+    }, [localChoice])
+
+    useEffect(() => handleSave(localChoice), [handleSave, localChoice]);
 
     return (
         <Col>
-            <div style={{display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.5em"}}>
-                {localChoices.map((choice, choiceIndex, choices) => 
+            <Stack gap={2}>
+                <DynamicTextField
+                    initialValue={localChoice.title}
+                    onSubmit={setTitle}
+                    baseProps={{
+                        id: "title",
+                        size: "lg",
+                        placeholder: "Nessun interrogativo"
+                    }}/>
+                {localChoice.choices.map((choice, choiceIndex, choices) => 
                     <Card key={choiceIndex} className={choice.wrong ? "wrong-choice" : ""}>
                         <Card.Header className="d-flex align-items-center">
                             <InputGroup className="flex-grow-1">
@@ -59,54 +78,30 @@ function ChoiceEditor(props: {
                                     </Card.Title>
                                 </InputGroup.Text>
                                 <Form.Control
-                                    value={choice.title}
-                                    onChange={e => setChoice(choiceIndex, {...localChoices[choiceIndex], title: e.target.value})}
+                                    value={choice.text}
+                                    onChange={e => setChoiceText(choiceIndex, e.target.value)}
                                     disabled={props.readOnly} />
                                 {!props.readOnly &&
                                     <>
                                         <Button variant="danger" onClick={() => deleteChoice(choiceIndex)} title="Elimina">
                                             <i className="bi bi-trash" aria-label="delete" /> 
                                         </Button>
-                                        <Button variant="secondary" onClick={() => moveChoiceLeft(choiceIndex)} disabled={choiceIndex === 0} title="Sposta a sinistra">
-                                            <i className="bi bi-chevron-left" aria-label="move left" /> 
+                                        <Button variant="primary"
+                                            onClick={() => props.onClickEditNode(nextSceneIds[choiceIndex]!)}
+                                            title="Apri scena successiva"
+                                            disabled={nextSceneIds[choiceIndex] === null}>
+                                            <i className="bi bi-box-arrow-up-right" aria-label="open" /> 
                                         </Button>
-                                        <Button variant="secondary" onClick={() => moveChoiceRight(choiceIndex)} disabled={choiceIndex === choices.length - 1} title="Sposta a destra">
-                                            <i className="bi bi-chevron-right" aria-label="move right" /> 
+                                        <Button variant="secondary" onClick={() => moveChoiceUp(choiceIndex)} disabled={choiceIndex === 0} title="Sposta su">
+                                            <i className="bi bi-chevron-up" aria-label="move up" /> 
+                                        </Button>
+                                        <Button variant="secondary" onClick={() => moveChoiceDown(choiceIndex)} disabled={choiceIndex === choices.length - 1} title="Sposta giù">
+                                            <i className="bi bi-chevron-down" aria-label="move down" /> 
                                         </Button>
                                     </>
                                 }
                             </InputGroup>
                         </Card.Header>
-                        <Card.Body style={{overflowY:"auto"}}>
-                            <Form onSubmit={e => e.preventDefault()}>
-                                <InputGroup>
-                                    <InputGroup.Text style={{width:textWidth}}>Scelta giusta:</InputGroup.Text>
-                                    <Button
-                                        variant={choice.wrong ? "danger" : "success"}
-                                        onClick={() => setChoice(choiceIndex, {...localChoices[choiceIndex], wrong: !localChoices[choiceIndex].wrong})}
-                                        disabled={props.readOnly}>
-                                        {choice.wrong ? <i className="bi bi-x-lg"/> : <i className="bi bi-check-lg"/>}
-                                    </Button>
-                                </InputGroup>
-                                <div style={{height:"5em"}}>
-                                    <PromptArea
-                                        initialText={choice.choice}
-                                        story={props.story}
-                                        setText={(text: string) => setChoice(choiceIndex, {...localChoices[choiceIndex], choice: text})}
-                                        readOnly={props.readOnly} />
-                                </div>
-                                <Collapse in={choice.wrong}>
-                                    <InputGroup>
-                                        <InputGroup.Text style={{width:textWidth}}>Conseguenza:</InputGroup.Text>
-                                        <Form.Control
-                                            as="textarea"
-                                            value={choice.consequence}
-                                            onChange={e => setChoice(choiceIndex, {...localChoices[choiceIndex], consequence: e.target.value})}
-                                            disabled={props.readOnly} />
-                                    </InputGroup>
-                                </Collapse>
-                            </Form>
-                        </Card.Body>
                     </Card>
                 )}
                 {!props.readOnly &&
@@ -117,7 +112,7 @@ function ChoiceEditor(props: {
                         </Col>
                     </Button>
                 }
-            </div>
+            </Stack>
         </Col>
     );
 }

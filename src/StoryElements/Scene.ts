@@ -26,9 +26,29 @@ class Scene {
             tone: details?.tone ?? "",
             value: details?.value ?? "",
             backgroundIds: details?.backgroundIds ?? [[], [], []],
-        }
+        };
         this.prompt = prompt ?? "";
         this.fullText = fullText ?? "";
+    }
+
+    clone(): Scene {
+        return new Scene(this.details, this.prompt, this.fullText);
+    }
+
+    cloneAndSetDetails(details: SceneDetails): Scene {
+        const cloned = this.clone();
+        cloned.details = details;
+        return cloned;
+    }
+    cloneAndSetPrompt(prompt: string): Scene {
+        const cloned = this.clone();
+        cloned.prompt = prompt;
+        return cloned;
+    }
+    cloneAndSetFullText(fullText: string): Scene {
+        const cloned = this.clone();
+        cloned.fullText = fullText;
+        return cloned;
     }
 
     toJson(): string {  //Renamed to lowercase to avoid JSON.stringify from using this

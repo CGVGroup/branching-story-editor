@@ -18,15 +18,15 @@ function ElementModal(props: {
 
     switch (props.elementType) {
         case StoryElementType.character:
-            blankElement = new CharacterElement(false, "Nuovo Personaggio");
+            blankElement = new CharacterElement("Nuovo Personaggio");
             typeString = "personaggio";
         break;
         case StoryElementType.object:
-            blankElement = new ObjectElement(false, "Nuovo Oggetto");
+            blankElement = new ObjectElement("Nuovo Oggetto");
             typeString = "oggetto";
         break;
         case StoryElementType.location:
-            blankElement = new LocationElement(false, "Nuovo Luogo");
+            blankElement = new LocationElement("Nuovo Luogo");
             typeString = "luogo";
         break;
         default:

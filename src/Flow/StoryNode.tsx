@@ -2,6 +2,7 @@ import { v4 as uuidv4 } from "uuid";
 import React from "react";
 import { Node, ReactFlowInstance, XYPosition } from "@xyflow/react";
 import Scene from "../StoryElements/Scene.ts";
+import Choice from "../StoryElements/Choice.ts";
 import SceneNode from "./SceneNode.tsx";
 import ChoiceNode from "./ChoiceNode.tsx";
 import ButtonEdge from "./ButtonEdge.tsx";
@@ -17,13 +18,6 @@ export enum EdgeType {
 
 export const storyNodeTypes = {sceneNode: SceneNode, choiceNode: ChoiceNode};
 export const storyEdgeTypes = {buttonEdge: ButtonEdge}
-
-export type ChoiceDetails = {
-    title: string;
-    choice: string;
-    consequence: string;
-    wrong: boolean;
-};
 
 export type StoryNodeFunctionProps = {
     onClickEdit: () => void;
@@ -42,7 +36,7 @@ export type SceneNodeProps =
 export type ChoiceNodeProps =
     StoryNodeProps & 
     StoryNodeFunctionProps & {
-        choices: ChoiceDetails[];
+        choice: Choice;
     };
 
 export type StoryNodeObject = {
@@ -93,7 +87,7 @@ export function createNewSceneNode(
         position: position ?? { x: 0, y: 0 },
         data: {
             label: label ?? data?.label ?? "Scena senza nome",
-            scene: data?.scene ?? new Scene(undefined),
+            scene: data?.scene ? Scene.from(data.scene) : new Scene(),
             onClickEdit: onClickEdit,
         },
         type: NodeType.scene
@@ -112,7 +106,7 @@ export function createNewChoiceNode(
         position: position ?? { x: 0, y: 0 },
         data: {
             label: label ?? data?.label ?? "Scelta senza nome",
-            choices: data?.choices ?? [{title: "A", choice: "", consequence: "", wrong: false}, {title: "B", choice: "", consequence: "", wrong: false}],
+            choice: data?.choice ? Choice.from(data.choice) : new Choice(),
             onClickEdit: onClickEdit,
         },
         type: NodeType.choice

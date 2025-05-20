@@ -1,6 +1,7 @@
-import React, { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Button, ButtonGroup, Col, Collapse, Container, Row, Spinner, Tab, Tabs } from "react-bootstrap";
 import { useNavigate, useParams } from "react-router";
+import { debounce } from "throttle-debounce";
 import StoryFlowChartEditor from "../Flow/StoryFlowChartEditor.tsx";
 import StoryElements from "./StoryElements.tsx";
 import Story from "../StoryElements/Story.ts";
@@ -8,11 +9,11 @@ import DynamicTextField from "./DynamicTextField.tsx";
 import saveToDisk from "../Misc/SaveToDisk.ts";
 import Scene from "../StoryElements/Scene.ts";
 import SceneEditor from "./SceneEditor.tsx";
-import { ChoiceDetails, NodeType } from "../Flow/StoryNode.tsx";
+import Choice from "../StoryElements/Choice.ts";
 import ChoiceEditor from "./ChoiceEditor.tsx";
 import StoryTexts from "./StoryTexts.tsx";
+import { NodeType } from "../Flow/StoryNode.tsx";
 import { ModalContents } from "./GenericModal.tsx";
-import { debounce } from "throttle-debounce";
 // @ts-ignore
 import {ReactComponent as AiPen} from "../img/ai-pen.svg";
 
@@ -59,7 +60,7 @@ function StoryEditor(props: {
 		});
 	}, []);
 
-	const onChoiceEdited = useCallback((id: string, newChoice: ChoiceDetails[]) => {
+	const onChoiceEdited = useCallback((id: string, newChoice: Choice) => {
 		setLocalStory(story => story.cloneAndSetChoice(id, newChoice));
 	}, []);
 
@@ -92,8 +93,8 @@ function StoryEditor(props: {
 
 	const onConfirmGenerateAll = useCallback(async () => {
 		setLoading(true);
-		const newStory = await localStory.sendToLLM();
-		setLocalStory(newStory);
+		//const newStory = await localStory.sendToLLM();
+		//setLocalStory(newStory);
 		setLoading(false);
 	}, [localStory]);
 
@@ -233,16 +234,21 @@ function StoryEditor(props: {
 										<SceneEditor
 											story={localStory}
 											setStory={setLocalStory}
+											nodeId={nodeId}
 											scene={node.data.scene as Scene}
 											setScene={newScene => onSceneEdited(nodeId, newScene)}
 											setModal={props.setModal}/>}
 									{node.type === NodeType.choice &&
 										<ChoiceEditor 
 											story={localStory}
-											choices={node.data.choices as ChoiceDetails[]}
-											setChoices={newChoice => onChoiceEdited(nodeId, newChoice)}
+											nodeId={nodeId}
+											choice={node.data.choice as Choice}
+											setChoice={newChoice => onChoiceEdited(nodeId, newChoice)}
 											onChoiceMoved={(oldIdx, newIdx) => onChoiceMoved(nodeId, oldIdx, newIdx)}
-											onChoiceDeleted={idx => onChoiceDeleted(nodeId, idx)}/>}
+											onChoiceDeleted={idx => onChoiceDeleted(nodeId, idx)}
+											onClickEditNode={onClickEditNode}
+										/>
+									}
 								</Tab>
 							)}
 						)}

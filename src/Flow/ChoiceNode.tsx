@@ -1,9 +1,9 @@
-import React from "react";
 import { Handle, NodeProps, NodeToolbar, Position, useReactFlow } from "@xyflow/react";
 import { Button, ButtonGroup, Col, InputGroup, OverlayTrigger, Tooltip } from "react-bootstrap";
 import { changeStoryNodeName, ChoiceNodeType, deleteStoryNode, StoryNode } from "./StoryNode.tsx";
 import { LabeledHandle } from "./LabeledHandle.tsx";
 import DynamicTextField from "../Layout/DynamicTextField.tsx";
+import Choice from "../StoryElements/Choice.ts";
 
 function ChoiceNode(props: NodeProps<ChoiceNodeType>) {
   const rfInstance = useReactFlow();
@@ -16,11 +16,28 @@ function ChoiceNode(props: NodeProps<ChoiceNodeType>) {
     changeStoryNodeName(rfInstance, props.id, name);
   }
 
+  const handleSubmitChoiceTitle = (title: string) => {
+    rfInstance.setNodes(nodes => nodes.map(
+      node => node.id === props.id ?
+        {...node,
+          data: {
+            ...node.data,
+            choice: {
+              ...(node.data.choice as Choice),
+              title: title
+            }
+          }
+        }
+      :
+        node
+    ));
+  }
+
   return (
     <StoryNode selected={props.selected} indirectSelected={props.data.indirectSelected} className="choice">
       <Handle type="target" position={Position.Left} />
       <Col className="w-100 px-0">
-        <div className="w-100 px-1">
+        <div className="w-100 px-1 mb-1">
           <DynamicTextField
             initialValue={props.data.label}
             focusOnDoubleClick={true}
@@ -31,15 +48,25 @@ function ChoiceNode(props: NodeProps<ChoiceNodeType>) {
               className: "name",
               size: "sm",
               style: {marginBottom: "0.5em"}
-            }} />
+            }}/>
+          <DynamicTextField
+            initialValue={props.data.choice?.title}
+            focusOnDoubleClick={true}
+            onSubmit={handleSubmitChoiceTitle}
+            baseProps={{
+              id: "title",
+              className: "title",
+              size: "sm",
+              placeholder: "Nessun interrogativo",
+            }}/>
         </div>
-        {props.data.choices.length > 0 && 
-          props.data.choices.map((choice, idx) =>
+        {props.data.choice.choices.length > 0 && 
+          props.data.choice.choices.map((choice, idx) =>
             <div key={idx}>
               {idx > 0 && <hr className="my-1"/>}
               <LabeledHandle
                 type="source"
-                title={choice.title}
+                title={choice.text}
                 position={Position.Right}
                 id={`source-${idx}`}
                 handleClassName={choice.wrong ? "wrong-choice" : "right-choice"}/>

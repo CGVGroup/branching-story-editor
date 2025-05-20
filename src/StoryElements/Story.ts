@@ -1,8 +1,9 @@
 import {v4 as uuidv4} from "uuid";
-import { getConnectedEdges, getIncomers, getOutgoers, Node, ReactFlowJsonObject } from "@xyflow/react";
+import { getIncomers, Node, ReactFlowJsonObject } from "@xyflow/react";
 import { CharacterElement, LocationElement, ObjectElement, StoryElementType, StoryElement } from "./StoryElement.ts";
 import Scene from "./Scene.ts";
-import { ChoiceDetails, NodeType } from "../Flow/StoryNode.tsx";
+import Choice from "./Choice.ts";
+import { NodeType } from "../Flow/StoryNode.tsx";
 import { sendToLLM } from "../Misc/LLM.ts";
 
 type SerializedStory = {
@@ -67,15 +68,15 @@ class Story {
         switch (element.type) {
             case StoryElementType.character:
                 const char = element as CharacterElement;
-                map.set(uuidv4(), new CharacterElement(char.isVariable, char.name, char.bio, char.objective, char.notes));
+                map.set(uuidv4(), new CharacterElement(char.name, char.bio, char.objective, char.notes));
             break;
             case StoryElementType.object:
                 const obj = element as ObjectElement;
-                map.set(uuidv4(), new ObjectElement(obj.isVariable, obj.name, obj.use, obj.notes));
+                map.set(uuidv4(), new ObjectElement(obj.name, obj.use, obj.notes));
             break;
             case StoryElementType.location:
                 const loc = element as LocationElement;
-                map.set(uuidv4(), new LocationElement(loc.isVariable, loc.name, loc.purpose, loc.notes));
+                map.set(uuidv4(), new LocationElement(loc.name, loc.purpose, loc.notes));
             break;
         }
         return true;
@@ -99,9 +100,9 @@ class Story {
         return cloned;
     }
 
-    cloneAndSetChoice(id: string, choices: ChoiceDetails[]): Story {
+    cloneAndSetChoice(id: string, choice: Choice): Story {
         const cloned = this.clone();
-        cloned.flow.nodes.find(node => node.id === id)!.data.choices = choices;
+        cloned.getNodeById(id)!.data.choice = choice;
         return cloned;
     }
 
@@ -215,106 +216,42 @@ class Story {
         return this.deserialize(JSON.parse(json));
     }
 
-    async sendToLLM(): Promise<Story> {
-        const argomentiStoria = {
-            titolo: this.title,
-            personaggi: [...this.characters.values()].map(char => {return {
-                nome: char.name,
-                bio: char.bio,
-                obbiettivi: [char.objective]
-            }}),
-            oggetti: [...this.objects.values()].map(obj => {return {
-                nome: obj.name,
-                uso: obj.use,
-                note: obj.notes
-            }}),
-            luoghi: [...this.locations.values()].map(loc => {return {
-                nome: loc.name,
-                finalita: loc.purpose,
-                note: loc.notes
-            }})
-        };
-        const scene: object[] = [];
-        for (const node of this.flow.nodes) {
-            const nextNodes = getOutgoers(node, this.flow.nodes, this.flow.edges);
-            const prevNodes = getIncomers(node, this.flow.nodes, this.flow.edges);
-            let nextScene: object[] | null = null;
-            let prevScene = prevNodes.length === 0 ? null :
-                prevNodes.map(previous => {
-                    if (previous.type === NodeType.scene) { 
-                        return {scena: previous.data.label};
-                    } else if (previous.type === NodeType.choice) {
-                        const prevPrevScenes = getIncomers(previous, this.flow.nodes, this.flow.edges);
-                        if (prevPrevScenes.length === 0) {
-                            return {scena: previous.data.label};
-                        } else if (prevPrevScenes[0].type === NodeType.choice) {
-                            return {scena: previous.data.label};
-                        } else if (prevPrevScenes[0].type === NodeType.scene) {
-                            return {scena: prevPrevScenes[0].data.label};
-                        }
-                    }
-                    return {};
-                });
-            if (node.type === NodeType.scene) {
-                if (nextNodes.length === 0) {
-                    nextScene = null;
-                } else if (nextNodes[0].type === NodeType.scene) {
-                    nextScene = [{scena: nextNodes[0].data.label, scelta: null}];
-                } else if (nextNodes[0].type === NodeType.choice) {
-                    nextScene = getConnectedEdges([nextNodes[0]], this.flow.edges)
-                        .filter(edge => edge.source === nextNodes[0].id)
-                        .map(edge => {
-                            const choiceIndex = Number.parseInt(edge.sourceHandle?.split("-")?.[1] ?? "0");
-                            const choice = (nextNodes[0].data.choices as ChoiceDetails[])[choiceIndex].choice;
-                            return {
-                                scena: this.getNodeById(edge.target)?.data.label,
-                                scelta: choice ? choice : (nextNodes[0].data.choices as ChoiceDetails[])[choiceIndex].title
-                            }
-                        });
-                }
-                
-                scene.push({
-                    nome: (node.data.scene as Scene).details.title,
-                    id_scena: node.data.label,
-                    descrizione: (node.data.scene as Scene).prompt,
-                    next_scene: nextScene,
-                    prev_scene: prevScene,
-                    num_frasi: 3,
-                    mood: (node.data.scene as Scene).details.tone
-                });
-            } else if (node.type === NodeType.choice) {
-                if (getIncomers(node, this.flow.nodes, this.flow.edges).some(incomer => incomer.type === NodeType.scene))
-                    continue;
-                else {
-                    nextScene = getConnectedEdges([node], this.flow.edges)
-                        .filter(edge => edge.source === node.id)
-                        .map(edge => {
-                            const choiceIndex = Number.parseInt(edge.sourceHandle?.split("-")?.[1] ?? "0");
-                            const choice = (node.data.choices as ChoiceDetails[])[choiceIndex].choice;
-                            return {
-                                scena: this.getNodeById(edge.target)?.data.label,
-                                scelta: choice ? choice : (node.data.choices as ChoiceDetails[])[choiceIndex].title
-                            }
-                        });
-                    
-                    scene.push({
-                        nome: node.data.label,
-                        id_scena: node.data.label,
-                        descrizione: (node.data.choices as ChoiceDetails[]).map(choice => choice.title).join(" / "),
-                        next_scene: nextScene,
-                        prev_scene: prevScene,
-                        num_frasi: 3,
-                        mood: "scelta"
-                    });
-                }
+    async sendToLLM(id: string): Promise<Story> {
+        const node = this.getNodeById(id);
+        if (!node) return this;
+        let payload: Object = {
+            title: this.title,
+            characters: [...this.characters.values()],
+            objects: [...this.objects.values()],
+            locations: [...this.locations.values()],
+            is_choice: node.type === NodeType.choice,
+        }
+        
+        if (node.type === NodeType.choice) {
+            payload["choices"] = [...node.data.choices as string[]]
+        } else {
+            const scene = node.data.scene as Scene;
+            payload = {...payload,
+                prompt: scene.prompt,
+                time: scene.details.time,
+                tone: scene.details.tone,
+                weather: scene.details.weather,
+                location: this.getElementById(scene.details.backgroundIds[StoryElementType.location][0]) ?? "",
+                characters: [...this.characters.values()].map(char => {
+                    const str = char.name;
+                    if (char.bio) str.concat(` - Descrizione: ${char.bio}`)
+                    if (char.objective) str.concat(` - Obiettivo: ${char.objective}`)
+                    return str}).join("\n")
             }
         }
-        const payloadObject = {
-            argomenti_storia: argomentiStoria,
-            scene: scene
+        
+        const incomers = getIncomers(node, this.flow.nodes, this.flow.edges)
+        if (incomers.length === 1 && incomers[0].type === NodeType.scene) {
+            payload["previous_scene"] = (incomers[0].data.scene as Scene).fullText;
         }
-        console.log(payloadObject);
-        sendToLLM(payloadObject).then(res => {
+
+        console.log(payload);
+        sendToLLM(payload).then(res => {
             const response = JSON.parse(res);
             if (response?.length) {
                 response.forEach(({content, id}) => {

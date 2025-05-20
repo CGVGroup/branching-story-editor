@@ -28,7 +28,7 @@ function ElementList (props: {
                 key={id}
                 type={props.checkboxType}
                 label={element.name}
-                id={props.checkboxType + "-" + id}
+                id={`${props.checkboxType}-${id}`}
                 checked={props.selected.has(id)}
                 onChange={e => {
                     if (props.checkboxType === "checkbox") {

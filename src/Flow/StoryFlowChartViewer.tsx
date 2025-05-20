@@ -1,5 +1,5 @@
 import "@xyflow/react/dist/style.css";
-import React, { useMemo } from "react";
+import { useMemo } from "react";
 import { Row } from "react-bootstrap";
 import { ReactFlow } from "@xyflow/react";
 import Story from "../StoryElements/Story.ts";

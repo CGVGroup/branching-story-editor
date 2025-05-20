@@ -8,8 +8,7 @@
 export async function sendToLLM(payload: object): Promise<string> {
     return new Promise((resolve, reject) => {
         const xhr = new XMLHttpRequest();
-        //xhr.open("POST", "http://192.168.50.15:11434", true);
-        xhr.open("POST", "http://127.0.0.1:5000/generate-story", true);
+        xhr.open("POST", "http://127.0.0.1:5000/", true);
         xhr.setRequestHeader("Content-Type", "application/json");
         xhr.onreadystatechange = () => {
             if (xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200) {
@@ -17,6 +16,7 @@ export async function sendToLLM(payload: object): Promise<string> {
                 resolve(xhr.responseText);
             }
             if (xhr.status !== 200) {
+                console.error(xhr.responseText)
                 reject(new Error(`Risposta dall'LLM: ${xhr.status} - ${xhr.statusText}`))
             }
         };

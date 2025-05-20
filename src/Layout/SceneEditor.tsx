@@ -5,7 +5,6 @@ import Story from "../StoryElements/Story.ts";
 import Scene, { SceneDetails as SceneDetailsType } from "../StoryElements/Scene.ts";
 import SceneDetails from "./SceneDetails.tsx";
 import PromptArea from "./PromptArea.tsx";
-import { sendToLLM } from "../Misc/LLM.ts";
 import UndoStack from "../Misc/UndoStack.ts";
 import { ModalContents } from "./GenericModal.tsx";
 // @ts-ignore
@@ -14,6 +13,7 @@ import {ReactComponent as AiPen} from "../img/ai-pen.svg";
 function SceneEditor(props: {
 	story: Story,
 	setStory: React.Dispatch<React.SetStateAction<Story>>,
+	nodeId: string,
 	scene: Scene,
 	setScene: (newScene: Scene) => void,
 	setModal: (contents: ModalContents) => void
@@ -27,11 +27,11 @@ function SceneEditor(props: {
 	}), []);
 
 	const handleEditDetails = useCallback((newDetails: SceneDetailsType) => {
-		setLocalScene(scene => new Scene(newDetails, scene.prompt, scene.fullText));
+		setLocalScene(scene => scene.cloneAndSetDetails(newDetails));
 	}, []);
 
 	const handleEditPrompt = useCallback((newPrompt: string) => {
-		setLocalScene(scene => new Scene(scene.details, newPrompt, scene.fullText));
+		setLocalScene(scene => scene.cloneAndSetPrompt(newPrompt));
 	}, []);
 	
 	const handleEditFullText = useCallback((newText: string) => {
@@ -40,7 +40,7 @@ function SceneEditor(props: {
 
 	const onSendToLLM = useCallback(async () => {
 		setLoading(true);
-		//const response = await sendToLLM("");
+		const response = await props.story.sendToLLM(props.nodeId);
 		/*if (response.ok) {
 			const responseText = await response.text();
 			setUndoStack(undoStack => undoStack.push(responseText));

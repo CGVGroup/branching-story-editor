@@ -1,5 +1,5 @@
 import { Button, Card, Col, Container, FloatingLabel, Form, InputGroup, ListGroup, Row, Spinner, Stack } from "react-bootstrap";
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Story from "../StoryElements/Story.ts";
 import StoryFlowChartViewer from "../Flow/StoryFlowChartViewer.tsx";
@@ -64,7 +64,7 @@ function StoriesDashboard(props: {
 	}, [addStory]);
 
 	const onClickCopy = useCallback((story: Story) => {
-		addStory(story.cloneAndSetTitle(story.title + " (Copia)"));
+		addStory(story.cloneAndSetTitle(`${story.title} (Copia)`));
 	}, [addStory])
 
 	const selectedStory = useMemo(() => props.stories.get(selectedId!), [props.stories, selectedId]);

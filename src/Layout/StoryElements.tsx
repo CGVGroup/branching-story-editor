@@ -1,7 +1,6 @@
+import React, { useCallback, useMemo, useState } from "react";
 import { Tabs, Tab, Button, ListGroup, Badge, OverlayTrigger, Tooltip, ButtonGroup } from "react-bootstrap";
-import { useCallback, useMemo, useState } from "react";
 import { StoryElementType, StoryElement } from "../StoryElements/StoryElement.ts";
-import React from "react";
 import ElementModal from "./AddElementModal.tsx";
 import Story from "../StoryElements/Story.ts";
 

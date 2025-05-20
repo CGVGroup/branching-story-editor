@@ -7,6 +7,7 @@ import { ChoiceDetails, ChoiceNodeProps, NodeType, SceneNodeProps } from "../Flo
 import Story from "../StoryElements/Story.ts";
 import PromptArea from "./PromptArea.tsx";
 import { sendToLLM } from "../Misc/LLM.ts";
+import Choice from "../StoryElements/Choice.ts";
 
 function StoryTexts(props: {
     story: Story,
@@ -19,16 +20,16 @@ function StoryTexts(props: {
     const onFullTextEdited = useCallback((id: string, newText: string) => {
         setLocalStory(story => {
             const scene = story.getSceneById(id)!;
-            return story.cloneAndSetScene(id, new Scene(scene.details, scene.prompt, newText));
+            return story.cloneAndSetScene(id, scene.cloneAndSetFullText(newText));
     })}, []);
     
     const onPromptTextEdited = useCallback((id: string, newPrompt: string) => {
         setLocalStory(story => {
             const scene = story.getSceneById(id)!;
-            return story.cloneAndSetScene(id, new Scene(scene.details, newPrompt, scene.fullText));
+            return story.cloneAndSetScene(id, scene.cloneAndSetPrompt(newPrompt));
     })}, []);
     
-    const onChoiceEdited = useCallback((id: string, newChoice: ChoiceDetails[]) => {
+    const onChoiceEdited = useCallback((id: string, newChoice: Choice) => {
         setLocalStory(story => {
             return story.cloneAndSetChoice(id, newChoice);
     })}, []);

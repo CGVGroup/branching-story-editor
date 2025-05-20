@@ -3,9 +3,10 @@ import { v4 as uuidv4 } from "uuid";
 import { debounce } from "throttle-debounce";
 import React, { useCallback, useState, useMemo, useEffect, useRef } from "react";
 import { Button, Card, Stack } from "react-bootstrap";
-import { ReactFlow, Controls, Background, applyNodeChanges, Panel, ReactFlowInstance, Edge, NodeChange, Node, addEdge, Connection, EdgeChange, applyEdgeChanges, Viewport, MarkerType} from "@xyflow/react";
+import { ReactFlow, Controls, Background, applyNodeChanges, Panel, ReactFlowInstance, Edge, NodeChange, Node, addEdge, Connection, EdgeChange, applyEdgeChanges, Viewport, MarkerType, getOutgoers, getIncomers, getConnectedEdges} from "@xyflow/react";
 import Story from "../StoryElements/Story.ts";
 import { ChoiceNodeProps, createNewChoiceNode, createNewSceneNode, EdgeType, NodeType, SceneNodeProps, storyEdgeTypes, storyNodeTypes } from "./StoryNode.tsx";
+import Choice, { ChoiceDetails } from "../StoryElements/Choice.ts";
 
 function StoryFlowChartEditor (props: {
   story: Story,
@@ -30,7 +31,7 @@ function StoryFlowChartEditor (props: {
     setNodes(nodes => applyNodeChanges(changes, nodes));
     //New node added
     changes.filter(change => change.type === "dimensions").forEach(change => {
-      setNodeProperties(node => node.id === change.id, {selected: false, data: {indirectSelected: false}})
+      setNodeProperties(node => node.id !== change.id, {selected: false, data: {indirectSelected: false}})
       setEdgeProperties(_ => true, {animated: false});
     });
     changes.filter(change => change.type === "select").forEach(change => {  
@@ -45,17 +46,47 @@ function StoryFlowChartEditor (props: {
         }
       }, timeout);
     });
-  }, [rfInstance]);
+  }, [rfInstance, setNodeProperties, setEdgeProperties]);
 
   const onEdgesChange = useCallback((changes: EdgeChange[]) => {
     setEdges(edges => applyEdgeChanges(changes, edges));
     changes.filter(change => change.type === "remove").forEach(change => {
-      if (rfInstance) {
-        setNodeProperties(
-          node => node.id === rfInstance.getEdge(change.id)?.source || node.id === rfInstance.getEdge(change.id)?.target,
-          {selected: false, data: {indirectSelected: false}});
+      if (!rfInstance) return;
+      
+      const edge = rfInstance.getEdge(change.id)!;
+      setNodeProperties(
+        node => node.id === edge.source || node.id === edge.target,
+        {selected: false, data: {indirectSelected: false}});
+      
+      const snode = rfInstance.getNode(edge.source);
+      const tnode = rfInstance.getNode(edge.target);
+
+      if (!snode || !tnode || (snode.type !== NodeType.choice && tnode.type !== NodeType.choice)) return;
+      
+      let handle: string | null | undefined;
+      let affectedNode: Node | undefined;
+      
+      if (snode.type === NodeType.choice) {
+        handle = edge.sourceHandle;
+        affectedNode = snode;
+      }
+      if (tnode.type === NodeType.choice) {
+        handle = getConnectedEdges([snode], rfInstance.getEdges())
+          .find(edge => edge.source === tnode.id && edge.target === snode.id)?.sourceHandle;
+        affectedNode = tnode;
+      }
+      
+      if (!handle || !affectedNode) return;
+      
+      const choiceIndex = Number.parseInt(handle.split("-")[1]);
+      const choice = (affectedNode.data.choice as Choice);
+      
+      if (choice.choices[choiceIndex].wrong) {
+        const newChoice = choice.cloneAndSetChoiceWrong(choiceIndex, false);
+        setNodeProperties(node => node.id === affectedNode.id, {data: {choice: newChoice}})
       }
     });
+
     changes.filter(change => change.type === "select").forEach(change => {
       const timeout = change.selected ? 50 : 0;
       setTimeout(() => {
@@ -67,7 +98,7 @@ function StoryFlowChartEditor (props: {
         }
       }, timeout);
     });
-  }, [rfInstance]);
+  }, [rfInstance, setNodeProperties, setEdgeProperties]);
 
   const onViewportChange = useCallback((newViewport: Viewport) => {
     setViewport(newViewport);
@@ -76,18 +107,42 @@ function StoryFlowChartEditor (props: {
   const onPaneClick = useCallback(() => {
     setNodeProperties(_ => true, {selected: false, data: {indirectSelected: false}});
     setEdgeProperties(_ => true, {animated: false});
-  }, []);
+  }, [setNodeProperties, setEdgeProperties]);
   
   const onConnect = useCallback((connection: Connection) => {
     setEdges(edges => addEdge(connection, edges));
-    if (rfInstance) {
-      if (rfInstance.getNode(connection.source)?.selected)
-        setNodeProperties(node => node.id === connection.target, {data: {indirectSelected: true}});
-      
-      if (rfInstance.getNode(connection.target)?.selected)
-        setNodeProperties(node => node.id === connection.source, {data: {indirectSelected: true}});
+    
+    if (!rfInstance) return;
+    
+    const snode = rfInstance.getNode(connection.source);
+    const tnode = rfInstance.getNode(connection.target);
+    if (snode?.selected) setNodeProperties(node => node.id === connection.target, {data: {indirectSelected: true}});
+    if (tnode?.selected) setNodeProperties(node => node.id === connection.source, {data: {indirectSelected: true}});
+    
+    if (!snode || !tnode || (snode.type !== NodeType.choice && tnode.type !== NodeType.choice)) return;
+
+    let handle: string | null | undefined;
+    let wrongChoice = false;
+    let checkNode: Node | undefined;
+    if (snode.type === NodeType.choice) {
+      checkNode = snode;
+      handle = connection.sourceHandle;
+      wrongChoice = getOutgoers(tnode, rfInstance.getNodes(), rfInstance.getEdges()).some(node => node.id === snode.id);
     }
-  }, []);
+    if (tnode.type === NodeType.choice) {
+      checkNode = tnode;
+      handle = getConnectedEdges([snode], rfInstance.getEdges())
+        .find(edge => edge.source === tnode.id && edge.target === snode.id)?.sourceHandle;
+      wrongChoice = true;
+    }
+
+    if (!handle || !checkNode) return;
+
+    const handleIndex = Number.parseInt(handle.split("-")[1]);
+    
+    const newChoice = (checkNode.data.choice as Choice).cloneAndSetChoiceWrong(handleIndex, wrongChoice);
+    setNodeProperties(node => node.id === checkNode.id, {data: {choice: newChoice}})
+  }, [rfInstance, setNodeProperties]);
 
   const onClickEdit = useCallback((id: string) => {
     props.onClickEditNode(id);
@@ -120,14 +175,14 @@ function StoryFlowChartEditor (props: {
         newNode = createNewSceneNode(
           id,
           () => onClickEdit(id),
-          "Scena " + maxLabel,
+          `Scena ${maxLabel}`,
           position);
       break;
       case NodeType.choice:
         newNode = createNewChoiceNode(
           id,
           () => onClickEdit(id),
-          "Scelta " + maxLabel,
+          `Scelta ${maxLabel}`,
           position);
       break;
     }

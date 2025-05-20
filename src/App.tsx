@@ -1,7 +1,7 @@
 import "./App.css";
 import "bootstrap-icons/font/bootstrap-icons.css";
 import { v4 as uuidv4 } from "uuid";
-import React, { createContext, useCallback, useEffect, useRef, useState } from "react";
+import { createContext, useCallback, useEffect, useRef, useState } from "react";
 import { Navigate, Route, BrowserRouter as Router, Routes } from "react-router-dom";
 import StoriesDashboard from "./Layout/StoriesDashboard.tsx";
 import StoryEditor from "./Layout/StoryEditor.tsx";
