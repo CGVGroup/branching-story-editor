@@ -3,10 +3,10 @@ import { v4 as uuidv4 } from "uuid";
 import { debounce } from "throttle-debounce";
 import React, { useCallback, useState, useMemo, useEffect, useRef } from "react";
 import { Button, Card, Stack } from "react-bootstrap";
-import { ReactFlow, Controls, Background, applyNodeChanges, Panel, ReactFlowInstance, Edge, NodeChange, Node, addEdge, Connection, EdgeChange, applyEdgeChanges, Viewport, MarkerType, getOutgoers, getIncomers, getConnectedEdges} from "@xyflow/react";
+import { ReactFlow, Controls, Background, applyNodeChanges, Panel, ReactFlowInstance, Edge, NodeChange, Node, addEdge, Connection, EdgeChange, applyEdgeChanges, Viewport, MarkerType, getOutgoers, getConnectedEdges} from "@xyflow/react";
 import Story from "../StoryElements/Story.ts";
 import { ChoiceNodeProps, createNewChoiceNode, createNewSceneNode, EdgeType, NodeType, SceneNodeProps, storyEdgeTypes, storyNodeTypes } from "./StoryNode.tsx";
-import Choice, { ChoiceDetails } from "../StoryElements/Choice.ts";
+import Choice from "../StoryElements/Choice.ts";
 
 function StoryFlowChartEditor (props: {
   story: Story,

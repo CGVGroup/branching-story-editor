@@ -7,6 +7,8 @@ import StoriesDashboard from "./Layout/StoriesDashboard.tsx";
 import StoryEditor from "./Layout/StoryEditor.tsx";
 import Story from "./StoryElements/Story.ts";
 import GenericModal, { ModalContents } from "./Layout/GenericModal.tsx";
+import { DbContext, getAll } from "./Misc/DB.ts";
+import { Spinner } from "react-bootstrap";
 
 export const DefaultEnumsContext = createContext({
   time: ["Alba", "Mattina", "Mezzogiorno", "Pomeriggio", "Tramonto", "Sera", "Notte"],
@@ -15,12 +17,32 @@ export const DefaultEnumsContext = createContext({
   value: ["Clemenza", "Gentilezza", "Abnegazione", "Scaltrezza"],
 });
 
+export const DbFields = createContext({
+  datazioni: [
+    {label: "XVIII Dinastia", value: "XVIII Dinastia"},
+    {label: "III Dinastia", value: "III Dinastia"},
+    {label: "XIX Dinastia", value: "XIX Dinastia"},
+    {label: "XII Dinastia", value: "XII Dinastia"},
+    {label: "Epoca Tarda", value: "Epoca Tarda"},
+    {label: "Periodo Tolemaico", value: "Periodo Tolemaico"},
+    {label: "Epoca Romana", value: "Epoca Romana"},
+    {label: "VI Dinastia", value: "VI Dinastia"}
+  ],
+  materiali: [
+    {label: "Ebano", value: "Ebano"},
+    {label: "Oro", value: "Oro"},
+    {label: "Lapislazzuli", value: "Lapislazzuli"},
+    {label: "Ebano", value: "Ebano"},
+    {label: "Calcite", value: "Calcite"}
+]})
+
 function App() {
   const [stories, setStories] = useState(new Map<string, Story>());
-  const storiesRef = useRef(stories);
   const [lastOpenStory, setLastOpenStory] = useState<string | null>(null);
   const [showModal, setShowModal] = useState<boolean>(false);
   const [modalContents, setModalContents] = useState<ModalContents>({});
+  const [db, setDb] = useState<Object | null>(null);
+  const storiesRef = useRef(stories);
 
   const setStory = useCallback((id: string, newStory: Story) => {
     setStories(stories => {stories.set(id, newStory); return new Map(stories);});
@@ -41,13 +63,9 @@ function App() {
     setShowModal(true);
   }, []);
 
-  /*useEffect(() => {
-    const handleContextmenu = (e: MouseEvent) => e.preventDefault();
-    document.addEventListener('contextmenu', handleContextmenu);
-    return () => document.removeEventListener('contextmenu', handleContextmenu);
-  }, []);*/
-
+  // Parse stories from localStorage
   useEffect(() => {
+    if (!db) return;
     const savedStories = localStorage.getItem("stories");
     if (savedStories) {
       const parsedStories = JSON.parse(savedStories);
@@ -55,8 +73,9 @@ function App() {
         setStories(new Map(parsedStories.map(([id, story]) => [id, Story.fromJSON(story)])));
       }
     }
-  }, []);
+  }, [db]);
 
+  // Save stories on exit
   useEffect(() => {
     const onBeforeUnload = (e: Event) => {
 			localStorage.setItem("stories", JSON.stringify([...storiesRef.current.entries()]));
@@ -65,32 +84,46 @@ function App() {
 		return () => window.removeEventListener('beforeunload', onBeforeUnload);
 	}, []);
 
+  // Keep stories reference updated
   useEffect(() => {storiesRef.current = stories}, [stories]);
+
+  // Fetch elements from DB
+  useEffect(() => {
+    getAll().then(dbObject => {
+      setDb(dbObject);
+      console.log("Fetched database");
+    });
+  }, []);
   
   return (
-    <div className="App">
-      <GenericModal show={showModal} setShow={setShowModal} {...modalContents}/>
-      <Router>
-        <Routes>
-          <Route path="/" element={<Navigate to="/stories"/>} />
-          <Route path="/stories" element={
-            <StoriesDashboard
-              stories={stories}
-              setStory={setStory}
-              addStory={addStory}
-              deleteStory={deleteStory}
-              lastOpenStory={lastOpenStory}
-              setLastOpenStory={setLastOpenStory}
-              setModal={setModal} />
-          } />
-          <Route path="/stories/:id" element={
-            <StoryEditor
-              stories={stories}
-              setStory={setStory}
-              setModal={setModal} />} />
-        </Routes>
-      </Router>
-    </div>
+    db === null ?
+      <Spinner/>
+    :
+      <div className="App">
+        <GenericModal show={showModal} setShow={setShowModal} {...modalContents}/>
+        <DbContext.Provider value={{db}}>
+          <Router>
+            <Routes>
+              <Route path="/" element={<Navigate to="/stories"/>} />
+              <Route path="/stories" element={
+                <StoriesDashboard
+                  stories={stories}
+                  setStory={setStory}
+                  addStory={addStory}
+                  deleteStory={deleteStory}
+                  lastOpenStory={lastOpenStory}
+                  setLastOpenStory={setLastOpenStory}
+                  setModal={setModal} />
+              } />
+              <Route path="/stories/:id" element={
+                <StoryEditor
+                  stories={stories}
+                  setStory={setStory}
+                  setModal={setModal} />} />
+            </Routes>
+          </Router>
+        </DbContext.Provider>
+      </div>
   );
 }
 

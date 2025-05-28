@@ -2,9 +2,9 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { Button, Card, Col, Form, InputGroup, Stack } from "react-bootstrap";
 import { debounce } from "throttle-debounce";
 import Story from "../StoryElements/Story.tsx";
-import Choice, { ChoiceDetails } from "../StoryElements/Choice.ts";
+import Choice from "../StoryElements/Choice.ts";
 import DynamicTextField from "./DynamicTextField.tsx";
-import { getConnectedEdges, getOutgoers } from "@xyflow/react";
+import { getConnectedEdges } from "@xyflow/react";
 
 function ChoiceEditor(props: {
     story: Story,
@@ -50,7 +50,7 @@ function ChoiceEditor(props: {
     }), []);
 
     const nextSceneIds = useMemo(() => {
-        const thisNode = props.story.getNodeById(props.nodeId)!;
+        const thisNode = props.story.getNode(props.nodeId)!;
         const outgoingEdges = getConnectedEdges([thisNode], props.story.flow.edges).filter(edge => edge.source === thisNode.id);
         return localChoice.choices.map((_, idx) => outgoingEdges.find(edge => edge.sourceHandle === `source-${idx}`)?.target ?? null);
     }, [localChoice])

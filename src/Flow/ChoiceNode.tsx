@@ -58,6 +58,7 @@ function ChoiceNode(props: NodeProps<ChoiceNodeType>) {
               className: "title",
               size: "sm",
               placeholder: "Nessun interrogativo",
+              style: {fontSize:"x-small"}
             }}/>
         </div>
         {props.data.choice.choices.length > 0 && 

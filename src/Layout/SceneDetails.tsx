@@ -125,19 +125,19 @@ function SceneDetails(props: {
 								{!!backgroundCharacters.size && <ChipList 
 									values={backgroundCharacters}
 									setValues={setBackgroundCharacters}
-									allValues={props.story.characters}
+									allValues={props.story.getElementsByType(StoryElementType.character)}
 									className="character-mention"
 									noElementsText="Nessun Personaggio" />}
 								{!!backgroundObjects.size && <ChipList 
 									values={backgroundObjects}
 									setValues={setBackgroundObjects}
-									allValues={props.story.objects}
+									allValues={props.story.getElementsByType(StoryElementType.object)}
 									className="object-mention"
 									noElementsText="Nessun Oggetto" />}
 								{!!backgroundLocations.size && <ChipList 
 									values={backgroundLocations}
 									setValues={setBackgroundLocations}
-									allValues={props.story.locations}
+									allValues={props.story.getElementsByType(StoryElementType.location)}
 									className="location-mention"
 									noElementsText="Nessun Luogo" />}
 							</Col>

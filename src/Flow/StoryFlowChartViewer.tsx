@@ -16,7 +16,7 @@ function StoryFlowChartViewer (props: {
     <Row className="gx-0 h-100">
       <ReactFlow key={props.storyId}
         nodes={props.story.flow.nodes.map(node => {return {...node, selected: false, data: {...node.data, indirectSelected: false}}}) ?? []}
-        edges={props.story.flow.edges.map(edge => {return {...edge, animated: false}}) ?? []}
+        edges={props.story.flow.edges.map(edge => {return {...edge, selected: false, animated: false}}) ?? []}
         nodeTypes={nodeTypes}
         edgeTypes={edgeTypes}
         nodesDraggable={false}

@@ -46,7 +46,7 @@ function StoryEditor(props: {
 
 	const onChoiceMoved = useCallback((id: string, oldIdx: number, newIdx: number) => {
 		setLocalStory(story => {
-			const node = story.getNodeById(id);
+			const node = story.getNode(id);
 			if (!node) return story;
 			const oldHandle = `source-${oldIdx}`;
 			const newHandle = `source-${newIdx}`;
@@ -66,7 +66,7 @@ function StoryEditor(props: {
 
 	const onChoiceDeleted = useCallback((id: string, idx: number) => {
 		setLocalStory(story => {
-			const node = story.getNodeById(id);
+			const node = story.getNode(id);
 			if (!node) return story;
 			return story.cloneAndSetFlow({...story.flow, edges: story.flow.edges.filter(edge => 
 				edge.source !== node.id || edge.sourceHandle !== `source-${idx}`)
@@ -85,8 +85,8 @@ function StoryEditor(props: {
 			else
 				return [...ids, id].sort(
 					(a, b) => (
-						localStory.getNodeById(a)?.data.label as string)?.localeCompare(
-						localStory.getNodeById(b)?.data.label as string));
+						localStory.getNode(a)?.data.label as string)?.localeCompare(
+						localStory.getNode(b)?.data.label as string));
 		});
 		setCurrentTab(id);
 	}, [localStory]);
@@ -198,11 +198,15 @@ function StoryEditor(props: {
 								<StoryTexts
 									story={localStory}
 									setStory={story => setLocalStory(story)}
-									onClickOpenScene={onClickEditNode}/>
+									onClickOpenScene={onClickEditNode}
+									onChoiceMoved={onChoiceMoved}
+									onChoiceDeleted={onChoiceDeleted}
+									onClickEditNode={onClickEditNode}
+									/>
 							</Row>
 						</Tab>
 						{openNodes.map(nodeId => {
-							const node = localStory.getNodeById(nodeId);
+							const node = localStory.getNode(nodeId);
 							if (node === undefined) return null;
 							let className: string;
 							switch (node.type) {

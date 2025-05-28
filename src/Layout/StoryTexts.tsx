@@ -1,31 +1,33 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Accordion, Button, Card, Col, FloatingLabel, Form, Row, Spinner } from "react-bootstrap";
 import { debounce } from "throttle-debounce";
-import Scene from "../StoryElements/Scene.ts";
-import ChoiceEditor from "./ChoiceEditor.tsx";
-import { ChoiceDetails, ChoiceNodeProps, NodeType, SceneNodeProps } from "../Flow/StoryNode.tsx";
 import Story from "../StoryElements/Story.ts";
+import Choice from "../StoryElements/Choice.ts";
+import ChoiceEditor from "./ChoiceEditor.tsx";
+import { ChoiceNodeProps, NodeType, SceneNodeProps } from "../Flow/StoryNode.tsx";
 import PromptArea from "./PromptArea.tsx";
 import { sendToLLM } from "../Misc/LLM.ts";
-import Choice from "../StoryElements/Choice.ts";
 
 function StoryTexts(props: {
     story: Story,
     setStory: (newStory: Story) => void,
     onClickOpenScene: (id: string) => void,
+    onChoiceMoved: (id: string, oldIdx: number, newIdx: number) => void,
+    onChoiceDeleted: (id: string, idx: number) => void,
+    onClickEditNode: (id: string) => void,
 }) {
     const [localStory, setLocalStory] = useState<Story>(props.story.clone());
     const [loadings, setLoadings] = useState<boolean[]>(new Array(localStory.flow.nodes.length).fill(false));
     
     const onFullTextEdited = useCallback((id: string, newText: string) => {
         setLocalStory(story => {
-            const scene = story.getSceneById(id)!;
+            const scene = story.getScene(id)!;
             return story.cloneAndSetScene(id, scene.cloneAndSetFullText(newText));
     })}, []);
     
     const onPromptTextEdited = useCallback((id: string, newPrompt: string) => {
         setLocalStory(story => {
-            const scene = story.getSceneById(id)!;
+            const scene = story.getScene(id)!;
             return story.cloneAndSetScene(id, scene.cloneAndSetPrompt(newPrompt));
     })}, []);
     
@@ -35,7 +37,7 @@ function StoryTexts(props: {
     })}, []);
 
     const onSendButtonClicked = useCallback(async (id: string) => {
-        const index = localStory.getAllNodes().findIndex(node => node.id === id);
+        const index = localStory.getNodes().findIndex(node => node.id === id);
         setLoadings(loadings => loadings.map((loading, idx) => idx === index ? true : loading));
         //const response = await sendToLLM("");
         /*if (response.ok) {
@@ -104,14 +106,18 @@ function StoryTexts(props: {
                     const data = node.data as ChoiceNodeProps;
                     return <Accordion.Item eventKey={id} key={idx} className="choice">
                         <Accordion.Header>
-                            {`${data.label}${data.choices?.length > 0 ? " - " : ""}${data.choices.map(choice => choice.title).join(" / ")}`}
+                            {`${data.label} - ${data.choice.title ? data.choice.title : data.choice.choices.map(choice => choice.text).join(" / ")}`}
                         </Accordion.Header>
                         <Accordion.Body>
                             <ChoiceEditor
                                 key={idx}
                                 story={localStory}
-                                choices={node.data.choices as ChoiceDetails[]}
-                                setChoices={newChoice => onChoiceEdited(id, newChoice)} />
+                                nodeId={node.id}
+                                choice={node.data.choice as Choice}
+                                setChoice={newChoice => onChoiceEdited(id, newChoice)}
+                                onChoiceMoved={(oldIdx, newIdx) => props.onChoiceMoved(node.id, oldIdx, newIdx)}
+                                onChoiceDeleted={idx => props.onChoiceDeleted(node.id, idx)}
+                                onClickEditNode={() => props.onClickEditNode(node.id)}/>
                         </Accordion.Body>
                     </Accordion.Item>
                 }

@@ -21,7 +21,7 @@ function ElementChip(props: {
 function ChipList(props: {
     values: Set<string>,
     setValues: React.Dispatch<React.SetStateAction<Set<string>>>,
-    allValues: Map<string, StoryElement>,
+    allValues: StoryElement[],
     className: string,
     noElementsText: string
 }) {
@@ -30,7 +30,7 @@ function ChipList(props: {
             {props.values.size > 0 ?
                 [...props.values.values()].map(id =>
                     <ElementChip
-                        name={props.allValues.get(id)?.name ?? "?"}
+                        name={props.allValues.find(element => element.id === id)?.name ?? "?"}
                         key={id}
                         onRemove={() => props.setValues(bg => {bg.delete(id); return new Set(bg);})}
                         className={"mention-chip " + props.className}/>

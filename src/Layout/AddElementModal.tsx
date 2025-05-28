@@ -1,47 +1,28 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { RefObject, useCallback, useEffect, useState } from "react";
 import { Alert, Button, Form, Modal } from "react-bootstrap";
-import { CharacterElement, LocationElement, ObjectElement, StoryElementType, StoryElement } from "../StoryElements/StoryElement.ts";
+import { StoryElementType, StoryElement, createNewElement, StoryElementTypeDictionary } from "../StoryElements/StoryElement.ts";
 import StoryElementInputForm from "./StoryElementInputForm.tsx";
 
 function ElementModal(props: {
     modal: boolean,
     setModal: React.Dispatch<React.SetStateAction<boolean>>,
-    modalAction: "add" | "edit",
     elementType: StoryElementType,
     initialElement?: StoryElement,
+    container?: RefObject<any>,
     onSubmit: (element: StoryElement) => boolean
 }) {
-    let blankElement: StoryElement;
-    let typeString: string;
+    const blankElement = createNewElement(props.elementType);
+    const typeString = StoryElementTypeDictionary.ita.singular[props.elementType];
+
     let actionString: string;
     let buttonString: string;
 
-    switch (props.elementType) {
-        case StoryElementType.character:
-            blankElement = new CharacterElement("Nuovo Personaggio");
-            typeString = "personaggio";
-        break;
-        case StoryElementType.object:
-            blankElement = new ObjectElement("Nuovo Oggetto");
-            typeString = "oggetto";
-        break;
-        case StoryElementType.location:
-            blankElement = new LocationElement("Nuovo Luogo");
-            typeString = "luogo";
-        break;
-        default:
-            throw new TypeError(props.elementType + " is not a valid type");
-    }
-
-    switch (props.modalAction) {
-        case "add":
-            actionString = "Aggiungi un nuovo";
-            buttonString = "Aggiungi";
-        break;
-        case "edit":
-            actionString = "Modifica";
-            buttonString = "Modifica";
-        break;
+    if (props.initialElement) {
+        actionString = "Modifica";
+        buttonString = "Modifica";
+    } else {
+        actionString = "Aggiungi un nuovo";
+        buttonString = "Aggiungi";
     }
 
     const title = `${actionString} ${typeString}`;
@@ -87,7 +68,11 @@ function ElementModal(props: {
     , [props.initialElement, props.elementType]);
     
     return (
-        <Modal show={props.modal} onHide={handleModalClose}>
+        <Modal
+            show={props.modal}
+            onHide={handleModalClose}
+            backdrop="static"
+            container={props.container}>
             <Form onSubmit={e => {e.preventDefault(); onConfirm()}}>
                 <Modal.Header closeButton>
                     <Modal.Title>{title}</Modal.Title>

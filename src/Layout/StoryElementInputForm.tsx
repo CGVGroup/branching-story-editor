@@ -1,11 +1,15 @@
 import { FloatingLabel, Form } from "react-bootstrap";
-import { CharacterElement, LocationElement, ObjectElement, StoryElementType, StoryElement } from "../StoryElements/StoryElement.ts";
+import { StoryElementType, StoryElement, ObjectElement } from "../StoryElements/StoryElement.ts";
+import { useContext } from "react";
+import { DbFields } from "../App.tsx";
+import Select from "react-select";
 
 function StoryElementInputForm(props: {
     type: StoryElementType,
     element: StoryElement,
     setElement: (e: any) => void
 }) {
+    const elementDetailsChoices = useContext(DbFields);
     const commonFields = (
         <>
             <FloatingLabel label="Nome:">
@@ -16,68 +20,57 @@ function StoryElementInputForm(props: {
                     isInvalid={props.element.name.length === 0}
                     autoFocus />
             </FloatingLabel>
+            <FloatingLabel label="Tipo:">
+                <Form.Control
+                    value={props.element.type}
+                    placeholder="Tipo"
+                    onChange={e => props.setElement({...props.element, type: e.target.value})}/>
+            </FloatingLabel>
+            <div style={{zIndex:"2000", textAlign:"left"}}>
+                <Select
+                placeholder={"Datazioni"}
+                value={props.element.dating.map(d => {return {label: d, value: d}})}
+                closeMenuOnSelect={false}
+                options={elementDetailsChoices.datazioni}
+                onChange={values => {props.setElement({...props.element, dating: values.map(v => v.value)})}}
+                isMulti
+                styles={{menu: (styles) => {return {...styles, zIndex: "2000"}}}}/>
+                </div>
+            <FloatingLabel label="Descrizione:">
+                <Form.Control
+                    value={props.element.description}
+                    placeholder="Descrizione"
+                    onChange={e => props.setElement({...props.element, description: e.target.value})}/>
+            </FloatingLabel>
         </>
-    );
-    const commonNotes = (
-        <FloatingLabel label="Note:">
-            <Form.Control
-                value={props.element.notes}
-                placeholder="Note"
-                onChange={e => props.setElement({...props.element, notes: e.target.value})} />
-        </FloatingLabel>
     );
     switch (props.type) {
         case StoryElementType.character:
-            return(
-                <>
-                    {commonFields}
-                    <hr />
-                    <FloatingLabel label="Bio:">
-                        <Form.Control
-                            value={(props.element as CharacterElement).bio}
-                            placeholder="Bio"
-                            onChange={e => props.setElement({...props.element, bio: e.target.value})} />
-                    </FloatingLabel>
-                    <FloatingLabel label="Obiettivo:">
-                        <Form.Control
-                            value={(props.element as CharacterElement).objective}
-                            placeholder="Obiettivo"
-                            onChange={e => props.setElement({...props.element, objective: e.target.value})} />
-                    </FloatingLabel>
-                    <hr />
-                    {commonNotes}
-                </>
-            );
+            return(commonFields);
         case StoryElementType.object:
             return(
                 <>
                     {commonFields}
                     <hr />
-                    <FloatingLabel label="Funzione:">
+                    <div style={{zIndex:"2100", textAlign:"left"}}>
+                        <Select
+                            placeholder={"Materiali"}
+                            value={(props.element as ObjectElement).materials.map(m => {return {label: m, value: m}})}
+                            closeMenuOnSelect={false}
+                            options={elementDetailsChoices.materiali}
+                            onChange={values => props.setElement({...props.element, materials: values.map(v => v.value)})}
+                            isMulti />
+                    </div>
+                    <FloatingLabel label="Origine:">
                         <Form.Control
-                            value={(props.element as ObjectElement).use}
-                            placeholder="Funzione"
-                            onChange={e => props.setElement({...props.element, use: e.target.value})} />
+                            value={(props.element as ObjectElement).origin}
+                            placeholder="Origine"
+                            onChange={e => props.setElement({...(props.element as ObjectElement), origin: e.target.value})}/>
                     </FloatingLabel>
-                    <hr />
-                    {commonNotes}
                 </>
             );
         case StoryElementType.location:
-            return(
-                <>
-                    {commonFields}
-                    <hr />
-                    <FloatingLabel label="Scopo:">
-                        <Form.Control
-                            value={(props.element as LocationElement).purpose}
-                            placeholder="Scopo"
-                            onChange={e => props.setElement({...props.element, purpose: e.target.value})} />
-                    </FloatingLabel>
-                    <hr />
-                    {commonNotes}
-                </>
-            );    
+            return(commonFields);    
         default:
             throw new TypeError(props.type + " is not a valid type");
     }

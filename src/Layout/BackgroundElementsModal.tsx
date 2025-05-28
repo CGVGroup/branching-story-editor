@@ -4,7 +4,7 @@ import { StoryElementType, StoryElement } from "../StoryElements/StoryElement.ts
 import Story from "../StoryElements/Story.ts";
 
 function ElementList (props: {
-    allElements: Map<string, StoryElement>,
+    allElements: StoryElement[],
     selected: Set<string>,
     setSelected: React.Dispatch<React.SetStateAction<Set<string>>>,
     checkboxType: "checkbox" | "radio",
@@ -17,27 +17,27 @@ function ElementList (props: {
             id={`radio-${encodeURI(props.noElementsText)}`}
             checked={props.selected.size === 0}
             onChange={() => props.setSelected(new Set())}/>
-        {props.allElements.size > 0 && <hr/>}
+        {props.allElements.length > 0 && <hr/>}
         {Array.from(props.allElements)
             .sort((a, b) => {
                 if (props.selected.has(a[0]) && !props.selected.has(b[0])) return -1;
                 if (!props.selected.has(a[0]) && props.selected.has(b[0])) return 1;
                 return a[1].name.localeCompare(b[1].name);})
-            .map(([id, element]) =>
+            .map(element =>
             <Form.Check
-                key={id}
+                key={element.id}
                 type={props.checkboxType}
                 label={element.name}
-                id={`${props.checkboxType}-${id}`}
-                checked={props.selected.has(id)}
+                id={`${props.checkboxType}-${element.id}`}
+                checked={props.selected.has(element.id)}
                 onChange={e => {
                     if (props.checkboxType === "checkbox") {
                         props.setSelected(bg => {
-                            if (e.target.checked) {bg.add(id); return new Set(bg)}
-                            else {bg.delete(id); return new Set(bg)}
+                            if (e.target.checked) {bg.add(element.id); return new Set(bg)}
+                            else {bg.delete(element.id); return new Set(bg)}
                         });
                     } else {
-                        if (e.target.checked) props.setSelected(new Set([id]));
+                        if (e.target.checked) props.setSelected(new Set([element.id]));
                     }
                 }}
             />)
@@ -72,7 +72,7 @@ function BackgroundElementsModal(props: {
                 <Row>
                     <Col style={{maxHeight:"75vh", overflowY:"auto"}}>
                         <ElementList
-                            allElements={props.story.characters}
+                            allElements={props.story.getElementsByType(StoryElementType.character)}
                             selected={props.selectedCharacters}
                             setSelected={props.setSelectedCharacters}
                             checkboxType="checkbox"
@@ -80,7 +80,7 @@ function BackgroundElementsModal(props: {
                     </Col>
                     <Col style={{maxHeight:"75vh", overflowY:"auto"}}>
                         <ElementList
-                            allElements={props.story.objects}
+                            allElements={props.story.getElementsByType(StoryElementType.object)}
                             selected={props.selectedObjects}
                             setSelected={props.setSelectedObjects}
                             checkboxType="checkbox"
@@ -88,7 +88,7 @@ function BackgroundElementsModal(props: {
                     </Col>
                     <Col style={{maxHeight:"75vh", overflowY:"auto"}}>
                         <ElementList
-                            allElements={props.story.locations}
+                            allElements={props.story.getElementsByType(StoryElementType.location)}
                             selected={props.selectedLocation}
                             setSelected={props.setSelectedLocation}
                             checkboxType="radio"
