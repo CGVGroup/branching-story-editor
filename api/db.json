@@ -1,0 +1,83 @@
+{
+    "characters": [
+        {
+            "id": "P001",
+            "name": "Amenhotep III",
+            "type": "Faraone",
+            "dating": [
+                "XVIII Dinastia"
+            ],
+            "description": "Nono faraone della XVIII dinastia egizia, noto per il periodo di prosperità e sviluppo artistico",
+            "assets": []
+        },
+        {
+            "id": "P002",
+            "name": "Imhotep",
+            "type": "Visir",
+            "dating": [
+                "III Dinastia"
+            ],
+            "description": "Visir del faraone Djoser, architetto, medico e scriba, progettista della piramide a gradoni di Saqqara",
+            "assets": []
+        }
+    ],
+    "objects": [
+        {
+            "id": "M001",
+            "name": "Sarcofago di Meritamon",
+            "type": "Sarcofago",
+            "materials": [
+                "Ebano",
+                "Oro",
+                "Lapislazzuli"
+            ],
+            "origin": "Valle delle Regine",
+            "dating": [
+                "XIX Dinastia"
+            ],
+            "description": "Sarcofago riccamente decorato appartenente a Meritamon, figlia di Ramses II",
+            "assets": []
+        },
+        {
+            "id": "M002",
+            "name": "Tavolozza dello Scriba Amenemhat",
+            "type": "Paletta da Scriba",
+            "materials": [
+                "Ebano",
+                "Calcite"
+            ],
+            "origin": "Elefantina",
+            "dating": [
+                "XII Dinastia"
+            ],
+            "description": "Tavolozza da scriba con incisioni ieratiche e cavità per pigmenti",
+            "assets": []
+        }
+    ],
+    "locations": [
+        {
+            "id": "L001",
+            "name": "Tempio di Hathor a Dendera",
+            "type": "Tempio",
+            "origin": "Dendera",
+            "dating": [
+                "Epoca Tarda",
+                "Periodo Tolemaico",
+                "Epoca Romana"
+            ],
+            "description": "Complesso templare dedicato alla dea Hathor, costruito e ampliato durante diverse epoche",
+            "assets": []
+        },
+        {
+            "id": "L002",
+            "name": "Mastaba di Kagemni",
+            "type": "Mastaba",
+            "origin": "Saqqara",
+            "dating": [
+                "VI Dinastia"
+            ],
+            "description": "Tomba del visir Kagemni, che servì sotto i faraoni Teti e Pepi I, famosa per i suoi rilievi e pitture funerarie",
+            "assets": []
+        }
+    ]
+}

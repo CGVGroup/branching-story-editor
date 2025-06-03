@@ -8,7 +8,8 @@ logging.basicConfig(level=logging.DEBUG)
 
 from langchain.chat_models import init_chat_model
 from langchain.chains import LLMChain
-from langchain.prompts import PromptTemplate
+from langchain.prompts import ChatPromptTemplate, SystemMessagePromptTemplate, HumanMessagePromptTemplate
+from langchain.schema import SystemMessage, HumanMessage
 
 app = Flask(__name__)
 CORS(app)
@@ -43,26 +44,31 @@ def read_secret(file_path: str) -> str:
 def send_to_LLM(data_param: dict, config_name: str) -> str:
     data = data_param
     config = read_config(config_name)
-    
+
     if "api_key_file" in config:
-        data["api_key"] = read_secret(config["api_key_file"])
+        config["model_parameters"]["api_key"] = read_secret(config["api_key_file"])
     
     if "prompt_file" not in config:
         raise FileNotFoundError("No prompt file was specified")
     
-    prompt = read_prompt(config["prompt_file"])
+    prompt_dict = read_prompt(config["prompt_file"])
 
-    if (data["previous_scene"] != "" and "there_is_a_previous_scene_prompt" in prompt):
-        data["previous_scene_prompt"] = prompt["there_is_a_previous_scene_prompt"]
+    if (data["previous_scene"] != "" and "there_is_a_previous_scene_prompt" in prompt_dict):
+        data["previous_scene_prompt"] = prompt_dict["there_is_a_previous_scene_prompt"]
     else:
         data["previous_scene_prompt"] = ""
         data["previous_scene"] = ""
-    
-    model = init_chat_model(config["model_name"], model_provider=config["provider"])
-    model.invoke(**config["model_config"])
 
-    #prompt_template = PromptTemplate(template=config["prompt"])
-    #chain = LLMChain(llm=model, prompt=prompt_template)
+    model = init_chat_model(config["model_name"], model_provider=config["provider"], **config["model_parameters"])
+
+    prompt = ChatPromptTemplate.from_messages([
+        SystemMessagePromptTemplate.from_template(prompt_dict["system"]),
+        HumanMessagePromptTemplate.from_template(prompt_dict["user"])
+    ])
+    chain = prompt | model
+    response = chain.invoke(data)
+    
+    return response.content
 
 @app.route('/db', methods = ['GET']) 
 def get_db():

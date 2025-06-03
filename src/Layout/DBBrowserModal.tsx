@@ -49,16 +49,22 @@ function DBBrowserModal(props: {
             show={props.modal}
             onHide={handleModalClose}
             container={props.container}>
-            <Modal.Header>Scegli un {typeString} dal Catalogo</Modal.Header>
+            <Modal.Header>
+                <Modal.Title>
+                    Scegli un {typeString} dal Catalogo
+                </Modal.Title>
+            </Modal.Header>
             <Modal.Body className="h-50">
                 <Col>
-                    <Form.Control onChange={e => onSearchChange(e.target.value)}/>
+                    <Form.Control onChange={e => onSearchChange(e.target.value)} autoFocus/>
                     {results.length ?
                         results.map((result, idx) => (
                             <Card key={idx}>
-                                <Card.Title>
-                                    {result["name"]}
-                                </Card.Title>
+                                <Card.Header>
+                                    <Card.Title>
+                                        {result["name"]}
+                                    </Card.Title>
+                                </Card.Header>
                                 <Card.Body>
                                     <Col>
                                         <Row>

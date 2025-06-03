@@ -95,8 +95,8 @@ function PromptArea(props: {
 				setMenuSelected(selected => {
 					const list = filtered.length > maxElementsShown ? filtered.filter(element => element.elementType === menuTabKey) : filtered;
 					const idx = list.findIndex(element => element.id === selected);
-					if (e.code === "ArrowUp") return list[idx <= 0 ? list.length - 1 : idx - 1][0];
-					if (e.code === "ArrowDown") return list[idx >= list.length - 1 ? 0 : idx + 1][0];
+					if (e.code === "ArrowUp") return list[idx <= 0 ? list.length - 1 : idx - 1].id;
+					if (e.code === "ArrowDown") return list[idx >= list.length - 1 ? 0 : idx + 1].id;
 				});
 			break;
 			case "Enter":
@@ -213,7 +213,7 @@ function PromptArea(props: {
 	)}, [allElements, filtered, menuTabKey, menuSelected, selectedRef, changeTab, complete]);
 
 	useEffect(() => setText(props.initialText ?? ""), [props.initialText]);
-	useEffect(() => {if (filtered.length > 0) setMenuSelected(filtered[0][0])}, [filtered]);
+	useEffect(() => {if (filtered.length > 0) setMenuSelected(filtered[0].id)}, [filtered]);
 	useEffect(() => selectedRef.current?.scrollIntoView({block:"end"}), [selectedRef]);
 
 	return (

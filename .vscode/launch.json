@@ -16,7 +16,7 @@
     "compounds": [
         {
             "name": "Launch All",
-            "configurations": ["Launch React", "Launch Flask"]
+            "configurations": ["Launch Flask", "Launch React"]
         }
     ]
 }

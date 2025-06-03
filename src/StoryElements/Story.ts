@@ -170,73 +170,45 @@ class Story {
         return this.deserialize(JSON.parse(json));
     }
 
-    async sendToLLM(id: string): Promise<Story> {
+    async sendSceneToLLM(id: string): Promise<string | null> {
         const node = this.getNode(id);
-        if (!node) return this;
+        if (!node || node.type === NodeType.choice) return null;
+        
         let payload: Object = {
             title: this.title,
             characters: this.getElementsByType(StoryElementType.character),
             objects: this.getElementsByType(StoryElementType.object),
             locations: this.getElementsByType(StoryElementType.location),
             is_choice: node.type === NodeType.choice,
-        }
+        };
         
-        if (node.type === NodeType.choice) {
-            payload["choices"] = [...node.data.choices as string[]]
-        } else {
-            const scene = node.data.scene as Scene;
-            payload = {...payload,
-                prompt: scene.prompt,
-                time: scene.details.time,
-                tone: scene.details.tone,
-                weather: scene.details.weather,
-                location: this.getElement(scene.details.backgroundIds[StoryElementType.location][0]) ?? "",
-                characters: this.getElementsByType(StoryElementType.character).map(char => {
-                    const str = char.name;
-                    if (char.description) str.concat(` - Descrizione: ${char.description}`)
-                    return str}).join("\n")
-            }
-        }
+        const scene = node.data.scene as Scene;
+        payload = {...payload,
+            prompt: scene.prompt,
+            time: scene.details.time,
+            tone: scene.details.tone,
+            weather: scene.details.weather,
+            location: this.getElement(scene.details.backgroundIds[StoryElementType.location][0])?.name ?? "",
+            characters: this.getElementsByType(StoryElementType.character).map(char => {
+                let str = char.name;
+                if (char.description) str = str.concat(` - Descrizione: ${char.description}`)
+                return str}).join("\n"),
+        };
         
         const incomers = getIncomers(node, this.flow.nodes, this.flow.edges)
         if (incomers.length === 1 && incomers[0].type === NodeType.scene) {
             payload["previous_scene"] = (incomers[0].data.scene as Scene).fullText;
+        } else {
+            payload["previous_scene"] = ""
         }
 
-        console.log(payload);
-        sendToLLM(payload).then(res => {
-            const response = JSON.parse(res);
-            if (response?.length) {
-                response.forEach(({content, id}) => {
-                    const correspondingNode = this.flow.nodes.find(node => node.data.label === id);
-                    if (correspondingNode && correspondingNode.type === NodeType.scene)
-                        (correspondingNode.data.scene as Scene).fullText = content;
-                });
-            }
-        }).catch(e => console.error(e));
-        return this.clone();
+        return sendToLLM(payload).then(res => {
+            return JSON.parse(res);
+        }).catch(err => {
+            console.error(err);
+            return null;
+        });
     }
-
-    /*async sendToLLM(): Promise<Story> {
-        const sceneNodes = this.flow.nodes.filter(node => node.type === NodeType.scene);
-        await Promise.all(
-			sceneNodes.map(
-				node => new Promise(resolve => 
-					resolve(this.sendSceneToLLM(node.id)))
-                    .then(fullText => {
-                        const newScene = Scene.from(node.data.scene as Scene);
-                        newScene.fullText = (fullText as string);
-                        console.log(newScene)
-                        return this.cloneAndSetScene(node.id, newScene);
-                    })
-            )
-        );
-        return this.clone();
-    }
-
-    sendSceneToLLM(id: string): Promise<string> {
-        return sendToLLM((this.getSceneById(id)!).prompt);
-    }*/
 }
 
 export default Story;

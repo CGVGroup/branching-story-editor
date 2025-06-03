@@ -20,9 +20,9 @@ function ElementList (props: {
         {props.allElements.length > 0 && <hr/>}
         {Array.from(props.allElements)
             .sort((a, b) => {
-                if (props.selected.has(a[0]) && !props.selected.has(b[0])) return -1;
-                if (!props.selected.has(a[0]) && props.selected.has(b[0])) return 1;
-                return a[1].name.localeCompare(b[1].name);})
+                if (props.selected.has(a.id) && !props.selected.has(b.id)) return -1;
+                if (!props.selected.has(a.id) && props.selected.has(b.id)) return 1;
+                return a.name.localeCompare(b.name);})
             .map(element =>
             <Form.Check
                 key={element.id}

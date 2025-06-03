@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { Button, Card, Col, FloatingLabel, Form, Row, Spinner } from "react-bootstrap";
+import { Button, Card, Col, FloatingLabel, Form, Placeholder, Row, Spinner } from "react-bootstrap";
 import { debounce } from 'throttle-debounce';
 import Story from "../StoryElements/Story.ts";
 import Scene, { SceneDetails as SceneDetailsType } from "../StoryElements/Scene.ts";
@@ -40,12 +40,10 @@ function SceneEditor(props: {
 
 	const onSendToLLM = useCallback(async () => {
 		setLoading(true);
-		const response = await props.story.sendToLLM(props.nodeId);
-		/*if (response.ok) {
-			const responseText = await response.text();
-			setUndoStack(undoStack => undoStack.push(responseText));
-		}*/
-		//setUndoStack(undoStack => undoStack.push(response));
+		const sceneText = await props.story.sendSceneToLLM(props.nodeId)
+		if (sceneText) {
+			setUndoStack(undoStack => undoStack.push(sceneText));
+		}
 		setLoading(false);
 	}, []);
 
@@ -114,14 +112,26 @@ function SceneEditor(props: {
 								</Col>
 							</Row>
 							<div className="h-75">
-								<FloatingLabel className="h-100" label="Testo completo:">
-									<Form.Control
-										as="textarea"
-										placeholder="Testo Completo"
-										value={undoStack.peek()}
-										onChange={e => handleEditFullText(e.target.value)}
-										style={{height:"100%"}} />
-								</FloatingLabel>
+								{loading ?
+									<Card className="h-100" style={{textAlign:"left"}}>
+										<Card.Body>
+											<Placeholder as={Card.Text} animation="wave">
+												<Placeholder xs={4}/>{" "}<Placeholder xs={4}/>{" "}<Placeholder xs={3}/>
+												<Placeholder xs={6}/>{" "}<Placeholder xs={5}/>
+												<Placeholder xs={10}/>
+											</Placeholder>
+										</Card.Body>
+									</Card>
+								:
+									<FloatingLabel className="h-100" label="Testo completo:">
+										<Form.Control
+											as="textarea"
+											placeholder="Testo Completo"
+											value={undoStack.peek()}
+											onChange={e => handleEditFullText(e.target.value)}
+											style={{height:"100%"}} />
+									</FloatingLabel>
+								}
 							</div>
 						</Col>
 					</Card.Body>
