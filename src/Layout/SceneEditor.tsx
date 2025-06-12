@@ -1,5 +1,5 @@
-import React, { useCallback, useEffect, useState } from "react";
-import { Button, Card, Col, FloatingLabel, Form, Placeholder, Row, Spinner } from "react-bootstrap";
+import React, { useCallback, useContext, useEffect, useState } from "react";
+import { Button, ButtonGroup, Card, Col, Dropdown, FloatingLabel, Form, Placeholder, Row, Spinner, SplitButton } from "react-bootstrap";
 import { debounce } from 'throttle-debounce';
 import Story from "../StoryElements/Story.ts";
 import Scene, { SceneDetails as SceneDetailsType } from "../StoryElements/Scene.ts";
@@ -7,6 +7,8 @@ import SceneDetails from "./SceneDetails.tsx";
 import PromptArea from "./PromptArea.tsx";
 import UndoStack from "../Misc/UndoStack.ts";
 import { ModalContents } from "./GenericModal.tsx";
+import { ChosenModelContext } from "../App.tsx";
+import LoadingPlaceholders from "../Misc/LoadingPlaceholders.tsx";
 // @ts-ignore
 import {ReactComponent as AiPen} from "../img/ai-pen.svg";
 
@@ -20,7 +22,10 @@ function SceneEditor(props: {
 }) {
 	const [localScene, setLocalScene] = useState(Scene.from(props.scene));
 	const [loading, setLoading] = useState(false);
+	const [fullText, setFullText] = useState(localScene.fullText);
 	const [undoStack, setUndoStack] = useState(new UndoStack([localScene.fullText]));
+	const [isManualEdit, setIsManualEdit] = useState(false);
+	const [chosenModel, _] = useContext(ChosenModelContext)!;
 
 	const handleSave = useCallback(debounce(250, (scene: Scene) => {
 		props.setScene(scene);
@@ -35,14 +40,16 @@ function SceneEditor(props: {
 	}, []);
 	
 	const handleEditFullText = useCallback((newText: string) => {
-		setUndoStack(undoStack => undoStack.set(newText));
+		setFullText(newText);
+		setIsManualEdit(true);
 	}, []);
 
 	const onSendToLLM = useCallback(async () => {
 		setLoading(true);
-		const sceneText = await props.story.sendSceneToLLM(props.nodeId)
+		const sceneText = await props.story.sendSceneToLLM(props.nodeId, chosenModel)
 		if (sceneText) {
 			setUndoStack(undoStack => undoStack.push(sceneText));
+			setFullText(sceneText);
 		}
 		setLoading(false);
 	}, []);
@@ -58,12 +65,26 @@ function SceneEditor(props: {
 	}, [onSendToLLM])
 
 	const onUndoButton = useCallback(() => {
-		setUndoStack(undoStack => undoStack.undo());
+		setUndoStack(undoStack => {
+			const newStack = undoStack.undo();
+			setFullText(newStack.peek());
+			return newStack;
+		});
 	}, []);
 	
 	const onRedoButton = useCallback(() => {
-		setUndoStack(undoStack => undoStack.redo());
+		setUndoStack(undoStack => {
+			const newStack = undoStack.redo();
+			setFullText(newStack.peek());
+			return newStack;
+		});
 	}, []);
+
+	const onSaveManualEditButton = useCallback(() => {
+		setUndoStack(undoStack => undoStack.push(fullText));
+		setIsManualEdit(false);
+		setLocalScene(scene => scene.cloneAndSetFullText(fullText))
+	}, [fullText]);
 
 	useEffect(() => 
 		setLocalScene(localScene => new Scene(localScene.details, localScene.prompt, undoStack.peek()))
@@ -81,53 +102,71 @@ function SceneEditor(props: {
 					<Card.Body className="h-100">
 						<Col className="h-100">
 							<Row className="h-25 gx-0">
-								<Col>
+								<Col xs={10}>
 									<PromptArea
 										initialText={localScene.prompt}
 										story={props.story}
 										setText={handleEditPrompt} />
 								</Col>
-								<Col xs={1}>
-									<Button onClick={onSendButton} disabled={loading} title="Invia all'IA">
-										{loading ? 
-											<Spinner size="sm"/>
-										:
-											<AiPen/>
-										}
-									</Button>
+								<Col>
+									<Dropdown as={ButtonGroup}>
+										<Button onClick={onSendButton} disabled={loading} title="Invia all'IA">
+											{loading ? 
+												<Spinner size="sm"/>
+											:
+												<AiPen/>
+											}
+										</Button>
+										<Dropdown.Toggle disabled={loading} split>
+											<Dropdown.Menu variant="primary" align="end" style={{ minWidth: 'auto' }}>
+												<Dropdown.Item
+													onClick={async () => {
+														for await(const {done, progress, newStory} of props.story.sendStoryToLLM(chosenModel, props.nodeId)) {
+															if (done) props.setStory(newStory);
+														}}}
+													title="Aggiorna anche Scene Successive"
+													style={{width:"fit-content"}}>
+													<AiPen/>
+													{" "}
+													<i className="bi bi-layer-forward" style={{display:"inline-block", transform:"rotate(90deg)"}}/>
+												</Dropdown.Item>
+											</Dropdown.Menu>
+										</Dropdown.Toggle>
+									</Dropdown>
+									<ButtonGroup>
+										<Button
+											variant="secondary"
+											disabled={!undoStack.canUndo()}
+											onClick={onUndoButton}
+											title="Risposta precedente">
+											<i className="bi bi-arrow-90deg-left" />
+										</Button>
+										<Button
+											variant="secondary"
+											disabled={!undoStack.canRedo()}
+											onClick={onRedoButton}
+											title="Risposta successiva">
+											<i className="bi bi-arrow-90deg-right" />
+										</Button>
+									</ButtonGroup>
 									<Button
-										variant="secondary"
-										disabled={!undoStack.canUndo()}
-										onClick={onUndoButton}
-										title="Risposta precedente">
-										<i className="bi bi-arrow-90deg-left" />
-									</Button>
-									<Button
-										variant="secondary"
-										disabled={!undoStack.canRedo()}
-										onClick={onRedoButton}
-										title="Risposta successiva">
-										<i className="bi bi-arrow-90deg-right" />
+										variant="primary"
+										disabled={!isManualEdit}
+										onClick={onSaveManualEditButton}
+										title="Salva modifica manuale">
+										<i className="bi bi-floppy" />
 									</Button>
 								</Col>
 							</Row>
 							<div className="h-75">
 								{loading ?
-									<Card className="h-100" style={{textAlign:"left"}}>
-										<Card.Body>
-											<Placeholder as={Card.Text} animation="wave">
-												<Placeholder xs={4}/>{" "}<Placeholder xs={4}/>{" "}<Placeholder xs={3}/>
-												<Placeholder xs={6}/>{" "}<Placeholder xs={5}/>
-												<Placeholder xs={10}/>
-											</Placeholder>
-										</Card.Body>
-									</Card>
+									<LoadingPlaceholders/>
 								:
 									<FloatingLabel className="h-100" label="Testo completo:">
 										<Form.Control
 											as="textarea"
 											placeholder="Testo Completo"
-											value={undoStack.peek()}
+											value={fullText}
 											onChange={e => handleEditFullText(e.target.value)}
 											style={{height:"100%"}} />
 									</FloatingLabel>

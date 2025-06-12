@@ -1,0 +1,31 @@
+time:
+  - Alba 
+  - Mattina 
+  - Mezzogiorno 
+  - Pomeriggio 
+  - Tramonto 
+  - Sera 
+  - Notte
+weather:
+  - Soleggiato 
+  - Velato 
+  - Coperto 
+  - Pioggia 
+  - Temporale 
+  - Tempesta,
+tone:
+  - Allegria 
+  - Tristezza
+  - Dramma
+  - Tensione
+  - Conflitto
+  - Mistero
+  - Indagine
+  - Sorpresa
+  - Rivelazione
+  - Risoluzione
+value:
+  - Clemenza 
+  - Gentilezza 
+  - Abnegazione
+  - Scaltrezza

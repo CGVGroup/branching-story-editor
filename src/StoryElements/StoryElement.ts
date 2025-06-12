@@ -71,6 +71,3 @@ export function createNewElement(type: StoryElementType) {
             return newElement as LocationElement;
     }
 }
-export function createNewDBElement(element: StoryElement, type: StoryElementType) {
-    return {...element, resident: false, elementType: type};
-}

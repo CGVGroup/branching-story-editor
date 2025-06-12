@@ -1,10 +1,11 @@
 import { Button, Card, Col, Container, FloatingLabel, Form, InputGroup, ListGroup, Row, Spinner, Stack } from "react-bootstrap";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Story from "../StoryElements/Story.ts";
 import StoryFlowChartViewer from "../Flow/StoryFlowChartViewer.tsx";
 import StoryElements from "./StoryElements.tsx";
 import { ModalContents } from "./GenericModal.tsx";
+import { ChosenModelContext, ModelListContext } from "../App.tsx";
 
 function StoriesDashboard(props: {
 	stories: Map<string, Story>,
@@ -20,7 +21,10 @@ function StoriesDashboard(props: {
 	const [selectedId, setSelectedId] = useState<string | null>(props.lastOpenStory);
 	const [fileUploading, setFileUploading] = useState(false);
 
+	const [chosenModel, setChosenModel] = useContext(ChosenModelContext)!;
+
 	const fileUpload = useRef<HTMLInputElement>(null);
+	const modelNamesContext = useContext(ModelListContext);
 
 	const addStory = useCallback((story: Story) => {
 		const newId = props.addStory(story);
@@ -85,6 +89,15 @@ function StoriesDashboard(props: {
 			<Row style={{height:"10%", alignItems:"center"}}>
 				<h3>Story Editor</h3>
 			</Row>
+			<Form.Select
+				defaultValue={chosenModel}
+				style={{position: "absolute", right: "0", top: "0", width: "10%"}}
+				onChange={e => setChosenModel(e.target.value)}>
+				<option value={"default"}>default</option>
+				{modelNamesContext?.map((model, idx) =>
+					<option key={idx} value={model}>{model}</option>)
+				}
+			</Form.Select>
 			<Row style={{height:"90%"}}>
 				<Col sm={3} className="h-100">
 					<Card className="h-100">

@@ -1,7 +1,7 @@
 import { FloatingLabel, Form } from "react-bootstrap";
 import { StoryElementType, StoryElement, ObjectElement } from "../StoryElements/StoryElement.ts";
 import { useContext } from "react";
-import { DbFields } from "../App.tsx";
+import { DbFieldsContext } from "../App.tsx";
 import Select from "react-select";
 
 function StoryElementInputForm(props: {
@@ -9,7 +9,7 @@ function StoryElementInputForm(props: {
     element: StoryElement,
     setElement: (e: any) => void
 }) {
-    const elementDetailsChoices = useContext(DbFields);
+    const elementDetailsChoices = useContext(DbFieldsContext)!;
     const commonFields = (
         <>
             <FloatingLabel label="Nome:">
@@ -31,7 +31,7 @@ function StoryElementInputForm(props: {
                 placeholder={"Datazioni"}
                 value={props.element.dating.map(d => {return {label: d, value: d}})}
                 closeMenuOnSelect={false}
-                options={elementDetailsChoices.datazioni}
+                options={elementDetailsChoices.datings}
                 onChange={values => {props.setElement({...props.element, dating: values.map(v => v.value)})}}
                 isMulti
                 styles={{menu: (styles) => {return {...styles, zIndex: "2000"}}}}/>
@@ -57,7 +57,7 @@ function StoryElementInputForm(props: {
                             placeholder={"Materiali"}
                             value={(props.element as ObjectElement).materials.map(m => {return {label: m, value: m}})}
                             closeMenuOnSelect={false}
-                            options={elementDetailsChoices.materiali}
+                            options={elementDetailsChoices.materials}
                             onChange={values => props.setElement({...props.element, materials: values.map(v => v.value)})}
                             isMulti />
                     </div>

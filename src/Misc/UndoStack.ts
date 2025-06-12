@@ -3,7 +3,7 @@ export default class UndoStack<T> {
     index: number;
 
     constructor(initialElements?: T[], index?: number) {
-        if (initialElements !== undefined) {
+        if (initialElements) {
             this.stack = [...initialElements];
         } else {
             this.stack = [];
@@ -22,31 +22,31 @@ export default class UndoStack<T> {
     undo() {
         if (!this.canUndo()) return this;
         this.index--;
-        return new UndoStack(this.stack, this.index);
+        return this.clone();
     }
 
     redo() {
         if (!this.canRedo()) return this;
         this.index++;
-        return new UndoStack(this.stack, this.index);
+        return this.clone();
     }
 
     push(element: T) {
         this.stack = this.stack.slice(0, this.index + 1)
         this.stack.push(element);
         this.index++;
-        return new UndoStack(this.stack, this.index);
+        return this.clone();
     }
 
     pop() {
         this.stack.pop();
         this.index--;
-        return new UndoStack(this.stack, this.index);
+        return this.clone();
     }
 
     set(element: T) {
         this.stack[this.index] = element;
-        return new UndoStack(this.stack, this.index);
+        return this.stack.filter((_, idx) => idx <= this.index);
     }
 
     peek() {

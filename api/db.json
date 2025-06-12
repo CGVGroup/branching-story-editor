@@ -19,6 +19,38 @@
             ],
             "description": "Visir del faraone Djoser, architetto, medico e scriba, progettista della piramide a gradoni di Saqqara",
             "assets": []
+        },
+        {
+            "id": "P003",
+            "name": "Hapuseneb",
+            "type": "Sommo sacerdote",
+            "dating": ["XVIII dinastia", "Nuovo Regno"],
+            "description": "Sommo sacerdote di Amon sotto Hatshepsut, influente figura religiosa e politica.",
+            "assets": []
+        },
+        {
+            "id": "P004",
+            "name": "Panhesy",
+            "type": "Sommo sacerdote",
+            "dating": ["XX dinastia", "Nuovo Regno"],
+            "description": "Sommo sacerdote di Amon al tempo di Ramses XI, coinvolto in conflitti con Viceré di Nubia.",
+            "assets": []
+        },
+        {
+            "id": "P005",
+            "name": "Nehesi",
+            "type": "Alto funzionario",
+            "dating": ["XVII dinastia", "Secondo Periodo Intermedio"],
+            "description": "Alto funzionario e principe, servì sotto il faraone del Basso Egitto durante l'epoca hyksos.",
+            "assets": []
+        },
+        {
+            "id": "P006",
+            "name": "Ramses III",
+            "type": "Faraone",
+            "dating": ["XX dinastia", "Nuovo Regno"],
+            "description": "Ultimo grande faraone del Nuovo Regno, noto per respingere i Popoli del Mare.",
+            "assets": []
         }
     ],
     "objects": [
@@ -77,6 +109,53 @@
                 "VI Dinastia"
             ],
             "description": "Tomba del visir Kagemni, che servì sotto i faraoni Teti e Pepi I, famosa per i suoi rilievi e pitture funerarie",
+            "assets": []
+        },
+        {
+            "id": "L003",
+            "name": "Tempio di Amon",
+            "type": "Tempio",
+            "origin": "Tebe",
+            "dating": [
+                "Nuovo Regno",
+                "XVIII Dinastia"
+            ],
+            "description": "Complesso templare monumentale dedicato al dio Amon, fulcro religioso e politico dell'antico Egitto",
+            "assets": []
+        },
+        {
+            "id": "L004",
+            "name": "Deir el-Medina",
+            "type": "Villaggio",
+            "origin": "Tebe Ovest",
+            "dating": [
+                "Nuovo Regno",
+                "XVIII-XX Dinastia"
+            ],
+            "description": "Villaggio abitato dagli artigiani delle tombe reali, celebre per l'elevata alfabetizzazione e la ricca documentazione epigrafica",
+            "assets": []
+        },
+        {
+            "id": "L005",
+            "name": "Porto di Deir el-Medina",
+            "type": "Porto",
+            "origin": "Tebe Ovest",
+            "dating": [
+                "Nuovo Regno"
+            ],
+            "description": "Piccolo porto fluviale utilizzato per il trasporto di materiali e viveri al villaggio di Deir el-Medina",
+            "assets": []
+        },
+        {
+            "id": "L006",
+            "name": "Necropoli di Deir el-Medina",
+            "type": "Necropoli",
+            "origin": "Tebe Ovest",
+            "dating": [
+                "Nuovo Regno",
+                "XIX Dinastia"
+            ],
+            "description": "Area funeraria riservata agli abitanti di Deir el-Medina, con tombe decorate da scene personali e religiose",
             "assets": []
         }
     ]

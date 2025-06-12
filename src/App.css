@@ -254,10 +254,6 @@
     li:hover .close-button, .active .close-button{
       visibility: visible;
     }
-
-    .bi-diagram-2::before {
-      transform: rotate(-90deg);
-    }
   }
 
   .story-elements {

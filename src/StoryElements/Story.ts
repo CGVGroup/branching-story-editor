@@ -1,10 +1,11 @@
-import { getIncomers, Node, ReactFlowJsonObject } from "@xyflow/react";
+import { getIncomers, getOutgoers, Node, ReactFlowJsonObject } from "@xyflow/react";
 import { StoryElementType, StoryElement } from "./StoryElement.ts";
 import Scene from "./Scene.ts";
 import Choice from "./Choice.ts";
 import { NodeType } from "../Flow/StoryNode.tsx";
 import { sendToLLM } from "../Misc/LLM.ts";
 import { getElementFromDB } from "../Misc/DB.ts";
+import getAllOutgoers from "../Misc/GraphUtils.ts";
 
 type SerializedStory = {
     elements: string[],
@@ -170,7 +171,7 @@ class Story {
         return this.deserialize(JSON.parse(json));
     }
 
-    async sendSceneToLLM(id: string): Promise<string | null> {
+    async sendSceneToLLM(id: string, model: string): Promise<string | null> {
         const node = this.getNode(id);
         if (!node || node.type === NodeType.choice) return null;
         
@@ -202,12 +203,29 @@ class Story {
             payload["previous_scene"] = ""
         }
 
-        return sendToLLM(payload).then(res => {
+        return sendToLLM(payload, model).then(res => {
             return JSON.parse(res);
         }).catch(err => {
             console.error(err);
             return null;
         });
+    }
+
+    async *sendStoryToLLM(model: string, startingNodeId?: string): AsyncGenerator<{done: boolean, progress: number, newStory: Story}> {
+        let processableNodes: Node[];
+        if (startingNodeId) {
+            processableNodes = Array.from(getAllOutgoers(this.flow, this.getNode(startingNodeId)!, node => node.type === NodeType.choice))
+            console.log(processableNodes);
+        } else {
+            processableNodes = this.flow.nodes.filter(node => node.type === NodeType.scene);
+        }
+        let i = 0; 
+        for (const node of processableNodes) {
+            const fullText = await this.sendSceneToLLM(node.id, model);
+            if (fullText) (node.data.scene as Scene).fullText = fullText;
+            yield {done: false, progress: ++i*100 / processableNodes.length, newStory: this};
+        }
+        yield {done: true, progress: 100, newStory: this.clone()};
     }
 }
 

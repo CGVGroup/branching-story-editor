@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { Accordion, Button, Card, Col, FloatingLabel, Form, Row, Spinner } from "react-bootstrap";
 import { debounce } from "throttle-debounce";
 import Story from "../StoryElements/Story.ts";
@@ -6,7 +6,8 @@ import Choice from "../StoryElements/Choice.ts";
 import ChoiceEditor from "./ChoiceEditor.tsx";
 import { ChoiceNodeProps, NodeType, SceneNodeProps } from "../Flow/StoryNode.tsx";
 import PromptArea from "./PromptArea.tsx";
-import { sendToLLM } from "../Misc/LLM.ts";
+import LoadingPlaceholders from "../Misc/LoadingPlaceholders.tsx";
+import { ChosenModelContext } from "../App.tsx";
 
 function StoryTexts(props: {
     story: Story,
@@ -18,6 +19,8 @@ function StoryTexts(props: {
 }) {
     const [localStory, setLocalStory] = useState<Story>(props.story.clone());
     const [loadings, setLoadings] = useState<boolean[]>(new Array(localStory.flow.nodes.length).fill(false));
+
+    const [chosenModel, _] = useContext(ChosenModelContext)!;
     
     const onFullTextEdited = useCallback((id: string, newText: string) => {
         setLocalStory(story => {
@@ -39,18 +42,18 @@ function StoryTexts(props: {
     const onSendButtonClicked = useCallback(async (id: string) => {
         const index = localStory.getNodes().findIndex(node => node.id === id);
         setLoadings(loadings => loadings.map((loading, idx) => idx === index ? true : loading));
-        //const response = await sendToLLM("");
-        /*if (response.ok) {
-            const responseText = await response.text();
-            onFullTextEdited(id, responseText);
-            }*/
-        onFullTextEdited(id, "response");
+        const sceneText = await props.story.sendSceneToLLM(id, chosenModel);
+        if (sceneText) {
+            onFullTextEdited(id, sceneText);
+        }
         setLoadings(loadings => loadings.map((loading, idx) => idx === index ? false : loading));
     }, [localStory, onFullTextEdited]);
 
     const handleSave = useCallback(debounce(250, (localStory: Story) => 
         props.setStory(localStory)
     ), []);
+
+    useEffect(() => handleSave(localStory), [handleSave, localStory]);
 
     const accordionElements = useMemo(() => 
         localStory.flow.nodes.length > 0 ?
@@ -86,17 +89,21 @@ function StoryTexts(props: {
                                         </Button>
                                     </Col>
                                     <Col>
-                                        <FloatingLabel className="h-100 w-100" label="Testo completo:">
-                                            <Form.Control
-                                                as="textarea"
-                                                value={data.scene?.fullText}
-                                                className="full-text"
-                                                placeholder="Testo Completo"
-                                                style={{height:"100%", width:"100%"}}
-                                                onChange={e => onFullTextEdited(id, e.target.value)}
-                                                disabled={loadings[idx]} >
-                                            </Form.Control>
-                                        </FloatingLabel>
+                                        {loadings[idx] ?
+                                            <LoadingPlaceholders/>
+                                        :   
+                                            <FloatingLabel className="h-100 w-100" label="Testo completo:">
+                                                <Form.Control
+                                                    as="textarea"
+                                                    value={data.scene?.fullText}
+                                                    className="full-text"
+                                                    placeholder="Testo Completo"
+                                                    style={{height:"100%", width:"100%"}}
+                                                    onChange={e => onFullTextEdited(id, e.target.value)}
+                                                    disabled={loadings[idx]} >
+                                                </Form.Control>
+                                            </FloatingLabel>
+                                        }
                                     </Col>
                                 </Row>
                             </Accordion.Body>
@@ -117,7 +124,7 @@ function StoryTexts(props: {
                                 setChoice={newChoice => onChoiceEdited(id, newChoice)}
                                 onChoiceMoved={(oldIdx, newIdx) => props.onChoiceMoved(node.id, oldIdx, newIdx)}
                                 onChoiceDeleted={idx => props.onChoiceDeleted(node.id, idx)}
-                                onClickEditNode={() => props.onClickEditNode(node.id)}/>
+                                onClickEditNode={props.onClickEditNode}/>
                         </Accordion.Body>
                     </Accordion.Item>
                 }

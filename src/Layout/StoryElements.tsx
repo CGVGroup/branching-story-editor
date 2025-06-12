@@ -79,16 +79,6 @@ function StoryElements (props: {
       container = {refApp}
       onSubmit = {selectedElement === undefined ? onSubmitNewElement : onEditElement} />
   ), [key, elementModal, selectedElement, onEditElement, onSubmitNewElement]);
-    
-  const dynamicDBModal = useMemo(() => (
-    <DBBrowserModal
-      modal = {dbModal}
-      setModal = {setDbModal}
-      elements = {props.story.getElementsByType(key).map(el => el.id)}
-      elementType = {key}
-      container = {refApp}
-      onSubmit = {onSubmitNewElement}/>
-  ), [key, dbModal]);
 
   const elementList = useCallback((type: StoryElementType, readOnly: boolean, className?: string) => {
     const elements = props.story.getElementsByType(type);
@@ -137,7 +127,13 @@ function StoryElements (props: {
   return (
     <>
       {dynamicElementModal}
-      {dynamicDBModal}
+      <DBBrowserModal
+        modal = {dbModal}
+        setModal = {setDbModal}
+        elements = {props.story.getElementsByType(key).map(el => el.id)}
+        elementType = {key}
+        container = {refApp}
+        onSubmit = {onSubmitNewElement}/>
       <Tabs
         activeKey={key}
         onSelect={k => setKey(Number.parseInt(k ?? "0"))}

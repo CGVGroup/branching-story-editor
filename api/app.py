@@ -7,15 +7,15 @@ import logging
 logging.basicConfig(level=logging.DEBUG)
 
 from langchain.chat_models import init_chat_model
-from langchain.chains import LLMChain
 from langchain.prompts import ChatPromptTemplate, SystemMessagePromptTemplate, HumanMessagePromptTemplate
-from langchain.schema import SystemMessage, HumanMessage
 
 app = Flask(__name__)
 CORS(app)
 
 CONFIG_PATH = "./configs"
 DEFAULT_CONFIG_NAME = "default"
+MODEL_LIST_PATH = "./models.yaml"
+SCENE_ENUMS_PATH = "./enums.yaml"
 DB_PATH = "./db.json"
 DB = None
 
@@ -70,14 +70,6 @@ def send_to_LLM(data_param: dict, config_name: str) -> str:
     
     return response.content
 
-@app.route('/db', methods = ['GET']) 
-def get_db():
-    global DB
-    if DB == None:
-        with open(DB_PATH) as db_fp:
-            DB = json.load(db_fp)
-    return jsonify(DB)
-
 @app.route('/generate/<config>', methods = ["POST"])
 def send(config):
     try:
@@ -90,5 +82,25 @@ def send(config):
 def send_default():
     return send(DEFAULT_CONFIG_NAME)
 
+@app.route('/models', methods = ['GET']) 
+def get_models():
+    with open(MODEL_LIST_PATH) as fp:
+        models = yaml.safe_load(fp)
+    return models
+
+@app.route('/db', methods = ['GET']) 
+def get_db():
+    global DB
+    if DB == None:
+        with open(DB_PATH, encoding='utf-8') as db_fp:
+            DB = json.load(db_fp)
+    return jsonify(DB)
+
+@app.route('/enums', methods = ['GET'])
+def get_scene_enums():
+    with open(SCENE_ENUMS_PATH) as fp:
+        enums = yaml.safe_load(fp)
+    return enums
+
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    app.run(host='0.0.0.0', port=5000, debug=True)

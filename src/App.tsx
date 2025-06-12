@@ -7,41 +7,44 @@ import StoriesDashboard from "./Layout/StoriesDashboard.tsx";
 import StoryEditor from "./Layout/StoryEditor.tsx";
 import Story from "./StoryElements/Story.ts";
 import GenericModal, { ModalContents } from "./Layout/GenericModal.tsx";
-import { DbContext, getAll } from "./Misc/DB.ts";
-import { Spinner } from "react-bootstrap";
+import { DbContext, getAll, getEnums, getModels } from "./Misc/DB.ts";
+import { Col, Spinner } from "react-bootstrap";
+import { StoryElementType, StoryElementTypeDictionary } from "./StoryElements/StoryElement.ts";
 
-export const DefaultEnumsContext = createContext({
-  time: ["Alba", "Mattina", "Mezzogiorno", "Pomeriggio", "Tramonto", "Sera", "Notte"],
-  weather: ["Soleggiato", "Velato", "Coperto", "Pioggia", "Temporale", "Tempesta"],
-  tone: ["Allegria", "Tristezza", "Tensione", "Indagine"],
-  value: ["Clemenza", "Gentilezza", "Abnegazione", "Scaltrezza"],
-});
+type ReactSelectOption = {
+  label: string,
+  value: string
+}
 
-export const DbFields = createContext({
-  datazioni: [
-    {label: "XVIII Dinastia", value: "XVIII Dinastia"},
-    {label: "III Dinastia", value: "III Dinastia"},
-    {label: "XIX Dinastia", value: "XIX Dinastia"},
-    {label: "XII Dinastia", value: "XII Dinastia"},
-    {label: "Epoca Tarda", value: "Epoca Tarda"},
-    {label: "Periodo Tolemaico", value: "Periodo Tolemaico"},
-    {label: "Epoca Romana", value: "Epoca Romana"},
-    {label: "VI Dinastia", value: "VI Dinastia"}
-  ],
-  materiali: [
-    {label: "Ebano", value: "Ebano"},
-    {label: "Oro", value: "Oro"},
-    {label: "Lapislazzuli", value: "Lapislazzuli"},
-    {label: "Ebano", value: "Ebano"},
-    {label: "Calcite", value: "Calcite"}
-]})
+type DbFields = {
+  datings: ReactSelectOption[],
+  materials: ReactSelectOption[] 
+}
+
+type SceneDetailsEnums = {
+  time: string[],
+  weather: string[],
+  tone: string[],
+  value: string[]
+}
+
+export const SceneDetailsEnumsContext = createContext<SceneDetailsEnums | null>(null);
+export const DbFieldsContext = createContext<DbFields | null>(null);
+export const ModelListContext = createContext<string[] | null>(null);
+export const ChosenModelContext = createContext<[string, React.Dispatch<React.SetStateAction<string>>] | null>(null);
 
 function App() {
   const [stories, setStories] = useState(new Map<string, Story>());
   const [lastOpenStory, setLastOpenStory] = useState<string | null>(null);
   const [showModal, setShowModal] = useState<boolean>(false);
   const [modalContents, setModalContents] = useState<ModalContents>({});
+  
   const [db, setDb] = useState<Object | null>(null);
+  const [dbFields, setDbFields] = useState<DbFields | null>(null);
+  const [enums, setEnums] = useState<SceneDetailsEnums | null>(null);
+  const [models, setModels] = useState<string[] | null>(null);
+  const [chosenModel, setChosenModel] = useState("default");
+  
   const storiesRef = useRef(stories);
 
   const setStory = useCallback((id: string, newStory: Story) => {
@@ -91,17 +94,51 @@ function App() {
   useEffect(() => {
     getAll().then(dbObject => {
       setDb(dbObject);
-      console.log("Fetched database");
+      const datings = new Set<string>();
+      const materials = new Set<string>();
+      for (const category in dbObject) {
+        dbObject[category].forEach(elem => elem["dating"].forEach(dating => datings.add(dating)));
+        if (category === StoryElementTypeDictionary.eng.plural[StoryElementType.object]) {
+          dbObject[category].forEach(elem => elem["materials"].forEach(material => materials.add(material)));
+        }
+      }
+      setDbFields({
+        datings: Array.from(datings).map(dating => {return {label: dating, value: dating}}),
+        materials: Array.from(materials).map(material => {return {label: material, value: material}})
+      });
     });
+  }, []);
+
+  // Fetch model names from backend
+  useEffect(() => {
+    getModels().then(modelList => {
+      setModels(modelList);
+      console.log(modelList);
+    })
+  }, []);
+  
+  // Fetch scene details enums from backend
+  useEffect(() => {
+    getEnums().then(enums => {
+      setEnums(enums as SceneDetailsEnums);
+      console.log(enums);
+    })
   }, []);
   
   return (
     db === null ?
-      <Spinner/>
+      <Col>
+        Loading...
+        <Spinner/>
+      </Col>
     :
       <div className="App">
         <GenericModal show={showModal} setShow={setShowModal} {...modalContents}/>
         <DbContext.Provider value={{db}}>
+        <DbFieldsContext.Provider value={dbFields}>
+        <ModelListContext.Provider value={models}>
+        <ChosenModelContext.Provider value={[chosenModel, setChosenModel]}>
+        <SceneDetailsEnumsContext.Provider value={enums}>
           <Router>
             <Routes>
               <Route path="/" element={<Navigate to="/stories"/>} />
@@ -122,6 +159,10 @@ function App() {
                   setModal={setModal} />} />
             </Routes>
           </Router>
+        </SceneDetailsEnumsContext.Provider>
+        </ChosenModelContext.Provider>
+        </ModelListContext.Provider>
+        </DbFieldsContext.Provider>
         </DbContext.Provider>
       </div>
   );

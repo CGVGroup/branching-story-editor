@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useState } from "react";
-import { Button, ButtonGroup, Col, Collapse, Container, Row, Spinner, Tab, Tabs } from "react-bootstrap";
+import { useCallback, useContext, useEffect, useState } from "react";
+import { Button, ButtonGroup, Col, Collapse, Container, ProgressBar, Row, Spinner, Tab, Tabs } from "react-bootstrap";
 import { useNavigate, useParams } from "react-router";
 import { debounce } from "throttle-debounce";
 import StoryFlowChartEditor from "../Flow/StoryFlowChartEditor.tsx";
@@ -16,6 +16,7 @@ import { NodeType } from "../Flow/StoryNode.tsx";
 import { ModalContents } from "./GenericModal.tsx";
 // @ts-ignore
 import {ReactComponent as AiPen} from "../img/ai-pen.svg";
+import { ChosenModelContext } from "../App.tsx";
 
 function StoryEditor(props: {
 	stories: Map<string, Story>,
@@ -32,6 +33,8 @@ function StoryEditor(props: {
 	const [storyElementsWidth, setStoryElementsWidth] = useState(0);
 
 	const [loading, setLoading] = useState(false);
+	const [loadingPercentage, setLoadingPercentage] = useState(0);
+	const [chosenModel, _] = useContext(ChosenModelContext)!;
 
 	const navigate = useNavigate();
 
@@ -93,10 +96,13 @@ function StoryEditor(props: {
 
 	const onConfirmGenerateAll = useCallback(async () => {
 		setLoading(true);
-		//const newStory = await localStory.sendToLLM();
-		//setLocalStory(newStory);
+		setLoadingPercentage(0);
+		for await (const {done, progress, newStory} of localStory.sendStoryToLLM(chosenModel)) {
+			setLoadingPercentage(progress);
+			if (done) setLocalStory(newStory);
+		}
 		setLoading(false);
-	}, [localStory]);
+	}, [localStory, chosenModel]);
 
 	const onClickGenerateAll = useCallback(() => {
 		props.setModal({
@@ -151,14 +157,18 @@ function StoryEditor(props: {
 					</ButtonGroup>
 				</Col>
 				<Col className="pe-0">
-					<DynamicTextField
-						initialValue={localStory.title}
-						onSubmit={handleTitleChange}
-						baseProps={{
-							id: "story-title",
-							className: "story-title",
-							size: "lg"
-						}} />
+					{loading ? 
+						<ProgressBar now={loadingPercentage} striped animated/>
+					:
+						<DynamicTextField
+							initialValue={localStory.title}
+							onSubmit={handleTitleChange}
+							baseProps={{
+								id: "story-title",
+								className: "story-title",
+								size: "lg"
+							}} />
+					}
 				</Col>
 			</Row>
 			
@@ -181,7 +191,10 @@ function StoryEditor(props: {
 						variant="underline">
 						<Tab
 							eventKey="structure"
-							title={<h4 style={{margin: "0"}}><i className="bi bi-diagram-2" style={{marginInline: "0.5em"}} /></h4>}
+							title={
+								<h4 style={{margin: "0"}}>
+									<i className="bi bi-diagram-2" style={{display:"inline-block", marginInline: "0.5em", transform: "rotate(-90deg)"}} />
+								</h4>}
 							unmountOnExit>
 							<Row className="w-100 h-100 gx-0">
 								<StoryFlowChartEditor

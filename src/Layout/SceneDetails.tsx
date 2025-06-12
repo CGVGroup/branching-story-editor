@@ -4,7 +4,7 @@ import { debounce } from 'throttle-debounce';
 import Story from "../StoryElements/Story.ts";
 import { SceneDetails as SceneDetailsType} from "../StoryElements/Scene.ts";
 import { StoryElementType } from "../StoryElements/StoryElement.ts";
-import { DefaultEnumsContext } from "../App.tsx";
+import { SceneDetailsEnumsContext } from "../App.tsx";
 import DropdownField from "./DropdownField.tsx";
 import { ChipList } from "./ElementChip.tsx";
 import BackgroundElementsModal from "./BackgroundElementsModal.tsx";
@@ -27,7 +27,7 @@ function SceneDetails(props: {
 
 	const [backgroundsModal, setBackgroundsModal] = useState(false);
 
-	const sceneDetailsChoices = useContext(DefaultEnumsContext);
+	const sceneDetailsChoices = useContext(SceneDetailsEnumsContext)!;
 
 	const textWidth = "20%";
 
