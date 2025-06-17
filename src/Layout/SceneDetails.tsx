@@ -1,6 +1,7 @@
 import { useCallback, useContext, useEffect, useState } from "react";
 import { Button, Card, Col, Form, InputGroup } from "react-bootstrap";
 import { debounce } from 'throttle-debounce';
+import Select from "react-select";
 import Story from "../StoryElements/Story.ts";
 import { SceneDetails as SceneDetailsType} from "../StoryElements/Scene.ts";
 import { StoryElementType } from "../StoryElements/StoryElement.ts";
@@ -19,7 +20,7 @@ function SceneDetails(props: {
 	const [summary, setSummary] = useState(props.details.summary);
 	const [time, setTime] = useState(props.details.time);
 	const [weather, setWeather] = useState(props.details.weather);
-	const [tone, setTone] = useState(props.details.tone);
+	const [tones, setTones] = useState(props.details.tones);
 	const [value, setValue] = useState(props.details.value);
 	const [backgroundCharacters, setBackgroundCharacters] = useState(new Set(props.details.backgroundIds[StoryElementType.character]));
 	const [backgroundObjects, setBackgroundObjects] = useState(new Set(props.details.backgroundIds[StoryElementType.object]));
@@ -36,7 +37,7 @@ function SceneDetails(props: {
 		summary: string,
 		time: string,
 		weather: string,
-		tone: string,
+		tones: string[],
 		value: string,
 		backgroundCharacters: Set<string>,
 		backgroundObjects: Set<string>,
@@ -47,14 +48,14 @@ function SceneDetails(props: {
 			summary: summary,
 			time: time,
 			weather: weather,
-			tone: tone,
+			tones: tones,
 			value: value,
 			backgroundIds: [Array.from(backgroundCharacters), Array.from(backgroundObjects), Array.from(backgroundLocations)]
 		});
 	}), []);
 
-	useEffect(() => handleSave(title, summary, time, weather, tone, value, backgroundCharacters, backgroundObjects, backgroundLocations)
-	, [handleSave, title, summary, time, weather, tone, value, backgroundCharacters, backgroundObjects, backgroundLocations]);
+	useEffect(() => handleSave(title, summary, time, weather, tones, value, backgroundCharacters, backgroundObjects, backgroundLocations)
+	, [handleSave, title, summary, time, weather, tones, value, backgroundCharacters, backgroundObjects, backgroundLocations]);
 
 	return (
 		<Card>
@@ -103,13 +104,17 @@ function SceneDetails(props: {
 						defaultValue="Nessun Meteo"
 						labelWidth={textWidth}
 						choices={sceneDetailsChoices.weather} />
-					<DropdownField
-						label="Tono:"
-						value={tone}
-						setValue={setTone}
-						defaultValue="Nessun Tono"
-						labelWidth={textWidth}
-						choices={sceneDetailsChoices.tone} />
+					<InputGroup style={{textAlign: "left"}}>
+						<InputGroup.Text style={{width: textWidth}}>{"Toni:"}</InputGroup.Text>
+						<Select
+							placeholder={"Nessun Tono"}
+							value={tones.map(tone => {return {label: tone, value: tone}})}
+							options={sceneDetailsChoices.tone.map(tone => {return {label: tone, value: tone}})}
+							onChange={tones => {setTones(tones.map(tone => tone.value))}}
+							closeMenuOnSelect={false}
+							isMulti
+							styles={{container: (styles) => {return {...styles, width: `calc(100% - ${textWidth})`}}}} />
+					</InputGroup>
 					<DropdownField
 						label="Valore:"
 						value={value}

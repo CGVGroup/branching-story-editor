@@ -16,6 +16,7 @@ CONFIG_PATH = "./configs"
 DEFAULT_CONFIG_NAME = "default"
 MODEL_LIST_PATH = "./models.yaml"
 SCENE_ENUMS_PATH = "./enums.yaml"
+TAXONOMIES_PATH = "./taxonomies.json"
 DB_PATH = "./db.json"
 DB = None
 
@@ -101,6 +102,12 @@ def get_scene_enums():
     with open(SCENE_ENUMS_PATH) as fp:
         enums = yaml.safe_load(fp)
     return enums
+
+@app.route('/taxonomies', methods = ['GET'])
+def get_db_taxonomies():
+    with (open(TAXONOMIES_PATH) as fp):
+        taxonomies = json.load(fp)
+    return taxonomies
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)

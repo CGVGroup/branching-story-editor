@@ -3,7 +3,7 @@ type SceneDetails = {
     summary: string;
     time: string;
     weather: string;
-    tone: string;
+    tones: string[];
     value: string;
     backgroundIds: [string[], string[], string[]];
 }
@@ -23,7 +23,7 @@ class Scene {
             summary: details?.summary ?? "",
             time: details?.time ?? "",
             weather: details?.weather ?? "",
-            tone: details?.tone ?? "",
+            tones: details?.tones ?? [],
             value: details?.value ?? "",
             backgroundIds: details?.backgroundIds ?? [[], [], []],
         };

@@ -1,0 +1,1485 @@
+{
+    "characters": [
+        {
+            "name": "Combattente",
+            "children": [
+                {
+                    "name": "Guardia",
+                    "children": []
+                },
+                {
+                    "name": "Soldato",
+                    "children": []
+                }
+            ]
+        },
+        {
+            "name": "Funzionario",
+            "children": [
+                {
+                    "name": "Alto Funzionario",
+                    "children": [
+                        {
+                            "name": "Capo della Giustizia",
+                            "children": []
+                        },
+                        {
+                            "name": "Capo delle Casa Reale",
+                            "children": []
+                        },
+                        {
+                            "name": "Capo delle Forze Armate",
+                            "children": []
+                        },
+                        {
+                            "name": "Consigliere",
+                            "children": []
+                        },
+                        {
+                            "name": "Gran Tesoriere",
+                            "children": []
+                        },
+                        {
+                            "name": "Ministro",
+                            "children": []
+                        },
+                        {
+                            "name": "Visir",
+                            "children": []
+                        }
+                    ]
+                },
+                {
+                    "name": "Basso Funzionario",
+                    "children": [
+                        {
+                            "name": "Generale Militare",
+                            "children": []
+                        },
+                        {
+                            "name": "Nomarca",
+                            "children": []
+                        },
+                        {
+                            "name": "Scriba",
+                            "children": []
+                        },
+                        {
+                            "name": "Sopraintendente dei Templi",
+                            "children": []
+                        },
+                        {
+                            "name": "Sopraintendente del Lavoro",
+                            "children": []
+                        },
+                        {
+                            "name": "Sopraintendente delle Terre",
+                            "children": []
+                        },
+                        {
+                            "name": "Ufficiale Militare",
+                            "children": []
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "Membro Famiglia Reale",
+            "children": [
+                {
+                    "name": "Faraone",
+                    "children": []
+                },
+                {
+                    "name": "Onorevole",
+                    "children": []
+                },
+                {
+                    "name": "Principe",
+                    "children": []
+                },
+                {
+                    "name": "Regina",
+                    "children": []
+                }
+            ]
+        },
+        {
+            "name": "Ministro della Fede",
+            "children": [
+                {
+                    "name": "Oracolo",
+                    "children": []
+                },
+                {
+                    "name": "Sacerdote",
+                    "children": [
+                        {
+                            "name": "Sommo Sacerdote",
+                            "children": []
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "Nobile",
+            "children": []
+        },
+        {
+            "name": "Popolano",
+            "children": [
+                {
+                    "name": "Contadino",
+                    "children": []
+                },
+                {
+                    "name": "Medico",
+                    "children": []
+                },
+                {
+                    "name": "Mercante",
+                    "children": []
+                },
+                {
+                    "name": "Operaio",
+                    "children": [
+                        {
+                            "name": "Capo degli Operai",
+                            "children": []
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "Servo",
+            "children": [
+                {
+                    "name": "Concubina",
+                    "children": []
+                },
+                {
+                    "name": "Schiavo",
+                    "children": []
+                }
+            ]
+        }
+    ],
+    "objects": [
+        {
+            "name": "Alimento",
+            "children": [
+                {
+                    "name": "Pane",
+                    "children": []
+                }
+            ]
+        },
+        {
+            "name": "Arma",
+            "children": [
+                {
+                    "name": "Arma da Taglio",
+                    "children": []
+                },
+                {
+                    "name": "Arco",
+                    "children": []
+                },
+                {
+                    "name": "Freccia",
+                    "children": []
+                }
+            ]
+        },
+        {
+            "name": "Attrezzo",
+            "children": [
+                {
+                    "name": "Attrezzo da Carpenteria",
+                    "children": [
+                        {
+                            "name": "Cubito",
+                            "children": []
+                        },
+                        {
+                            "name": "Mazzuolo",
+                            "children": []
+                        },
+                        {
+                            "name": "Pennello",
+                            "children": []
+                        },
+                        {
+                            "name": "Picchetto",
+                            "children": []
+                        },
+                        {
+                            "name": "Punteruolo",
+                            "children": []
+                        },
+                        {
+                            "name": "Scalpello",
+                            "children": []
+                        },
+                        {
+                            "name": "Spatola",
+                            "children": []
+                        }
+                    ]
+                },
+                {
+                    "name": "Attrezzo da Lavoro",
+                    "children": [
+                        {
+                            "name": "Ascia",
+                            "children": []
+                        },
+                        {
+                            "name": "Corda",
+                            "children": []
+                        },
+                        {
+                            "name": "Falcetto",
+                            "children": []
+                        },
+                        {
+                            "name": "Zappa",
+                            "children": []
+                        }
+                    ]
+                },
+                {
+                    "name": "Attrezzo da Metallurgia",
+                    "children": [
+                        {
+                            "name": "Crogiolo",
+                            "children": []
+                        },
+                        {
+                            "name": "Matrice",
+                            "children": []
+                        },
+                        {
+                            "name": "Stampo",
+                            "children": [
+                                {
+                                    "name": "Forma per Pane",
+                                    "children": []
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "Attrezzo da Pesca",
+                    "children": [
+                        {
+                            "name": "Amo",
+                            "children": []
+                        },
+                        {
+                            "name": "Nassa",
+                            "children": []
+                        },
+                        {
+                            "name": "Remo",
+                            "children": []
+                        },
+                        {
+                            "name": "Rete",
+                            "children": []
+                        }
+                    ]
+                },
+                {
+                    "name": "Attrezzo da Tessitura",
+                    "children": [
+                        {
+                            "name": "Ago",
+                            "children": []
+                        },
+                        {
+                            "name": "Fuseruola",
+                            "children": []
+                        },
+                        {
+                            "name": "Fuso",
+                            "children": []
+                        },
+                        {
+                            "name": "Peso da Telaio",
+                            "children": []
+                        },
+                        {
+                            "name": "Rocchetto",
+                            "children": []
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "Contenitore",
+            "children": [
+                {
+                    "name": "Cassetta",
+                    "children": []
+                },
+                {
+                    "name": "Cofanetto",
+                    "children": []
+                },
+                {
+                    "name": "Contenitore Intrecciato",
+                    "children": [
+                        {
+                            "name": "Cesta",
+                            "children": []
+                        },
+                        {
+                            "name": "Paniere",
+                            "children": []
+                        },
+                        {
+                            "name": "Sacco",
+                            "children": []
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "Gioco",
+            "children": [
+                {
+                    "name": "Pedina",
+                    "children": []
+                },
+                {
+                    "name": "Scacchiera",
+                    "children": []
+                },
+                {
+                    "name": "Trottola",
+                    "children": []
+                }
+            ]
+        },
+        {
+            "name": "Indumento",
+            "children": [
+                {
+                    "name": "Abito",
+                    "children": []
+                },
+                {
+                    "name": "Calzatura",
+                    "children": []
+                },
+                {
+                    "name": "Copricapo",
+                    "children": []
+                }
+            ]
+        },
+        {
+            "name": "Manufatto Funerario",
+            "children": [
+                {
+                    "name": "Cassetta",
+                    "children": []
+                },
+                {
+                    "name": "Cesta Funeraria",
+                    "children": []
+                },
+                {
+                    "name": "Cono Funerario",
+                    "children": []
+                },
+                {
+                    "name": "Copertura di Mummia",
+                    "children": []
+                },
+                {
+                    "name": "Mummia",
+                    "children": [
+                        {
+                            "name": "Mummia Umana",
+                            "children": []
+                        },
+                        {
+                            "name": "Mummia Animale",
+                            "children": []
+                        }
+                    ]
+                },
+                {
+                    "name": "Sarcofago",
+                    "children": []
+                },
+                {
+                    "name": "Ushabti",
+                    "children": []
+                },
+                {
+                    "name": "Vaso Funerario",
+                    "children": [
+                        {
+                            "name": "Vaso Canopo",
+                            "children": []
+                        },
+                        {
+                            "name": "Vaso Sarcofago",
+                            "children": []
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "Manufatto Rituale",
+            "children": [
+                {
+                    "name": "Amuleto",
+                    "children": []
+                },
+                {
+                    "name": "Contenitore per Offerte",
+                    "children": []
+                },
+                {
+                    "name": "Contenitore per Ushabti",
+                    "children": []
+                },
+                {
+                    "name": "Incensiere",
+                    "children": []
+                },
+                {
+                    "name": "Kernos",
+                    "children": []
+                },
+                {
+                    "name": "Sedile Votivo",
+                    "children": []
+                },
+                {
+                    "name": "Situla",
+                    "children": []
+                }
+            ]
+        },
+        {
+            "name": "Manufatto Tessile",
+            "children": [
+                {
+                    "name": "Benda",
+                    "children": []
+                },
+                {
+                    "name": "Biancheria da Letto",
+                    "children": []
+                },
+                {
+                    "name": "Coprisedile",
+                    "children": []
+                },
+                {
+                    "name": "Filato",
+                    "children": []
+                },
+                {
+                    "name": "Impagliatura",
+                    "children": []
+                },
+                {
+                    "name": "Tappeto/Stuoia",
+                    "children": []
+                },
+                {
+                    "name": "Telo",
+                    "children": []
+                }
+            ]
+        },
+        {
+            "name": "Mobile",
+            "children": [
+                {
+                    "name": "Appoggio",
+                    "children": []
+                },
+                {
+                    "name": "Contenitore",
+                    "children": []
+                },
+                {
+                    "name": "Letto",
+                    "children": []
+                },
+                {
+                    "name": "Seduta",
+                    "children": []
+                },
+                {
+                    "name": "Tavolo",
+                    "children": []
+                },
+                {
+                    "name": "Reggivaso",
+                    "children": []
+                }
+            ]
+        },
+        {
+            "name": "Ornamento",
+            "children": [
+                {
+                    "name": "Anello",
+                    "children": []
+                },
+                {
+                    "name": "Bracciale",
+                    "children": []
+                },
+                {
+                    "name": "Collana",
+                    "children": []
+                },
+                {
+                    "name": "Orecchino",
+                    "children": []
+                },
+                {
+                    "name": "Parrucca",
+                    "children": []
+                },
+                {
+                    "name": "Pendente",
+                    "children": []
+                },
+                {
+                    "name": "Spillone",
+                    "children": []
+                }
+            ]
+        },
+        {
+            "name": "Recipiente",
+            "children": [
+                {
+                    "name": "Balsamario",
+                    "children": []
+                },
+                {
+                    "name": "Bicchiere",
+                    "children": []
+                },
+                {
+                    "name": "Bottiglia",
+                    "children": []
+                },
+                {
+                    "name": "Brocca",
+                    "children": []
+                },
+                {
+                    "name": "Ciotola",
+                    "children": []
+                },
+                {
+                    "name": "Coppa",
+                    "children": []
+                },
+                {
+                    "name": "Fiasca",
+                    "children": []
+                },
+                {
+                    "name": "Piatto",
+                    "children": []
+                },
+                {
+                    "name": "Unguentario",
+                    "children": []
+                },
+                {
+                    "name": "Vaso",
+                    "children": [
+                        {
+                            "name": "Anfora",
+                            "children": []
+                        },
+                        {
+                            "name": "Bacile",
+                            "children": []
+                        },
+                        {
+                            "name": "Giara",
+                            "children": []
+                        },
+                        {
+                            "name": "Vasetto",
+                            "children": []
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "Statua",
+            "children": [
+                {
+                    "name": "Statua Divinità",
+                    "children": []
+                },
+                {
+                    "name": "Statua Femminile",
+                    "children": []
+                },
+                {
+                    "name": "Statua Maschile",
+                    "children": []
+                },
+                {
+                    "name": "Statua Zoomorfa",
+                    "children": []
+                },
+                {
+                    "name": "Statuetta",
+                    "children": []
+                }
+            ]
+        },
+        {
+            "name": "Stele",
+            "children": []
+        },
+        {
+            "name": "Strumento",
+            "children": [
+                {
+                    "name": "Strumento per Cura Personale",
+                    "children": [
+                        {
+                            "name": "Applicatore Kohl",
+                            "children": []
+                        },
+                        {
+                            "name": "Pettine",
+                            "children": []
+                        },
+                        {
+                            "name": "Rasoio",
+                            "children": []
+                        },
+                        {
+                            "name": "Specchio",
+                            "children": []
+                        },
+                        {
+                            "name": "Tavolozza da Cosmesi",
+                            "children": []
+                        },
+                        {
+                            "name": "Tubetto Kohl",
+                            "children": []
+                        }
+                    ]
+                },
+                {
+                    "name": "Strumento Musicale",
+                    "children": []
+                },
+                {
+                    "name": "Strumento Scrittorio",
+                    "children": [
+                        {
+                            "name": "Etichetta",
+                            "children": []
+                        },
+                        {
+                            "name": "Ostracon/Ostrakon",
+                            "children": []
+                        },
+                        {
+                            "name": "Paletta da Scriba",
+                            "children": []
+                        },
+                        {
+                            "name": "Papiro",
+                            "children": []
+                        },
+                        {
+                            "name": "Pestello per Papiro",
+                            "children": []
+                        },
+                        {
+                            "name": "Tavoletta",
+                            "children": []
+                        }
+                    ]
+                }
+            ]
+        }
+    ],
+    "locations": [
+        {
+            "name": "Location Esterna",
+            "children": [
+                {
+                    "name": "Cappella",
+                    "children": []
+                },
+                {
+                    "name": "Casa",
+                    "children": []
+                },
+                {
+                    "name": "Magazzino",
+                    "children": []
+                },
+                {
+                    "name": "Porto",
+                    "children": []
+                },
+                {
+                    "name": "Santuario",
+                    "children": []
+                },
+                {
+                    "name": "Tempio",
+                    "children": []
+                },
+                {
+                    "name": "Tomba",
+                    "children": [
+                        {
+                            "name": "Mastaba",
+                            "children": []
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "Location Interna",
+            "children": [
+                {
+                    "name": "Ambiente Casa",
+                    "children": []
+                },
+                {
+                    "name": "Ambiente Tempio",
+                    "children": []
+                },
+                {
+                    "name": "Interno Cappella",
+                    "children": []
+                },
+                {
+                    "name": "Interno Magazzino",
+                    "children": []
+                },
+                {
+                    "name": "Interno Santuario",
+                    "children": []
+                },
+                {
+                    "name": "Interno Tomba",
+                    "children": [
+                        {
+                            "name": "Interno Mastaba",
+                            "children": [
+                                {
+                                    "name": "Pozzo",
+                                    "children": []
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "Ambiente Casa",
+                    "children": []
+                },
+                {
+                    "name": "Ambiente Tempio",
+                    "children": []
+                }
+            ]
+        }
+    ],
+    "materials": [
+        {
+            "name": "Argilla",
+            "children": [
+                {
+                    "name": "Argilla Calcarea",
+                    "children": []
+                },
+                {
+                    "name": "Argilla Caolinitica",
+                    "children": []
+                },
+                {
+                    "name": "Argilla Nilotica",
+                    "children": []
+                },
+                {
+                    "name": "Terracotta",
+                    "children": []
+                },
+                {
+                    "name": "Terracotta Caolinitica Da Assuan",
+                    "children": []
+                }
+            ]
+        },
+        {
+            "name": "Carta",
+            "children": []
+        },
+        {
+            "name": "Cartonnage",
+            "children": []
+        },
+        {
+            "name": "Ceramica",
+            "children": [
+                {
+                    "name": "Faience",
+                    "children": []
+                }
+            ]
+        },
+        {
+            "name": "Fibra",
+            "children": [
+                {
+                    "name": "Fibra Animale",
+                    "children": [
+                        {
+                            "name": "Lana",
+                            "children": []
+                        }
+                    ]
+                },
+                {
+                    "name": "Fibra Vegetale",
+                    "children": [
+                        {
+                            "name": "Lino",
+                            "children": []
+                        },
+                        {
+                            "name": "Papiro",
+                            "children": []
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "Intonaco Paglia e Fango",
+            "children": []
+        },
+        {
+            "name": "Legno",
+            "children": [
+                {
+                    "name": "Canna",
+                    "children": []
+                },
+                {
+                    "name": "Ebano",
+                    "children": []
+                }
+            ]
+        },
+        {
+            "name": "Metallo",
+            "children": [
+                {
+                    "name": "Argento",
+                    "children": []
+                },
+                {
+                    "name": "Bronzo",
+                    "children": []
+                },
+                {
+                    "name": "Ferro",
+                    "children": []
+                },
+                {
+                    "name": "Lega Metallica",
+                    "children": []
+                },
+                {
+                    "name": "Oro",
+                    "children": []
+                },
+                {
+                    "name": "Ottone",
+                    "children": []
+                },
+                {
+                    "name": "Rame",
+                    "children": []
+                }
+            ]
+        },
+        {
+            "name": "Minerale",
+            "children": [
+                {
+                    "name": "Ametista",
+                    "children": []
+                },
+                {
+                    "name": "Avventurina",
+                    "children": []
+                },
+                {
+                    "name": "Blu Egizio",
+                    "children": []
+                },
+                {
+                    "name": "Calcedonio",
+                    "children": []
+                },
+                {
+                    "name": "Calcite",
+                    "children": []
+                },
+                {
+                    "name": "Calcite Alabastrina",
+                    "children": []
+                },
+                {
+                    "name": "Clorite",
+                    "children": []
+                },
+                {
+                    "name": "Corniola",
+                    "children": []
+                },
+                {
+                    "name": "Cristallo di Rocca",
+                    "children": []
+                },
+                {
+                    "name": "Ematite",
+                    "children": []
+                },
+                {
+                    "name": "Fayalite",
+                    "children": []
+                },
+                {
+                    "name": "Gesso",
+                    "children": []
+                },
+                {
+                    "name": "Magnetite",
+                    "children": []
+                },
+                {
+                    "name": "Ocra",
+                    "children": []
+                },
+                {
+                    "name": "Quarzo",
+                    "children": []
+                },
+                {
+                    "name": "Sale",
+                    "children": []
+                },
+                {
+                    "name": "Verde Egizio",
+                    "children": []
+                }
+            ]
+        },
+        {
+            "name": "Organico",
+            "children": [
+                {
+                    "name": "Organico Animale",
+                    "children": [
+                        {
+                            "name": "Avorio",
+                            "children": []
+                        },
+                        {
+                            "name": "Cera",
+                            "children": []
+                        },
+                        {
+                            "name": "Conchiglia",
+                            "children": []
+                        },
+                        {
+                            "name": "Cuoio",
+                            "children": []
+                        },
+                        {
+                            "name": "Madreperla",
+                            "children": []
+                        },
+                        {
+                            "name": "Pelle",
+                            "children": []
+                        }
+                    ]
+                },
+                {
+                    "name": "Organico Vegetale",
+                    "children": [
+                        {
+                            "name": "Paglia",
+                            "children": []
+                        },
+                        {
+                            "name": "Resina",
+                            "children": []
+                        },
+                        {
+                            "name": "Resina Di Pistacia",
+                            "children": []
+                        },
+                        {
+                            "name": "Terra",
+                            "children": []
+                        }
+                    ]
+                },
+                {
+                    "name": "Organico Umano",
+                    "children": [
+                        {
+                            "name": "Capelli",
+                            "children": []
+                        },
+                        {
+                            "name": "Resti Umani",
+                            "children": []
+                        }
+                    ]
+                },
+                {
+                    "name": "Organico Vario",
+                    "children": [
+                        {
+                            "name": "Fossile",
+                            "children": []
+                        },
+                        {
+                            "name": "Osso",
+                            "children": []
+                        },
+                        {
+                            "name": "Resti Organici",
+                            "children": []
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "Pietra",
+            "children": [
+                {
+                    "name": "Alabastro",
+                    "children": []
+                },
+                {
+                    "name": "Andesite",
+                    "children": []
+                },
+                {
+                    "name": "Andesite Porfirica",
+                    "children": []
+                },
+                {
+                    "name": "Anortosite",
+                    "children": []
+                },
+                {
+                    "name": "Arenaria",
+                    "children": []
+                },
+                {
+                    "name": "Basalto",
+                    "children": []
+                },
+                {
+                    "name": "Calcare",
+                    "children": []
+                },
+                {
+                    "name": "Diaspro",
+                    "children": []
+                },
+                {
+                    "name": "Diaspro Rosso",
+                    "children": []
+                },
+                {
+                    "name": "Diaspro Verde",
+                    "children": []
+                },
+                {
+                    "name": "Diorite",
+                    "children": []
+                },
+                {
+                    "name": "Gabbro",
+                    "children": []
+                },
+                {
+                    "name": "Gneiss",
+                    "children": []
+                },
+                {
+                    "name": "Gneiss Anortositico",
+                    "children": []
+                },
+                {
+                    "name": "Granito",
+                    "children": []
+                },
+                {
+                    "name": "Granito Rosa",
+                    "children": []
+                },
+                {
+                    "name": "Granodiorite",
+                    "children": []
+                },
+                {
+                    "name": "Grovacca",
+                    "children": []
+                },
+                {
+                    "name": "Lapislazzuli",
+                    "children": []
+                },
+                {
+                    "name": "Marmo",
+                    "children": []
+                },
+                {
+                    "name": "Pietra Dura",
+                    "children": []
+                },
+                {
+                    "name": "Pietra Lavica",
+                    "children": []
+                },
+                {
+                    "name": "Porfido",
+                    "children": []
+                },
+                {
+                    "name": "Porfido Rosso",
+                    "children": []
+                },
+                {
+                    "name": "Quarzite",
+                    "children": []
+                },
+                {
+                    "name": "Quarzodiorite",
+                    "children": []
+                },
+                {
+                    "name": "Selce",
+                    "children": []
+                },
+                {
+                    "name": "Serpentinite",
+                    "children": []
+                },
+                {
+                    "name": "Serpentino",
+                    "children": []
+                },
+                {
+                    "name": "Steatite",
+                    "children": []
+                }
+            ]
+        },
+        {
+            "name": "Stoffa",
+            "children": []
+        },
+        {
+            "name": "Stucco",
+            "children": []
+        },
+        {
+            "name": "Tela",
+            "children": []
+        },
+        {
+            "name": "Vetro",
+            "children": [
+                {
+                    "name": "Ossidiana",
+                    "children": []
+                },
+                {
+                    "name": "Pasta Vitrea",
+                    "children": []
+                },
+                {
+                    "name": "Vetro",
+                    "children": []
+                },
+                {
+                    "name": "Vetro Colorato",
+                    "children": []
+                }
+            ]
+        }
+    ],
+    "areas": [
+        {
+            "name": "Alto Egitto",
+            "children": []
+        },
+        {
+            "name": "Basso Egitto",
+            "children": [
+                {
+                    "name": "Assuan",
+                    "children": [
+                        {
+                            "name": "Elefantina",
+                            "children": []
+                        },
+                        {
+                            "name": "Qubbet el-Hawa",
+                            "children": []
+                        }
+                    ]
+                },
+                {
+                    "name": "Gebelein",
+                    "children": [
+                        {
+                            "name": "Collina Settentrionale",
+                            "children": [
+                                {
+                                    "name": "Necropoli Nord",
+                                    "children": []
+                                }
+                            ]
+                        },
+                        {
+                            "name": "Collina Meridionale",
+                            "children": [
+                                {
+                                    "name": "Area Fortezza e Tempio",
+                                    "children": []
+                                },
+                                {
+                                    "name": "Necropoli Sud",
+                                    "children": []
+                                }
+                            ]
+                        },
+                        {
+                            "name": "Necropoli dell'Ovest",
+                            "children": []
+                        }
+                    ]
+                },
+                {
+                    "name": "Luxor / Tebe",
+                    "children": [
+                        {
+                            "name": "Valle dei Re",
+                            "children": []
+                        },
+                        {
+                            "name": "Valle delle Regine",
+                            "children": []
+                        },
+                        {
+                            "name": "Deir El-Medina",
+                            "children": [
+                                {
+                                    "name": "Zona Necropoli",
+                                    "children": []
+                                },
+                                {
+                                    "name": "Zona Templi",
+                                    "children": []
+                                },
+                                {
+                                    "name": "Centro Abitato",
+                                    "children": []
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+    ],
+    "periods": [
+        {
+            "name": "Antico Egitto",
+            "children": [
+                {
+                    "name": "Epoca Predinastica",
+                    "children": [
+                        {
+                            "name": "Naqada I",
+                            "children": []
+                        },
+                        {
+                            "name": "Naqada IA-IIB",
+                            "children": []
+                        },
+                        {
+                            "name": "Naqada IC-IIC",
+                            "children": []
+                        },
+                        {
+                            "name": "Naqada IC-IID",
+                            "children": []
+                        },
+                        {
+                            "name": "Naqada II",
+                            "children": []
+                        },
+                        {
+                            "name": "Naqada IIA",
+                            "children": []
+                        },
+                        {
+                            "name": "Naqada IIA-D",
+                            "children": []
+                        },
+                        {
+                            "name": "Naqada IIA-IIB",
+                            "children": []
+                        },
+                        {
+                            "name": "Naqada IIB-IIC",
+                            "children": []
+                        },
+                        {
+                            "name": "Naqada IIC",
+                            "children": []
+                        },
+                        {
+                            "name": "Naqada IIC-IID",
+                            "children": []
+                        },
+                        {
+                            "name": "Naqada IIC-IIIA",
+                            "children": []
+                        },
+                        {
+                            "name": "Naqada IID2",
+                            "children": []
+                        },
+                        {
+                            "name": "Naqada I-II",
+                            "children": []
+                        },
+                        {
+                            "name": "Naqada I-IIA",
+                            "children": []
+                        },
+                        {
+                            "name": "Naqada I-IIB",
+                            "children": []
+                        }
+                    ]
+                },
+                {
+                    "name": "Epoca Protodinastica",
+                    "children": [
+                        {
+                            "name": "Naqada IIIA1",
+                            "children": []
+                        },
+                        {
+                            "name": "Naqada IIIA2",
+                            "children": []
+                        },
+                        {
+                            "name": "Naqada IIIB",
+                            "children": []
+                        }
+                    ]
+                },
+                {
+                    "name": "Antico Regno",
+                    "children": []
+                },
+                {
+                    "name": "Primo periodo intermedio",
+                    "children": []
+                },
+                {
+                    "name": "Medio Regno",
+                    "children": []
+                },
+                {
+                    "name": "Secondo periodo intermedio",
+                    "children": []
+                },
+                {
+                    "name": "Nuovo Regno",
+                    "children": []
+                },
+                {
+                    "name": "Terzo periodo intermedio",
+                    "children": []
+                },
+                {
+                    "name": "Epoca Tarda",
+                    "children": []
+                }
+            ]
+        },
+        {
+            "name": "Periodo Greco-Romano",
+            "children": [
+                {
+                    "name": "Periodo Tolemaico",
+                    "children": []
+                },
+                {
+                    "name": "Epoca Ellenistica",
+                    "children": []
+                },
+                {
+                    "name": "Epoca Romana",
+                    "children": []
+                },
+                {
+                    "name": "Epoca Bizantina",
+                    "children": []
+                }
+            ]
+        },
+        {
+            "name": "Epoca Moderna",
+            "children": []
+        }
+    ]
+}

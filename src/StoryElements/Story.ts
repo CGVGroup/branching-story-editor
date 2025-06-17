@@ -150,12 +150,12 @@ class Story {
 
     serialize(): SerializedStory {
         return {
-            elements: this.elements.filter(element => !element.resident).map(element => element.id),
-            residentElements: this.elements.filter(element => element.resident),
-            flow: this.flow,
             title: this.title,
             summary: this.summary,
-            notes: this.notes
+            notes: this.notes,
+            elements: this.elements.filter(element => !element.resident).map(element => element.id),
+            residentElements: this.elements.filter(element => element.resident),
+            flow: this.flow
         }
     }
 
@@ -187,7 +187,7 @@ class Story {
         payload = {...payload,
             prompt: scene.prompt,
             time: scene.details.time,
-            tone: scene.details.tone,
+            tones: scene.details.tones,
             weather: scene.details.weather,
             location: this.getElement(scene.details.backgroundIds[StoryElementType.location][0])?.name ?? "",
             characters: this.getElementsByType(StoryElementType.character).map(char => {

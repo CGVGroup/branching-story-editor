@@ -7,7 +7,7 @@ import StoriesDashboard from "./Layout/StoriesDashboard.tsx";
 import StoryEditor from "./Layout/StoryEditor.tsx";
 import Story from "./StoryElements/Story.ts";
 import GenericModal, { ModalContents } from "./Layout/GenericModal.tsx";
-import { DbContext, getAll, getEnums, getModels } from "./Misc/DB.ts";
+import { DbContext, getAll, getEnums, getModels, getTaxonomies, SceneDetailsEnums, Taxonomies } from "./Misc/DB.ts";
 import { Col, Spinner } from "react-bootstrap";
 import { StoryElementType, StoryElementTypeDictionary } from "./StoryElements/StoryElement.ts";
 
@@ -16,20 +16,8 @@ type ReactSelectOption = {
   value: string
 }
 
-type DbFields = {
-  datings: ReactSelectOption[],
-  materials: ReactSelectOption[] 
-}
-
-type SceneDetailsEnums = {
-  time: string[],
-  weather: string[],
-  tone: string[],
-  value: string[]
-}
-
 export const SceneDetailsEnumsContext = createContext<SceneDetailsEnums | null>(null);
-export const DbFieldsContext = createContext<DbFields | null>(null);
+export const TaxonomiesContext = createContext<Taxonomies | null>(null);
 export const ModelListContext = createContext<string[] | null>(null);
 export const ChosenModelContext = createContext<[string, React.Dispatch<React.SetStateAction<string>>] | null>(null);
 
@@ -38,9 +26,8 @@ function App() {
   const [lastOpenStory, setLastOpenStory] = useState<string | null>(null);
   const [showModal, setShowModal] = useState<boolean>(false);
   const [modalContents, setModalContents] = useState<ModalContents>({});
-  
   const [db, setDb] = useState<Object | null>(null);
-  const [dbFields, setDbFields] = useState<DbFields | null>(null);
+  const [taxonomies, setTaxonomies] = useState<Taxonomies | null>(null);
   const [enums, setEnums] = useState<SceneDetailsEnums | null>(null);
   const [models, setModels] = useState<string[] | null>(null);
   const [chosenModel, setChosenModel] = useState("default");
@@ -92,21 +79,7 @@ function App() {
 
   // Fetch elements from DB
   useEffect(() => {
-    getAll().then(dbObject => {
-      setDb(dbObject);
-      const datings = new Set<string>();
-      const materials = new Set<string>();
-      for (const category in dbObject) {
-        dbObject[category].forEach(elem => elem["dating"].forEach(dating => datings.add(dating)));
-        if (category === StoryElementTypeDictionary.eng.plural[StoryElementType.object]) {
-          dbObject[category].forEach(elem => elem["materials"].forEach(material => materials.add(material)));
-        }
-      }
-      setDbFields({
-        datings: Array.from(datings).map(dating => {return {label: dating, value: dating}}),
-        materials: Array.from(materials).map(material => {return {label: material, value: material}})
-      });
-    });
+    getAll().then(dbObject => setDb(dbObject));
   }, []);
 
   // Fetch model names from backend
@@ -124,6 +97,14 @@ function App() {
       console.log(enums);
     })
   }, []);
+
+  // Fetch taxonomies from backend
+  useEffect(() => {
+    getTaxonomies().then(taxonomies => {
+      setTaxonomies(taxonomies as Taxonomies);
+      console.log(taxonomies);
+    })
+  }, []);
   
   return (
     db === null ?
@@ -135,7 +116,7 @@ function App() {
       <div className="App">
         <GenericModal show={showModal} setShow={setShowModal} {...modalContents}/>
         <DbContext.Provider value={{db}}>
-        <DbFieldsContext.Provider value={dbFields}>
+        <TaxonomiesContext.Provider value={taxonomies}>
         <ModelListContext.Provider value={models}>
         <ChosenModelContext.Provider value={[chosenModel, setChosenModel]}>
         <SceneDetailsEnumsContext.Provider value={enums}>
@@ -162,7 +143,7 @@ function App() {
         </SceneDetailsEnumsContext.Provider>
         </ChosenModelContext.Provider>
         </ModelListContext.Provider>
-        </DbFieldsContext.Provider>
+        </TaxonomiesContext.Provider>
         </DbContext.Provider>
       </div>
   );

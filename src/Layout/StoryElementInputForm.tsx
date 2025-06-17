@@ -1,15 +1,30 @@
+import { useContext, useMemo } from "react";
 import { FloatingLabel, Form } from "react-bootstrap";
-import { StoryElementType, StoryElement, ObjectElement } from "../StoryElements/StoryElement.ts";
-import { useContext } from "react";
-import { DbFieldsContext } from "../App.tsx";
 import Select from "react-select";
+import { StoryElementType, StoryElement, ObjectElement, StoryElementTypeDictionary } from "../StoryElements/StoryElement.ts";
+import { TaxonomiesContext } from "../App.tsx";
+import { taxonomyToMultioption } from "../Misc/DB.ts";
+import DropdownField from "./DropdownField.tsx";
 
 function StoryElementInputForm(props: {
     type: StoryElementType,
     element: StoryElement,
     setElement: (e: any) => void
 }) {
-    const elementDetailsChoices = useContext(DbFieldsContext)!;
+    const elementDetailsChoices = useContext(TaxonomiesContext)!;
+
+    const datingMultioptions = useMemo(() => {
+        const options = taxonomyToMultioption(elementDetailsChoices.periods);
+        return options[0].map((label, idx) => {return {label: label, value: options[1][idx]}});
+    }, []);
+    const materialMultioptions = useMemo(() => {
+        const options = taxonomyToMultioption(elementDetailsChoices.materials);
+        return options[0].map((label, idx) => {return {label: label, value: options[1][idx]}});
+    }, []);
+    const typeOptions = useMemo(() => {
+        const options = taxonomyToMultioption(elementDetailsChoices[StoryElementTypeDictionary.eng.plural[props.type]]);
+        return options[1];
+    }, [props.type]);
     const commonFields = (
         <>
             <FloatingLabel label="Nome:">
@@ -20,21 +35,20 @@ function StoryElementInputForm(props: {
                     isInvalid={props.element.name.length === 0}
                     autoFocus />
             </FloatingLabel>
-            <FloatingLabel label="Tipo:">
-                <Form.Control
-                    value={props.element.type}
-                    placeholder="Tipo"
-                    onChange={e => props.setElement({...props.element, type: e.target.value})}/>
-            </FloatingLabel>
-            <div style={{zIndex:"2000", textAlign:"left"}}>
+            <DropdownField
+                value={props.element.type}
+                setValue={value => props.setElement({...props.element, type: value})}
+                defaultValue="Nessun Tipo"
+                choices={typeOptions} />
+            <div style={{textAlign:"left"}}>
                 <Select
-                placeholder={"Datazioni"}
-                value={props.element.dating.map(d => {return {label: d, value: d}})}
-                closeMenuOnSelect={false}
-                options={elementDetailsChoices.datings}
-                onChange={values => {props.setElement({...props.element, dating: values.map(v => v.value)})}}
-                isMulti
-                styles={{menu: (styles) => {return {...styles, zIndex: "2000"}}}}/>
+                    placeholder={"Datazioni"}
+                    value={props.element.dating.map(d => {return {label: d, value: d}})}
+                    closeMenuOnSelect={false}
+                    options={datingMultioptions}
+                    onChange={values => {props.setElement({...props.element, dating: values.map(v => v.value)})}}
+                    isMulti
+                    styles={{menu: (styles) => {return {...styles, zIndex: "2000"}}}}/>
                 </div>
             <FloatingLabel label="Descrizione:">
                 <Form.Control
@@ -57,9 +71,10 @@ function StoryElementInputForm(props: {
                             placeholder={"Materiali"}
                             value={(props.element as ObjectElement).materials.map(m => {return {label: m, value: m}})}
                             closeMenuOnSelect={false}
-                            options={elementDetailsChoices.materials}
+                            options={materialMultioptions}
                             onChange={values => props.setElement({...props.element, materials: values.map(v => v.value)})}
-                            isMulti />
+                            isMulti
+                            styles={{menu: (styles) => {return {...styles, zIndex: "2000"}}}}/>
                     </div>
                     <FloatingLabel label="Origine:">
                         <Form.Control

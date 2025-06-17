@@ -11,7 +11,7 @@ system: |
     Rispondi esclusivamente con un testo narrativo che non superi le 100 parole; la qualità dello scritto è l'aspetto più importante, puoi superare di poco questo limite se necessario. La narrazione deve essere in terza persona ed utilizzare come tempo verbale il presente storico. 
 
     TONO:
-    {tone}
+    {tones}
 
     AMBIENTAZIONE:
     Location: {location}

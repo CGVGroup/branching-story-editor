@@ -7,10 +7,32 @@ type DBSchema = {
     locations: Omit<LocationElement, "resident" | "elementType">[],
 }
 
+export type SceneDetailsEnums = {
+  time: string[],
+  weather: string[],
+  tone: string[],
+  value: string[]
+}
+
+type TaxonomyElement = {
+    name: string,
+    children: TaxonomyElement[]
+};
+
+export type Taxonomies = {
+    characters: TaxonomyElement[],
+    objects: TaxonomyElement[],
+    locations: TaxonomyElement[],
+    materials: TaxonomyElement[],
+    areas: TaxonomyElement[],
+    periods: TaxonomyElement[],
+}
+
 export let DB: DBSchema | null = null;
 export const DB_URL = "/db";
 export const MODELS_URL = "/models";
 export const ENUMS_URL = "/enums";
+export const TAXONOMIES_URL = "/taxonomies";
 
 export const DbContext = createContext<Object | null>(null);
 
@@ -62,4 +84,30 @@ export async function getEnums(): Promise<Object> {
     }
     const enums = await response.json() as Object;
     return enums;
+}
+
+export async function getTaxonomies(): Promise<Taxonomies> {
+    const response = await fetch(TAXONOMIES_URL);
+    if (!response.ok) {
+        throw Error(`Could not fetch taxonomies: ${response.status}`);
+    }
+    const taxonomies = await response.json() as Taxonomies;
+    return taxonomies;
+}
+
+export function taxonomyToMultioption(taxonomies: TaxonomyElement[], nesting?: number) {
+    const labels: string[] = [];
+    const values: string[] = [];
+    const index = nesting ?? 0;
+    for (const entry of taxonomies) {
+        if (entry.children.length === 0) {
+            labels.push(" ".repeat(index) + entry.name);
+            values.push(entry.name);
+        } else {
+            const [nestedLabels, nestedValues] = taxonomyToMultioption(entry.children, index + 1);
+            labels.push(...nestedLabels);
+            values.push(...nestedValues);
+        }
+    }
+    return [labels, values];
 }
