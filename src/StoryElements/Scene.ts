@@ -1,3 +1,5 @@
+import UndoStack from "../Misc/UndoStack.ts";
+
 type SceneDetails = {
     title: string;
     summary: string;
@@ -8,15 +10,18 @@ type SceneDetails = {
     backgroundIds: [string[], string[], string[]];
 }
 
-class Scene {
-    details: SceneDetails;
+type HistoryElement = {
     prompt: string;
     fullText: string;
+}
+
+class Scene {
+    details: SceneDetails;
+    history: UndoStack<HistoryElement>;
 
     constructor(
         details?: Partial<SceneDetails>,
-        prompt?: string,
-        fullText?: string
+        history?: UndoStack<HistoryElement>
     ) {
         this.details = {
             title: details?.title ?? "",
@@ -27,12 +32,15 @@ class Scene {
             value: details?.value ?? "",
             backgroundIds: details?.backgroundIds ?? [[], [], []],
         };
-        this.prompt = prompt ?? "";
-        this.fullText = fullText ?? "";
+        if (history === undefined) {
+            this.history = new UndoStack([{prompt: "", fullText: ""}])
+        } else {
+            this.history = new UndoStack(history.stack, history.index);
+        }
     }
 
     clone(): Scene {
-        return new Scene(this.details, this.prompt, this.fullText);
+        return new Scene(this.details, this.history);
     }
 
     cloneAndSetDetails(details: SceneDetails): Scene {
@@ -42,21 +50,43 @@ class Scene {
     }
     cloneAndSetPrompt(prompt: string): Scene {
         const cloned = this.clone();
-        cloned.prompt = prompt;
+        cloned.history.set({prompt: prompt, fullText: cloned.history.current.fullText});
         return cloned;
     }
     cloneAndSetFullText(fullText: string): Scene {
         const cloned = this.clone();
-        cloned.fullText = fullText;
+        cloned.history.set({prompt: cloned.history.current.prompt, fullText: fullText});
         return cloned;
     }
 
+    cloneAndPushFullText(fullText: string): Scene {
+        const cloned = this.clone();
+        cloned.history.push({prompt: cloned.history.current.prompt, fullText: fullText});
+        return cloned;
+    }
+
+    cloneAndUndo(): Scene {
+        const cloned = this.clone();
+        cloned.history.undo();
+        return cloned;
+    }
+
+    cloneAndRedo(): Scene {
+        const cloned = this.clone();
+        cloned.history.redo();
+        return cloned;
+    }
+
+    serialize() {
+        return {details: this.details, history: this.history.serialize()}
+    }
+
     toJson(): string {  //Renamed to lowercase to avoid JSON.stringify from using this
-        return JSON.stringify(this);
+        return JSON.stringify(this.serialize());
     }
 
     static from(scene: Scene) {
-        return new Scene(scene.details, scene.prompt, scene.fullText);
+        return new Scene(scene.details, scene.history);
     }
     
     static fromJSON(json: string) {

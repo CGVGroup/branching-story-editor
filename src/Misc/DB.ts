@@ -101,7 +101,7 @@ export function taxonomyToMultioption(taxonomies: TaxonomyElement[], nesting?: n
     const index = nesting ?? 0;
     for (const entry of taxonomies) {
         if (entry.children.length === 0) {
-            labels.push(" ".repeat(index) + entry.name);
+            labels.push(entry.name);
             values.push(entry.name);
         } else {
             const [nestedLabels, nestedValues] = taxonomyToMultioption(entry.children, index + 1);

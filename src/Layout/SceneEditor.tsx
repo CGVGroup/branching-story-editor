@@ -1,11 +1,10 @@
 import React, { useCallback, useContext, useEffect, useState } from "react";
-import { Button, ButtonGroup, Card, Col, Dropdown, FloatingLabel, Form, Placeholder, Row, Spinner, SplitButton } from "react-bootstrap";
+import { Button, ButtonGroup, Card, Col, Dropdown, FloatingLabel, Form, Row, Spinner } from "react-bootstrap";
 import { debounce } from 'throttle-debounce';
 import Story from "../StoryElements/Story.ts";
 import Scene, { SceneDetails as SceneDetailsType } from "../StoryElements/Scene.ts";
 import SceneDetails from "./SceneDetails.tsx";
 import PromptArea from "./PromptArea.tsx";
-import UndoStack from "../Misc/UndoStack.ts";
 import { ModalContents } from "./GenericModal.tsx";
 import { ChosenModelContext } from "../App.tsx";
 import LoadingPlaceholders from "../Misc/LoadingPlaceholders.tsx";
@@ -22,8 +21,6 @@ function SceneEditor(props: {
 }) {
 	const [localScene, setLocalScene] = useState(Scene.from(props.scene));
 	const [loading, setLoading] = useState(false);
-	const [fullText, setFullText] = useState(localScene.fullText);
-	const [undoStack, setUndoStack] = useState(new UndoStack([localScene.fullText]));
 	const [isManualEdit, setIsManualEdit] = useState(false);
 	const [chosenModel, _] = useContext(ChosenModelContext)!;
 
@@ -40,7 +37,7 @@ function SceneEditor(props: {
 	}, []);
 	
 	const handleEditFullText = useCallback((newText: string) => {
-		setFullText(newText);
+		setLocalScene(scene => scene.cloneAndSetFullText(newText));
 		setIsManualEdit(true);
 	}, []);
 
@@ -48,8 +45,7 @@ function SceneEditor(props: {
 		setLoading(true);
 		const sceneText = await props.story.sendSceneToLLM(props.nodeId, chosenModel)
 		if (sceneText) {
-			setUndoStack(undoStack => undoStack.push(sceneText));
-			setFullText(sceneText);
+			setLocalScene(scene => scene.cloneAndPushFullText(sceneText));
 		}
 		setLoading(false);
 	}, []);
@@ -65,30 +61,12 @@ function SceneEditor(props: {
 	}, [onSendToLLM])
 
 	const onUndoButton = useCallback(() => {
-		setUndoStack(undoStack => {
-			const newStack = undoStack.undo();
-			setFullText(newStack.peek());
-			return newStack;
-		});
+		setLocalScene(scene => scene.cloneAndUndo());
 	}, []);
 	
 	const onRedoButton = useCallback(() => {
-		setUndoStack(undoStack => {
-			const newStack = undoStack.redo();
-			setFullText(newStack.peek());
-			return newStack;
-		});
+		setLocalScene(scene => scene.cloneAndRedo());
 	}, []);
-
-	const onSaveManualEditButton = useCallback(() => {
-		setUndoStack(undoStack => undoStack.push(fullText));
-		setIsManualEdit(false);
-		setLocalScene(scene => scene.cloneAndSetFullText(fullText))
-	}, [fullText]);
-
-	useEffect(() => 
-		setLocalScene(localScene => new Scene(localScene.details, localScene.prompt, undoStack.peek()))
-	, [undoStack]);
 	
 	useEffect(() => handleSave(localScene), [handleSave, localScene]);
 
@@ -104,7 +82,7 @@ function SceneEditor(props: {
 							<Row className="h-25 gx-0">
 								<Col xs={10}>
 									<PromptArea
-										initialText={localScene.prompt}
+										initialText={localScene.history.current.prompt}
 										story={props.story}
 										setText={handleEditPrompt} />
 								</Col>
@@ -136,26 +114,19 @@ function SceneEditor(props: {
 									<ButtonGroup>
 										<Button
 											variant="secondary"
-											disabled={!undoStack.canUndo()}
+											disabled={!localScene.history.canUndo()}
 											onClick={onUndoButton}
 											title="Risposta precedente">
 											<i className="bi bi-arrow-90deg-left" />
 										</Button>
 										<Button
 											variant="secondary"
-											disabled={!undoStack.canRedo()}
+											disabled={!localScene.history.canRedo()}
 											onClick={onRedoButton}
 											title="Risposta successiva">
 											<i className="bi bi-arrow-90deg-right" />
 										</Button>
 									</ButtonGroup>
-									<Button
-										variant="primary"
-										disabled={!isManualEdit}
-										onClick={onSaveManualEditButton}
-										title="Salva modifica manuale">
-										<i className="bi bi-floppy" />
-									</Button>
 								</Col>
 							</Row>
 							<div className="h-75">
@@ -166,7 +137,7 @@ function SceneEditor(props: {
 										<Form.Control
 											as="textarea"
 											placeholder="Testo Completo"
-											value={fullText}
+											value={localScene.history.current.fullText}
 											onChange={e => handleEditFullText(e.target.value)}
 											style={{height:"100%"}} />
 									</FloatingLabel>

@@ -86,7 +86,6 @@ function App() {
   useEffect(() => {
     getModels().then(modelList => {
       setModels(modelList);
-      console.log(modelList);
     })
   }, []);
   
@@ -94,7 +93,6 @@ function App() {
   useEffect(() => {
     getEnums().then(enums => {
       setEnums(enums as SceneDetailsEnums);
-      console.log(enums);
     })
   }, []);
 
@@ -102,7 +100,6 @@ function App() {
   useEffect(() => {
     getTaxonomies().then(taxonomies => {
       setTaxonomies(taxonomies as Taxonomies);
-      console.log(taxonomies);
     })
   }, []);
   

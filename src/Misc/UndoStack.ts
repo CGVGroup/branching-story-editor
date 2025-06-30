@@ -1,3 +1,5 @@
+const serializedStackMaxLength = 10;
+
 export default class UndoStack<T> {
     stack: T[];
     index: number;
@@ -19,41 +21,47 @@ export default class UndoStack<T> {
         return this.index < this.stack.length - 1;
     }
     
-    undo() {
+    undo(): UndoStack<T> {
         if (!this.canUndo()) return this;
         this.index--;
         return this.clone();
     }
 
-    redo() {
+    redo(): UndoStack<T> {
         if (!this.canRedo()) return this;
         this.index++;
         return this.clone();
     }
 
-    push(element: T) {
+    push(element: T): UndoStack<T> {
         this.stack = this.stack.slice(0, this.index + 1)
         this.stack.push(element);
         this.index++;
         return this.clone();
     }
 
-    pop() {
+    pop(): UndoStack<T> {
         this.stack.pop();
         this.index--;
         return this.clone();
     }
 
-    set(element: T) {
+    set(element: T): UndoStack<T> {
         this.stack[this.index] = element;
-        return this.stack.filter((_, idx) => idx <= this.index);
+        this.stack = this.stack.filter((_, idx) => idx <= this.index);
+        return this.clone();
     }
 
-    peek() {
-        return this.stack[this.index];
-    }
-
-    clone() {
+    clone(): UndoStack<T> {
         return new UndoStack(this.stack, this.index);
+    }
+
+    serialize() {
+        this.stack = this.stack.slice(-serializedStackMaxLength);
+        this.index = Math.min(this.index, serializedStackMaxLength - 1)
+        return this;
+    }
+    get current() {
+        return this.stack[this.index];
     }
 }

@@ -155,7 +155,11 @@ class Story {
             notes: this.notes,
             elements: this.elements.filter(element => !element.resident).map(element => element.id),
             residentElements: this.elements.filter(element => element.resident),
-            flow: this.flow
+            flow: {...this.flow, nodes: this.flow.nodes.map(node =>
+                node.type === NodeType.scene ?
+                    {...node, data: {...node.data, scene: (node.data.scene as Scene).serialize()}}
+                :
+                    node)}
         }
     }
 
@@ -185,7 +189,7 @@ class Story {
         
         const scene = node.data.scene as Scene;
         payload = {...payload,
-            prompt: scene.prompt,
+            prompt: scene.history.current.prompt,
             time: scene.details.time,
             tones: scene.details.tones,
             weather: scene.details.weather,
@@ -198,7 +202,7 @@ class Story {
         
         const incomers = getIncomers(node, this.flow.nodes, this.flow.edges)
         if (incomers.length === 1 && incomers[0].type === NodeType.scene) {
-            payload["previous_scene"] = (incomers[0].data.scene as Scene).fullText;
+            payload["previous_scene"] = (incomers[0].data.scene as Scene).history.current.fullText;
         } else {
             payload["previous_scene"] = ""
         }
@@ -215,14 +219,13 @@ class Story {
         let processableNodes: Node[];
         if (startingNodeId) {
             processableNodes = Array.from(getAllOutgoers(this.flow, this.getNode(startingNodeId)!, node => node.type === NodeType.choice))
-            console.log(processableNodes);
         } else {
             processableNodes = this.flow.nodes.filter(node => node.type === NodeType.scene);
         }
         let i = 0; 
         for (const node of processableNodes) {
             const fullText = await this.sendSceneToLLM(node.id, model);
-            if (fullText) (node.data.scene as Scene).fullText = fullText;
+            if (fullText) (node.data.scene as Scene).history.current.fullText = fullText;
             yield {done: false, progress: ++i*100 / processableNodes.length, newStory: this};
         }
         yield {done: true, progress: 100, newStory: this.clone()};
