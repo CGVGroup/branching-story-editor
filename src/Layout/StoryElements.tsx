@@ -1,14 +1,15 @@
-import React, { useCallback, useMemo, useRef, useState } from "react";
-import { Tabs, Tab, Button, ListGroup, Badge, OverlayTrigger, Tooltip, ButtonGroup } from "react-bootstrap";
-import { StoryElementType, StoryElement } from "../StoryElements/StoryElement.ts";
+import React, { useCallback, useMemo, useState } from "react";
+import { ActionIcon, Avatar, Badge, Button, Center, Group, Menu, NavLink, ScrollArea, Stack, Tabs } from "@mantine/core";
+import { useDisclosure } from "@mantine/hooks";
+import { StoryElementType, StoryElement, shortNoElementsText, StoryElementColorArray } from "../StoryElements/StoryElement.ts";
 import ElementModal from "./AddElementModal.tsx";
 import Story from "../StoryElements/Story.ts";
-import DBBrowserModal from "./DBBrowserModal.tsx";
+import classes from "../GrowColumn.module.css"
 
 const storyElementTabsArray = [
-  {type: StoryElementType.character, className: "character-mention", tabContents: <img src={require("../img/character.png")} title="Personaggi" alt="characters" style={{height:"3em"}}/>, noElementsText: "Nessun personaggio" },
-  {type: StoryElementType.object, className: "object-mention", tabContents: <img src={require("../img/object.png")} title="Oggetti" alt="objects" style={{height:"3em"}}/>, noElementsText: "Nessun oggetto" },
-  {type: StoryElementType.location, className: "location-mention", tabContents: <img src={require("../img/location.png")} title="Luoghi" alt="locations" style={{height:"3em"}}/>, noElementsText: "Nessun luogo" }
+  {type: StoryElementType.character, color: StoryElementColorArray[StoryElementType.character], tabContents: <img src={require("../img/character.png")} title="Personaggi" alt="characters" style={{height:"3em"}}/>},
+  {type: StoryElementType.object, color: StoryElementColorArray[StoryElementType.object], tabContents: <img src={require("../img/object.png")} title="Oggetti" alt="objects" style={{height:"3em"}}/>},
+  {type: StoryElementType.location, color: StoryElementColorArray[StoryElementType.location], tabContents: <img src={require("../img/location.png")} title="Luoghi" alt="locations" style={{height:"3em"}}/>}
 ]
 
 function StoryElements (props: {
@@ -18,156 +19,152 @@ function StoryElements (props: {
 }) {
   const [key, setKey] = useState(StoryElementType.character);
   const [selectedElement, setSelectedElement] = useState<StoryElement>();
-  
-  const [elementModal, setElementModal] = useState(false);
-  const [dbModal, setDbModal] = useState(false);
-
-  const refApp = useRef(document.getElementsByClassName("App").item(0));
-
-  const readOnly = props.readOnly ?? false;
-
-  const onSelectElement = useCallback((element: StoryElement) => {
-    setSelectedElement(element);
-  }, []);
-
-  const onDeselectElement = useCallback(() => {
-    setSelectedElement(undefined);
-  }, []);
+  const [newElementModal, newElementModalHandlers] = useDisclosure(false);
+  const [dbModal, dbModalHandlers] = useDisclosure(false);
 
   const onAddButtonClicked = useCallback(() => {
     setSelectedElement(undefined);
-    setElementModal(true);
+    newElementModalHandlers.open();
   }, []);
 
   const onOpenDBButtonClicked = useCallback(() => {
-    setDbModal(true);
+    dbModalHandlers.open();
   }, []);
 
   const onElementEditButtonClicked = useCallback((element: StoryElement) => {
-    onSelectElement(element)
-    setElementModal(true);
-  }, [onSelectElement]);
+    newElementModalHandlers.open();
+  }, []);
 
   const onElementDeleteButtonClicked = useCallback((element: StoryElement) => {
     props.setStory?.(story => story.cloneAndDeleteElement(element.id));
-    onDeselectElement();
-  }, [onDeselectElement]);
+    setSelectedElement(undefined);
+  }, []);
 
   const onSubmitNewElement = useCallback((newElement: StoryElement) => {
-    if (!props.story.canAddElement(newElement)) return false;
+    if (!props.story.canAddElement(newElement)) return;
     props.setStory?.(story => story.cloneAndAddElement(newElement));
-    onDeselectElement();
-    return true;
   }, [key, props.story]);
+
+  const onNewElementModalExited = useCallback(() => {
+    setSelectedElement(undefined);
+  }, [])
 
   const onEditElement = useCallback((editedElement: StoryElement) => {
     if (selectedElement) {
       props.setStory?.(story => story.cloneAndSetElement(selectedElement.id, editedElement));
-      onDeselectElement();
-      return true;
     }
-    onDeselectElement();
-    return false;
   }, [selectedElement, key]);
 
-  const dynamicElementModal = useMemo(() => (
-    <ElementModal
-      modal = {elementModal}
-      setModal = {setElementModal}
-      elementType = {key}
-      initialElement = {selectedElement}
-      container = {refApp}
-      onSubmit = {selectedElement === undefined ? onSubmitNewElement : onEditElement} />
-  ), [key, elementModal, selectedElement, onEditElement, onSubmitNewElement]);
-
-  const elementList = useCallback((type: StoryElementType, readOnly: boolean, className?: string) => {
+  const elementList = useCallback((type: StoryElementType, readOnly?: boolean) => {
     const elements = props.story.getElementsByType(type);
     return (
-      <ListGroup style={{overflowY: "auto"}} className="story-elements">
-        {elements.length === 0 ?
-          <ListGroup.Item disabled>
-            {storyElementTabsArray[type].noElementsText}
-          </ListGroup.Item>
-        :
-          elements.map(element => (
-            <OverlayTrigger
-              key={element.id}
-              placement={"right"}
-              trigger="focus"
-              overlay={
-                <Tooltip>
-                  <ButtonGroup vertical>
-                    {element.resident && <Button variant="secondary" onClick={() => onElementEditButtonClicked(element)} title="Modifica">
-                      <i className="bi bi-pencil" aria-label="edit" /> 
-                    </Button>}
-                    <Button variant="danger" onClick={() => onElementDeleteButtonClicked(element)} title="Elimina">
+        <>
+          {elements.length === 0 ?
+            <NavLink disabled label={<Center>{shortNoElementsText(type)}</Center>}/>
+          :
+            elements.map(element => (
+              <Menu key={element.id} position="right" disabled={readOnly}>
+                <Menu.Target>
+                  <NavLink
+                    active={!readOnly}
+                    color={storyElementTabsArray[type].color}
+                    variant="light"
+                    label={element.name}
+                    description={element.type}
+                    leftSection={<Avatar></Avatar>}
+                    onClick={() => setSelectedElement(element)}
+                    //className={`${className} ${readOnly ? "disabled" : ""}`}
+                    style={{fontStyle: element.resident ? "italic" : undefined}}/>
+                </Menu.Target>
+                <Menu.Dropdown p="xs">
+                  <ActionIcon.Group orientation="vertical">
+                    {element.resident && (
+                      <ActionIcon
+                        variant="subtle"
+                        color={storyElementTabsArray[type].color}
+                        onClick={() => onElementEditButtonClicked(element)}>
+                        <i className="bi bi-pencil" aria-label="edit" />
+                      </ActionIcon>
+                    )}
+                    <ActionIcon
+                      variant="subtle"
+                      color="red"
+                      onClick={() => onElementDeleteButtonClicked(element)}>
                       <i className="bi bi-trash" aria-label="delete" /> 
-                    </Button>
-                  </ButtonGroup>
-                </Tooltip>}>
-              <ListGroup.Item key={element.id} action={!readOnly}
-                className={`d-flex flex-grow-1 ${className} ${readOnly ? "disabled" : ""}`}
-                style={{
-                  textWrap:"pretty",
-                  justifyContent:"space-evenly",
-                  pointerEvents: readOnly ? "none" : undefined,
-                  fontStyle: element.resident ? "italic" : undefined}}>
-                {element.name}
-              </ListGroup.Item>
-            </OverlayTrigger>
-          ))
-        }
-      </ListGroup>);
+                    </ActionIcon>
+                  </ActionIcon.Group>
+                </Menu.Dropdown>
+              </Menu>
+            ))
+          }
+        </>
+      );
   }, [props, onElementEditButtonClicked, onElementDeleteButtonClicked]);
 
-  const badges = useMemo(() => [props.story.getElementsByType(StoryElementType.character).length,
+  const badges = useMemo(() => [
+    props.story.getElementsByType(StoryElementType.character).length,
     props.story.getElementsByType(StoryElementType.object).length,
-    props.story.getElementsByType(StoryElementType.location).length], [props.story]);
+    props.story.getElementsByType(StoryElementType.location).length]
+  , [props.story]);
 
   return (
     <>
-      {dynamicElementModal}
-      <DBBrowserModal
+      <ElementModal
+        show = {newElementModal}
+        handlers = {newElementModalHandlers}
+        elementType = {key}
+        initialElement = {selectedElement}
+        allElements={props.story.getElementsByType(key)}
+        onSubmit = {selectedElement === undefined ? onSubmitNewElement : onEditElement}
+        onExited={onNewElementModalExited}/>
+      {/*<DBBrowserModal
         modal = {dbModal}
         setModal = {setDbModal}
         elements = {props.story.getElementsByType(key).map(el => el.id)}
         elementType = {key}
-        container = {refApp}
-        onSubmit = {onSubmitNewElement}/>
+        onSubmit = {onSubmitNewElement}/>*/}
       <Tabs
-        activeKey={key}
-        onSelect={k => setKey(Number.parseInt(k ?? "0"))}
-        className="mb-2 flex-nowrap"
-        fill>
-        {storyElementTabsArray.map((tab, idx) =>
-          <Tab
-            eventKey={tab.type}
-            key={tab.type}
-            className="h-100"
-            tabClassName={tab.className}
-            title={
-              <>
-                <span style={{width:"2em"}}>
-                  {tab.tabContents}
-                </span>
-                <Badge className={tab.className + " selected"} bg="" pill>
+        value={key.toString()}
+        onChange={k => setKey(Number.parseInt(k ?? "0"))}
+        classNames={{root: classes.growcol, panel: classes.growcol}}>
+        <Tabs.List grow>
+          {storyElementTabsArray.map((tab, idx) =>
+            <Tabs.Tab key={idx} value={tab.type.toString()} px={0} color={tab.color} variant="light">
+              <Center inline>
+                {tab.tabContents}
+                <Badge color={tab.color} variant="light">
                   {badges[idx]}
                 </Badge>
-              </>}>
-            {!readOnly && 
-              <ButtonGroup>
-                <Button onClick={onOpenDBButtonClicked} variant="primary">
-                  {"Da catalogo "}
-                  <i className="bi bi-journal-plus" />
-                </Button>
-                <Button onClick={onAddButtonClicked} variant="outline-primary">
-                  {"Crea "}
-                  <i className="bi bi-plus-square" />
-                </Button>
-              </ButtonGroup>
+              </Center>
+            </Tabs.Tab>)}
+        </Tabs.List>
+        {storyElementTabsArray.map((tab, idx) =>
+        <Tabs.Panel key={idx} value={tab.type.toString()}>
+          <Stack pt="xs" gap="xs">
+            {!props.readOnly && 
+              <Center>
+                <Group gap="xs">
+                  <Button
+                    onClick={onOpenDBButtonClicked}
+                    color={tab.color}
+                    leftSection={<i className="bi bi-journal-plus" />}>
+                    Da catalogo
+                  </Button>
+                  <Button
+                    onClick={onAddButtonClicked}
+                    color={tab.color}
+                    variant="light"
+                    leftSection={<i className="bi bi-plus-square" />}>
+                    Crea
+                  </Button>
+                </Group>
+              </Center>
               }
-            {elementList(tab.type, readOnly, tab.className)}
-          </Tab>
+            <ScrollArea className={classes.growcol}>
+              {elementList(tab.type, props.readOnly)}
+            </ScrollArea>
+          </Stack>
+        </Tabs.Panel>
         )}
       </Tabs>
     </>

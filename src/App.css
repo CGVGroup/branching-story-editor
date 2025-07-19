@@ -1,5 +1,3 @@
-@import "bootstrap/dist/css/bootstrap.min.css";
-
 .App {
   --character-color: #b05e00;
   --character-color-light: #ffecd7;
@@ -9,7 +7,7 @@
   --location-color-light: #dcffdc;
 
   --choice-color: #2e0c64;
-  --choice-color-light: #ece2fd;
+  --choice-color-light: var(--mantine-color-violet-1);
 
   --story-node-color: #f2f2f5;
 
@@ -19,7 +17,6 @@
   text-align: center;
   height: 100vh;
   padding: 8px 16px;
-  overflow: hidden;
 
   /*Overrides*/
 
@@ -89,13 +86,12 @@
     .name {
       text-align: center;
       font-weight: 500;
-      width: 100%;
     }
 
     .title {
       text-align: center;
       font-style: italic;
-      width: 100%;
+      font-size: x-small;
     }
 
     .react-flow__handle {
@@ -124,6 +120,7 @@
       font-size: xx-small;
       text-align: end;
       text-overflow: clip;
+      padding-inline-end: 0.75em;
     }
 
     &:hover {

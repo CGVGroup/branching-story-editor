@@ -2,6 +2,8 @@ import { RefObject, useCallback, useEffect, useMemo, useState } from "react";
 import { Button, Card, Col, Form, Modal, Row } from "react-bootstrap";
 import { StoryElement, StoryElementType, StoryElementTypeDictionary } from "../StoryElements/StoryElement.ts";
 import { searchDB } from "../Misc/DB.ts";
+import { Group } from "@mantine/core";
+//import { Button, Group, Modal } from "@mantine/core";
 
 function DBBrowserModal(props: {
     modal: boolean,
@@ -52,57 +54,49 @@ function DBBrowserModal(props: {
 
     return (
         <Modal
-            show={props.modal}
-            onHide={handleModalClose}
-            container={props.container}
-            scrollable={true}
-            size="lg">
-            <Modal.Header>
-                <Modal.Title>
-                    Scegli un {typeString} dal Catalogo
-                </Modal.Title>
-            </Modal.Header>
-            <Modal.Body>
-                <Row>
-                    <Col xs={1}>
-                        <Button onClick={() => setType(StoryElementType.character)}>Cha</Button>
-                        <Button onClick={() => setType(StoryElementType.object)}>Obj</Button>
-                        <Button onClick={() => setType(StoryElementType.location)}>Loc</Button>
-                    </Col>
-                    <Col>
-                        <Row>
-                            <Form.Control
-                                value={search}
-                                onChange={e => setSearch(e.target.value)}
-                                id="db-search"
-                                autoFocus/>
-                        </Row>
-                        <Row>
-                            {results.length ?
-                                results.map((result, idx) => (
-                                    <DBBrowserElement
-                                        key={idx}
-                                        element={result}
-                                        addable={checkElementSelectable(result)}
-                                        onAdd={() => onAddResult(result)}
-                                        removable={selected.includes(result)}
-                                        onRemove={() => onRemoveResult(result)}/>
-                                ))
-                            :
-                                "Nessun risultato" 
-                            }
-                        </Row>
-                    </Col>
-                </Row>
-            </Modal.Body>
-            <Modal.Footer>
-                <Button variant="secondary" type="reset" onClick={handleModalClose}>
+            opened={props.modal}
+            onClose={handleModalClose}
+            size="lg"
+            title={`Scegli un ${typeString} dal Catalogo`}>
+            <Row>
+                <Col xs={1}>
+                    <Button onClick={() => setType(StoryElementType.character)}>Cha</Button>
+                    <Button onClick={() => setType(StoryElementType.object)}>Obj</Button>
+                    <Button onClick={() => setType(StoryElementType.location)}>Loc</Button>
+                </Col>
+                <Col>
+                    <Row>
+                        <Form.Control
+                            value={search}
+                            onChange={e => setSearch(e.target.value)}
+                            id="db-search"
+                            autoFocus/>
+                    </Row>
+                    <Row>
+                        {results.length ?
+                            results.map((result, idx) => (
+                                <DBBrowserElement
+                                    key={idx}
+                                    element={result}
+                                    addable={checkElementSelectable(result)}
+                                    onAdd={() => onAddResult(result)}
+                                    removable={selected.includes(result)}
+                                    onRemove={() => onRemoveResult(result)}/>
+                            ))
+                        :
+                            "Nessun risultato" 
+                        }
+                    </Row>
+                </Col>
+            </Row>
+            <Group justify="flex-end">
+                <Button color="gray" variant="light" onClick={handleModalClose}>
                     Annulla
                 </Button>
                 <Button variant="primary" type="submit" disabled={selected.length === 0} onClick={onSubmit}>
                     Aggiungi
                 </Button>
-            </Modal.Footer>
+            </Group>
         </Modal>
     );
 }

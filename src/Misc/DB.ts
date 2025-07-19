@@ -1,4 +1,5 @@
 import { createContext } from "react";
+import { TreeNodeData } from "@mantine/core";
 import { CharacterElement, ObjectElement, LocationElement, StoryElementType, StoryElement, StoryElementTypeDictionary, StoryElementTypeArray } from "../StoryElements/StoryElement.ts";
 
 type DBSchema = {
@@ -95,19 +96,15 @@ export async function getTaxonomies(): Promise<Taxonomies> {
     return taxonomies;
 }
 
-export function taxonomyToMultioption(taxonomies: TaxonomyElement[], nesting?: number) {
-    const labels: string[] = [];
-    const values: string[] = [];
-    const index = nesting ?? 0;
+export function taxonomyToTree(taxonomies: TaxonomyElement[]) {
+    const leaves: TreeNodeData[] = [];
     for (const entry of taxonomies) {
         if (entry.children.length === 0) {
-            labels.push(entry.name);
-            values.push(entry.name);
+            leaves.push({label: entry.name, value: entry.name});
         } else {
-            const [nestedLabels, nestedValues] = taxonomyToMultioption(entry.children, index + 1);
-            labels.push(...nestedLabels);
-            values.push(...nestedValues);
+            const nestedLeaves = taxonomyToTree(entry.children);
+            leaves.push({label: entry.name, value: entry.name, children: nestedLeaves});
         }
     }
-    return [labels, values];
+    return leaves;
 }

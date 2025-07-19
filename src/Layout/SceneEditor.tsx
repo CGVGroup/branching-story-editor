@@ -1,15 +1,15 @@
 import React, { useCallback, useContext, useEffect, useState } from "react";
-import { Button, ButtonGroup, Card, Col, Dropdown, FloatingLabel, Form, Row, Spinner } from "react-bootstrap";
 import { debounce } from 'throttle-debounce';
+import { ActionIcon, Box, Button, Fieldset, Grid, Group, LoadingOverlay, Menu, Modal, SimpleGrid, Stack, Textarea, Title } from "@mantine/core";
+import { useDisclosure } from "@mantine/hooks";
 import Story from "../StoryElements/Story.ts";
 import Scene, { SceneDetails as SceneDetailsType } from "../StoryElements/Scene.ts";
 import SceneDetails from "./SceneDetails.tsx";
 import PromptArea from "./PromptArea.tsx";
-import { ModalContents } from "./GenericModal.tsx";
 import { ChosenModelContext } from "../App.tsx";
-import LoadingPlaceholders from "../Misc/LoadingPlaceholders.tsx";
 // @ts-ignore
 import {ReactComponent as AiPen} from "../img/ai-pen.svg";
+import classes from "../GrowColumn.module.css"
 
 function SceneEditor(props: {
 	story: Story,
@@ -17,11 +17,11 @@ function SceneEditor(props: {
 	nodeId: string,
 	scene: Scene,
 	setScene: (newScene: Scene) => void,
-	setModal: (contents: ModalContents) => void
 }) {
 	const [localScene, setLocalScene] = useState(Scene.from(props.scene));
 	const [loading, setLoading] = useState(false);
 	const [isManualEdit, setIsManualEdit] = useState(false);
+	const [requestNewText, {open: requestNewTextOpen, close: requestNewTextClose}] = useDisclosure(false);
 	const [chosenModel, _] = useContext(ChosenModelContext)!;
 
 	const handleSave = useCallback(debounce(250, (scene: Scene) => {
@@ -50,16 +50,6 @@ function SceneEditor(props: {
 		setLoading(false);
 	}, []);
 
-	const onSendButton = useCallback(() => {
-		props.setModal({
-			title: "Vuoi richiedere un altro testo?",
-			body: <span>È possibile ritornare alle proposte precedenti e successive con i tasti <i className="bi bi-arrow-90deg-left"/> e <i className="bi bi-arrow-90deg-right"/>.</span>,
-			okProps: {variant:"primary", onClick: onSendToLLM},
-			okText:"Sì",
-			cancelProps: {variant:"secondary"},
-			cancelText:"No"})
-	}, [onSendToLLM])
-
 	const onUndoButton = useCallback(() => {
 		setLocalScene(scene => scene.cloneAndUndo());
 	}, []);
@@ -70,92 +60,93 @@ function SceneEditor(props: {
 	
 	useEffect(() => handleSave(localScene), [handleSave, localScene]);
 
-	return (			
-		<Row className="h-100">
-			<Col xs={6} className="h-100">
-				<Card className="h-100">
-					<Card.Header>
-						<h4>Testo</h4>
-					</Card.Header>
-					<Card.Body className="h-100">
-						<Col className="h-100">
-							<Row className="h-25 gx-0">
-								<Col xs={10}>
-									<PromptArea
-										initialText={localScene.history.current.prompt}
-										story={props.story}
-										setText={handleEditPrompt} />
-								</Col>
-								<Col>
-									<Dropdown as={ButtonGroup}>
-										<Button onClick={onSendButton} disabled={loading} title="Invia all'IA">
-											{loading ? 
-												<Spinner size="sm"/>
-											:
-												<AiPen/>
-											}
-										</Button>
-										<Dropdown.Toggle disabled={loading} split>
-											<Dropdown.Menu variant="primary" align="end" style={{ minWidth: 'auto' }}>
-												<Dropdown.Item
-													onClick={async () => {
-														for await(const {done, progress, newStory} of props.story.sendStoryToLLM(chosenModel, props.nodeId)) {
-															if (done) props.setStory(newStory);
-														}}}
-													title="Aggiorna anche Scene Successive"
-													style={{width:"fit-content"}}>
-													<AiPen/>
-													{" "}
-													<i className="bi bi-layer-forward" style={{display:"inline-block", transform:"rotate(90deg)"}}/>
-												</Dropdown.Item>
-											</Dropdown.Menu>
-										</Dropdown.Toggle>
-									</Dropdown>
-									<ButtonGroup>
-										<Button
-											variant="secondary"
-											disabled={!localScene.history.canUndo()}
-											onClick={onUndoButton}
-											title="Risposta precedente">
-											<i className="bi bi-arrow-90deg-left" />
-										</Button>
-										<Button
-											variant="secondary"
-											disabled={!localScene.history.canRedo()}
-											onClick={onRedoButton}
-											title="Risposta successiva">
-											<i className="bi bi-arrow-90deg-right" />
-										</Button>
-									</ButtonGroup>
-								</Col>
-							</Row>
-							<div className="h-75">
-								{loading ?
-									<LoadingPlaceholders/>
-								:
-									<FloatingLabel className="h-100" label="Testo completo:">
-										<Form.Control
-											as="textarea"
-											placeholder="Testo Completo"
-											value={localScene.history.current.fullText}
-											onChange={e => handleEditFullText(e.target.value)}
-											style={{height:"100%"}} />
-									</FloatingLabel>
-								}
-							</div>
-						</Col>
-					</Card.Body>
-				</Card>
-			</Col>
-			<Col>
+	return (
+		<>
+			<Modal
+				opened={requestNewText}
+				onClose={requestNewTextClose}
+				title={<Title order={4}>Vuoi richiedere un altro testo?</Title>}>
+				<span>È possibile ritornare alle proposte precedenti e successive con i tasti <i className="bi bi-arrow-90deg-left"/> e <i className="bi bi-arrow-90deg-right"/>.</span>
+				<Group justify="flex-end">
+					<Button color="gray" variant="light" onClick={requestNewTextClose}>
+						No
+					</Button>
+					<Button onClick={() => {onSendToLLM(); requestNewTextClose();}}>
+						Sì
+					</Button>
+				</Group>
+			</Modal>
+			<SimpleGrid cols={2} style={{flexGrow: 1}}>
+				<Fieldset legend="Testo" className={classes.growcol}>
+					<Stack h="100%">
+						<Grid>
+							<Grid.Col span={10} className={classes.growcol}>
+								<PromptArea
+									initialText={localScene.history.current.prompt}
+									story={props.story}
+									setText={handleEditPrompt} />
+							</Grid.Col>
+							<Grid.Col span={2} className={classes.growcol}>
+								<Group wrap="nowrap" gap={0}>
+									<ActionIcon onClick={requestNewTextOpen} loading={loading} title="Invia all'IA">
+										<AiPen/>
+									</ActionIcon>
+									<Menu>
+										<Menu.Target>
+											<ActionIcon loading={loading}>
+												<i className="bi bi-chevron-down"/>
+											</ActionIcon>
+										</Menu.Target> 
+										<Menu.Dropdown>
+											<Menu.Item
+												onClick={async () => {
+													for await(const {done, progress, newStory} of props.story.sendStoryToLLM(chosenModel, props.nodeId)) {
+														if (done) props.setStory(newStory);
+													}}}
+												leftSection={<i className="bi bi-layer-forward" style={{display:"inline-block", transform:"rotate(90deg)"}}/>}>
+												Aggiorna anche Scene Successive
+											</Menu.Item>
+										</Menu.Dropdown>
+									</Menu>
+								</Group>
+								<ActionIcon.Group>
+									<ActionIcon
+										disabled={!localScene.history.canUndo()}
+										onClick={onUndoButton}
+										title="Risposta precedente">
+										<i className="bi bi-arrow-90deg-left" />
+									</ActionIcon>
+									<ActionIcon
+										disabled={!localScene.history.canRedo()}
+										onClick={onRedoButton}
+										title="Risposta successiva">
+										<i className="bi bi-arrow-90deg-right" />
+									</ActionIcon>
+								</ActionIcon.Group>
+							</Grid.Col>
+						</Grid>
+						<Box h="100%">
+							<LoadingOverlay visible={loading}/>
+							<Textarea
+								h="100%"
+								className={classes.growcol}
+								styles={{
+									wrapper: {flexGrow: 1},
+									input: {height: "100%"}}}
+								placeholder="Testo completo"
+								description="Testo generato dall'AI ma anche scrivibile a mano"
+								label="Testo completo"
+								value={localScene.history.current.fullText}
+								onChange={e => handleEditFullText(e.target.value)} />
+						</Box>
+					</Stack>
+				</Fieldset>
 				<SceneDetails
 					story={props.story}
 					details={localScene.details}
 					setDetails={handleEditDetails} />
-			</Col>
-		</Row>
-		
+			</SimpleGrid>
+		</>		
 	);
 }
-
 export default SceneEditor;

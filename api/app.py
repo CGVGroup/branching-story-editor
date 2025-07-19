@@ -1,6 +1,7 @@
 import os.path
 import yaml
 import json
+from pathlib import Path
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 import logging
@@ -14,7 +15,6 @@ CORS(app)
 
 CONFIG_PATH = "./configs"
 DEFAULT_CONFIG_NAME = "default"
-MODEL_LIST_PATH = "./models.yaml"
 SCENE_ENUMS_PATH = "./enums.yaml"
 TAXONOMIES_PATH = "./taxonomies.json"
 DB_PATH = "./db.json"
@@ -85,9 +85,10 @@ def send_default():
 
 @app.route('/models', methods = ['GET']) 
 def get_models():
-    with open(MODEL_LIST_PATH) as fp:
-        models = yaml.safe_load(fp)
-    return models
+    models_folder = Path(CONFIG_PATH)
+    configs = [config.stem for config in models_folder.iterdir() if config.is_file() and config.name.endswith(".yaml")]
+    print(configs)
+    return configs
 
 @app.route('/db', methods = ['GET']) 
 def get_db():

@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { ListGroup, Tab, Tabs } from "react-bootstrap";
 import { createPortal } from "react-dom";
 import { RichTextarea, RichTextareaHandle } from "rich-textarea"
+import { Flex, ScrollArea, Tabs, UnstyledButton } from "@mantine/core";
 import Story from "../StoryElements/Story.ts";
 import { StoryElementType, StoryElementTypeArray, StoryElementTypeDictionary } from "../StoryElements/StoryElement.ts";
 import { storyElementTabsArray } from "./StoryElements.tsx";
@@ -154,21 +154,21 @@ function PromptArea(props: {
 
 	const elements = useMemo(() => {
 		if (allElements.length === 0) {
-		  return <ListGroup>
+		  return <ScrollArea>
 			  <PromptAreaMenuElement
 			  value={"Non sono presenti elementi nella storia attuale"}
 			  type={null} />
-		  </ListGroup>
+		  </ScrollArea>
 		}
 		if (filtered.length === 0) {
-		  return <ListGroup>
+		  return <ScrollArea>
 			  <PromptAreaMenuElement
 			  value={"Nessuna corrispondenza"}
 			  type={null} />
-		  </ListGroup>
+		  </ScrollArea>
 		}
 		if (filtered.length <= maxElementsShown) {
-		  return <ListGroup className="story-elements">
+		  return <ScrollArea className="story-elements">
 			{filtered.map(element =>
 			  <PromptAreaMenuElement
 				key={element.id} 
@@ -177,38 +177,36 @@ function PromptArea(props: {
 				selected={element.id === menuSelected}
 				onMouseEnter={() => setMenuSelected(element.id)}
 				onClick={() => complete(element.id)} />)}
-		  </ListGroup>
+		  </ScrollArea>
 		}
 		return (
-		  <Tabs
-			activeKey={menuTabKey}
-			onSelect={k => changeTab(k)}
+		<Tabs
+			value={menuTabKey.toString()}
+			onChange={k => changeTab(k)}
 			onMouseDown={e => {e.preventDefault(); ref?.current?.focus()}}
 			className="custom-tabs">
-			{storyElementTabsArray.map(tab => 
-			  <Tab
-			  	eventKey={tab.type}
-					key={tab.type}
-					tabClassName={tab.className}
-					title={
-							<span style={{fontSize:"0.5em"}}>
-								{tab.tabContents}
-							</span>
-						}>
-				<ListGroup style={{height:"100%", overflowY:"auto"}} className="story-elements">
-				  {filtered.filter(element => element.elementType === tab.type).map((element, idx) => 
-					<PromptAreaMenuElement
-					  key={idx}
-					  selectedRef={element.id === menuSelected ? selectedRef : null}
-					  value={element.name}
-					  type={element.elementType}
-					  selected={element.id === menuSelected}
-					  id={element.id}
-					  onMouseEnter={() => setMenuSelected(element.id)}
-					  onClick={() => complete(element.id)} />)}
-				</ListGroup>
-			  </Tab>
-			)}
+				<Tabs.List>
+					{storyElementTabsArray.map(tab => 
+						<Tabs.Tab key={tab.type} value={tab.type.toString()} style={{fontSize:"0.5em"}}>
+							{tab.tabContents}
+						</Tabs.Tab>)}
+				</Tabs.List>
+				{storyElementTabsArray.map(tab => 
+					<Tabs.Panel value={tab.type.toString()}>
+						<ScrollArea className="story-elements">
+							{filtered.filter(element => element.elementType === tab.type).map((element, idx) => 
+								<PromptAreaMenuElement
+								key={idx}
+								selectedRef={element.id === menuSelected ? selectedRef : null}
+								value={element.name}
+								type={element.elementType}
+								selected={element.id === menuSelected}
+								id={element.id}
+								onMouseEnter={() => setMenuSelected(element.id)}
+								onClick={() => complete(element.id)} />)}
+						</ScrollArea>
+					</Tabs.Panel>
+				)}
 		</Tabs>
 	)}, [allElements, filtered, menuTabKey, menuSelected, selectedRef, changeTab, complete]);
 
@@ -217,7 +215,7 @@ function PromptArea(props: {
 	useEffect(() => selectedRef.current?.scrollIntoView({block:"end"}), [selectedRef]);
 
 	return (
-		<div className="prompt-area h-100 w-100">
+		<Flex className="prompt-area" h="100%" direction="column" style={{flexGrow: 1}}>
 			<RichTextarea
 				ref={ref}
 				value={text}
@@ -265,7 +263,7 @@ function PromptArea(props: {
 					</div>,
 					refApp.current)
 			}
-		</div>
+		</Flex>
 	);
 }
 
@@ -279,15 +277,15 @@ function PromptAreaMenuElement(props: {
   onClick?: () => void
 }) {
   return (
-	<ListGroup.Item
-		action={!!props.onClick}
+	<UnstyledButton
+		//action={!!props.onClick}
 		id={"id-"+props.id}
-		ref={props.selectedRef ?? undefined}
+		//ref={props.selectedRef ?? undefined}
 		className={`${props.type === null ? "no" : StoryElementTypeDictionary.eng.singular[props.type]}-mention ${props.selected ? "selected" : ""}`}
 		onMouseEnter={props.onMouseEnter}
 		onClick={props.onClick}>
 		{props.value}
-	</ListGroup.Item>
+	</UnstyledButton>
   );
 }
 

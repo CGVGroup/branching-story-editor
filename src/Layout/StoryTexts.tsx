@@ -1,6 +1,6 @@
 import { useCallback, useContext, useEffect, useMemo, useState } from "react";
-import { Accordion, Button, Card, Col, FloatingLabel, Form, Row, Spinner } from "react-bootstrap";
 import { debounce } from "throttle-debounce";
+import { Accordion, ActionIcon, Center, Grid, Textarea } from "@mantine/core";
 import Story from "../StoryElements/Story.ts";
 import Choice from "../StoryElements/Choice.ts";
 import ChoiceEditor from "./ChoiceEditor.tsx";
@@ -61,78 +61,82 @@ function StoryTexts(props: {
             .sort((n1, n2) => n1.position.x - n2.position.x)
             .map((node, idx) => {
                 const id = node.id;
-                if (node.type === NodeType.scene) {
-                    const data = node.data as SceneNodeProps;
-                    return (
-                        <Accordion.Item eventKey={id} key={idx}>
-                            <Accordion.Header>
-                                {`${data.label}${data.scene?.details.title ? " - " : ""}${data.scene?.details.title}`} 
-                            </Accordion.Header>
-                            <Accordion.Body>
-                                <Row style={{height:"10em"}}>
-                                    <Col xs={4}>
-                                        <PromptArea
-                                            story={localStory}
-                                            initialText={data.scene?.prompt}
-                                            setText={(text: string) => onPromptTextEdited(id, text)} />
-                                    </Col>
-                                    <Col xs={1} style={{alignContent:"center"}}>
-                                        <Button onClick={() => props.onClickOpenScene(id)} title="Vai alla scena">
-                                            <i className="bi bi-box-arrow-up-right" />
-                                        </Button>
-                                        <Button variant="secondary" onClick={() => onSendButtonClicked(id)} disabled={loadings[idx]} title="Invia all'IA">
-                                            {loadings[idx] ? 
-                                                <Spinner size="sm"/>
-                                            :
-                                                <i className="bi bi-send" />
-                                            }
-                                        </Button>
-                                    </Col>
-                                    <Col>
-                                        {loadings[idx] ?
-                                            <LoadingPlaceholders/>
-                                        :   
-                                            <FloatingLabel className="h-100 w-100" label="Testo completo:">
-                                                <Form.Control
-                                                    as="textarea"
-                                                    value={data.scene?.fullText}
+                switch (node.type) {
+                    case (NodeType.scene): {
+                        const data = node.data as SceneNodeProps;
+                        return (
+                            <Accordion.Item value={id} key={idx}>
+                                <Accordion.Control icon={<i className="bi bi-card-image"/>}>
+                                    {`${data.label}${data.scene?.details.title ? " - " : ""}${data.scene?.details.title}`} 
+                                </Accordion.Control>
+                                <Accordion.Panel>
+                                    <Grid>
+                                        <Grid.Col span={4}>
+                                            <PromptArea
+                                                story={localStory}
+                                                initialText={data.scene?.history.current.prompt}
+                                                setText={(text: string) => onPromptTextEdited(id, text)} />
+                                        </Grid.Col>
+                                        <Grid.Col span={1} style={{alignContent:"center"}}>
+                                            <Center>
+                                                <ActionIcon.Group>
+                                                    <ActionIcon onClick={() => props.onClickOpenScene(id)} title="Vai alla scena">
+                                                        <i className="bi bi-box-arrow-up-right" />
+                                                    </ActionIcon>
+                                                    <ActionIcon onClick={() => onSendButtonClicked(id)} disabled={loadings[idx]} loading={loadings[idx]} title="Invia all'IA">
+                                                        <i className="bi bi-send" />
+                                                    </ActionIcon>
+                                                </ActionIcon.Group>    
+                                            </Center>
+                                        </Grid.Col>
+                                        <Grid.Col span={7}>
+                                            {loadings[idx] ?
+                                                <LoadingPlaceholders/>
+                                            :   
+                                                <Textarea
+                                                    label="Testo completo"
+                                                    value={data.scene?.history.current.fullText}
                                                     className="full-text"
                                                     placeholder="Testo Completo"
                                                     style={{height:"100%", width:"100%"}}
                                                     onChange={e => onFullTextEdited(id, e.target.value)}
                                                     disabled={loadings[idx]} >
-                                                </Form.Control>
-                                            </FloatingLabel>
-                                        }
-                                    </Col>
-                                </Row>
-                            </Accordion.Body>
-                        </Accordion.Item>
-                    );
-                } else if (node.type === NodeType.choice) {
-                    const data = node.data as ChoiceNodeProps;
-                    return <Accordion.Item eventKey={id} key={idx} className="choice">
-                        <Accordion.Header>
-                            {`${data.label} - ${data.choice.title ? data.choice.title : data.choice.choices.map(choice => choice.text).join(" / ")}`}
-                        </Accordion.Header>
-                        <Accordion.Body>
-                            <ChoiceEditor
-                                key={idx}
-                                story={localStory}
-                                nodeId={node.id}
-                                choice={node.data.choice as Choice}
-                                setChoice={newChoice => onChoiceEdited(id, newChoice)}
-                                onChoiceMoved={(oldIdx, newIdx) => props.onChoiceMoved(node.id, oldIdx, newIdx)}
-                                onChoiceDeleted={idx => props.onChoiceDeleted(node.id, idx)}
-                                onClickEditNode={props.onClickEditNode}/>
-                        </Accordion.Body>
-                    </Accordion.Item>
+                                                </Textarea>
+                                            }
+                                        </Grid.Col>
+                                    </Grid>
+                                </Accordion.Panel>
+                            </Accordion.Item>
+                        );
+                    }
+                    case(NodeType.choice): {
+                        const data = node.data as ChoiceNodeProps;
+                        return (
+                            <Accordion.Item value={id} key={idx} className="choice">
+                                <Accordion.Control icon={<i className="bi bi-patch-question"/>}>
+                                    {`${data.label} - ${data.choice.title ? data.choice.title : data.choice.choices.map(choice => choice.text).join(" / ")}`}
+                                </Accordion.Control>
+                                <Accordion.Panel>
+                                    <ChoiceEditor
+                                        key={idx}
+                                        story={localStory}
+                                        nodeId={node.id}
+                                        choice={node.data.choice as Choice}
+                                        setChoice={newChoice => onChoiceEdited(id, newChoice)}
+                                        onChoiceMoved={(oldIdx, newIdx) => props.onChoiceMoved(node.id, oldIdx, newIdx)}
+                                        onChoiceDeleted={idx => props.onChoiceDeleted(node.id, idx)}
+                                        onClickEditNode={props.onClickEditNode}/>
+                                </Accordion.Panel>
+                            </Accordion.Item>
+                        );
+                    }
+                    default:
+                        return <></>
                 }
-                return <></>
             }
         )
     :
-        <Accordion.Item eventKey="no-stories">
+        <Accordion.Item value="no-stories">
             Nessuna Scena nella Storia
         </Accordion.Item>
     , [localStory, loadings, onChoiceEdited, onFullTextEdited, onPromptTextEdited, onSendButtonClicked, props.onClickOpenScene]);
@@ -140,11 +144,9 @@ function StoryTexts(props: {
     useEffect(() => handleSave(localStory), [handleSave, localStory]);
 
     return (
-        <Card className="h-100" style={{overflowY:"auto"}}>
-            <Accordion flush>
-                {accordionElements}
-            </Accordion>
-        </Card>
+        <Accordion>
+            {accordionElements}
+        </Accordion>
     )
 }
 

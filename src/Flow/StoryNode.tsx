@@ -1,6 +1,7 @@
 import { v4 as uuidv4 } from "uuid";
 import React from "react";
 import { Node, ReactFlowInstance, XYPosition } from "@xyflow/react";
+import { Flex } from "@mantine/core";
 import Scene from "../StoryElements/Scene.ts";
 import Choice from "../StoryElements/Choice.ts";
 import SceneNode from "./SceneNode.tsx";
@@ -117,12 +118,13 @@ export const StoryNode = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement> & {selected?: boolean, indirectSelected?: boolean}
 >(({ className, selected, indirectSelected, ...props }, ref) => (
-  <div
+  <Flex
     ref={ref}
-    className={`story-node px-0 py-2 ${className ?? ""} ${selected ? "shadow selected" : ""} ${indirectSelected ? "indirect-selected" : ""}`}
-    style={{display: "flex", position: "relative"}}
+    px={0}
+    py={2}
+    className={`story-node ${className ?? ""} ${selected ? "shadow selected" : ""} ${indirectSelected ? "indirect-selected" : ""}`}
     tabIndex={0}
     {...props}
-  ></div>
+  />
 ));
 StoryNode.displayName = "StoryNode";

@@ -1,15 +1,10 @@
-import { useCallback, useContext, useEffect, useState } from "react";
-import { Button, Card, Col, Form, InputGroup } from "react-bootstrap";
+import { useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { debounce } from 'throttle-debounce';
-import Select from "react-select";
+import { Avatar, Divider, Fieldset, Group, MultiSelect, Select, SimpleGrid, Stack, Text, Textarea, TextInput } from "@mantine/core";
 import Story from "../StoryElements/Story.ts";
 import { SceneDetails as SceneDetailsType} from "../StoryElements/Scene.ts";
-import { StoryElementType } from "../StoryElements/StoryElement.ts";
+import { noElementsText, noMatchingElementsText, StoryElementType, StoryElementTypeArray } from "../StoryElements/StoryElement.ts";
 import { SceneDetailsEnumsContext } from "../App.tsx";
-import DropdownField from "./DropdownField.tsx";
-import { ChipList } from "./ElementChip.tsx";
-import BackgroundElementsModal from "./BackgroundElementsModal.tsx";
-import { storyElementTabsArray } from "./StoryElements.tsx";
 
 function SceneDetails(props: {
 	story: Story,
@@ -22,15 +17,34 @@ function SceneDetails(props: {
 	const [weather, setWeather] = useState(props.details.weather);
 	const [tones, setTones] = useState(props.details.tones);
 	const [value, setValue] = useState(props.details.value);
-	const [backgroundCharacters, setBackgroundCharacters] = useState(new Set(props.details.backgroundIds[StoryElementType.character]));
-	const [backgroundObjects, setBackgroundObjects] = useState(new Set(props.details.backgroundIds[StoryElementType.object]));
-	const [backgroundLocations, setBackgroundLocations] = useState(new Set(props.details.backgroundIds[StoryElementType.location]));
-
-	const [backgroundsModal, setBackgroundsModal] = useState(false);
+	const [backgroundCharacters, setBackgroundCharacters] = useState(props.details.backgroundIds[StoryElementType.character]);
+	const [backgroundObjects, setBackgroundObjects] = useState(props.details.backgroundIds[StoryElementType.object]);
+	const [backgroundLocation, setBackgroundLocation] = useState(props.details.backgroundIds[StoryElementType.location]);
 
 	const sceneDetailsChoices = useContext(SceneDetailsEnumsContext)!;
 
-	const textWidth = "20%";
+	const renderOptions = useCallback(({ option }) => {
+		const element = props.story.getElement(option.value)!;
+		return ( 
+			<Group gap="sm">
+				<Avatar size={36} radius="xl" />
+				<div>
+					<Text size="sm" fs={element.resident ? "italic" : undefined}>{element.name}</Text>
+					<Text size="xs" opacity={0.5}>
+						{element.type}
+						{element.type && element.description && " - "}
+						{element.description}
+					</Text>
+				</div>
+			</Group>
+		);
+	}, [props.story]);
+
+	const allOptions = useMemo(() => 
+		StoryElementTypeArray.map(
+			type => props.story.getElementsByType(type)
+				.map(element => {return {value: element.id, label: element.name}}))
+	, [props.story]);
 
 	const handleSave = useCallback(debounce(250, (
 		title: string,
@@ -39,9 +53,9 @@ function SceneDetails(props: {
 		weather: string,
 		tones: string[],
 		value: string,
-		backgroundCharacters: Set<string>,
-		backgroundObjects: Set<string>,
-		backgroundLocations: Set<string>
+		backgroundCharacters: string[],
+		backgroundObjects: string[],
+		backgroundLocation: string
 	) => {
 		props.setDetails({
 			title: title,
@@ -50,115 +64,91 @@ function SceneDetails(props: {
 			weather: weather,
 			tones: tones,
 			value: value,
-			backgroundIds: [Array.from(backgroundCharacters), Array.from(backgroundObjects), Array.from(backgroundLocations)]
+			backgroundIds: [Array.from(backgroundCharacters), Array.from(backgroundObjects), backgroundLocation]
 		});
 	}), []);
 
-	useEffect(() => handleSave(title, summary, time, weather, tones, value, backgroundCharacters, backgroundObjects, backgroundLocations)
-	, [handleSave, title, summary, time, weather, tones, value, backgroundCharacters, backgroundObjects, backgroundLocations]);
+	useEffect(() => handleSave(title, summary, time, weather, tones, value, backgroundCharacters, backgroundObjects, backgroundLocation)
+	, [handleSave, title, summary, time, weather, tones, value, backgroundCharacters, backgroundObjects, backgroundLocation]);
 
 	return (
-		<Card>
-			<BackgroundElementsModal
-				show={backgroundsModal}
-				setShow={setBackgroundsModal}
-				story={props.story}
-				selectedCharacters={backgroundCharacters}
-				setSelectedCharacters={setBackgroundCharacters}
-				selectedObjects={backgroundObjects}
-				setSelectedObjects={setBackgroundObjects}
-				selectedLocation={backgroundLocations}
-				setSelectedLocation={setBackgroundLocations}
-				noElementTexts={storyElementTabsArray.map(element => element.noElementsText)}/>
-			<Card.Header>
-				<h4>Dettagli scena</h4>
-			</Card.Header>
-			<Card.Body>
-				<Form>
-					<InputGroup>
-						<InputGroup.Text style={{ width: textWidth }}>Titolo:</InputGroup.Text>
-						<Form.Control
-							value={title}
-							onChange={e => setTitle(e.target.value)} />
-					</InputGroup>
-					<InputGroup>
-						<InputGroup.Text style={{ width: textWidth }}>Riassunto:</InputGroup.Text>
-						<Form.Control
-							as="textarea"
-							style={{ maxHeight: "10em" }}
-							value={summary}
-							onChange={e => setSummary(e.target.value)} />
-					</InputGroup>
-					<hr />
-					<DropdownField
-						label="Orario:"
+		<Fieldset legend="Dati Scena">
+			<Stack gap="xs">
+				<TextInput
+					label="Titolo"
+					value={title}
+					onChange={e => setTitle(e.target.value)} />
+				<Textarea
+					label="Riassunto"
+					maxRows={5}
+					style={{ maxHeight: "10em" }}
+					value={summary}
+					onChange={e => setSummary(e.target.value)}/>
+				<Divider label="Dettagli"/>
+				<SimpleGrid cols={2}>
+					<Select
+						label="Orario"
+						placeholder="Nessun Orario"
 						value={time}
-						setValue={setTime}
-						defaultValue="Nessun Orario"
-						labelWidth={textWidth}
-						choices={sceneDetailsChoices.time} />
-					<DropdownField
-						label="Meteo:"
+						onChange={time => setTime(time ?? "")}
+						data={sceneDetailsChoices.time}
+						clearable/>
+					<Select
+						label="Meteo"
+						placeholder="Nessun Meteo"
 						value={weather}
-						setValue={setWeather}
-						defaultValue="Nessun Meteo"
-						labelWidth={textWidth}
-						choices={sceneDetailsChoices.weather} />
-					<InputGroup style={{textAlign: "left"}}>
-						<InputGroup.Text style={{width: textWidth}}>{"Toni:"}</InputGroup.Text>
-						<Select
-							placeholder={"Nessun Tono"}
-							value={tones.map(tone => {return {label: tone, value: tone}})}
-							options={sceneDetailsChoices.tone.map(tone => {return {label: tone, value: tone}})}
-							onChange={tones => {setTones(tones.map(tone => tone.value))}}
-							closeMenuOnSelect={false}
-							isMulti
-							styles={{container: (styles) => {return {...styles, width: `calc(100% - ${textWidth})`}}}} />
-					</InputGroup>
-					<DropdownField
+						onChange={weather => setWeather(weather ?? "")}
+						data={sceneDetailsChoices.weather}
+						clearable/>
+					<MultiSelect
+						label="Tono"
+						placeholder={tones.length ? undefined : "Nessun Tono"}
+						value={tones}
+						onChange={tones => setTones(tones ?? [""])}
+						data={sceneDetailsChoices.tone}
+						clearable/>
+					<Select
 						label="Valore:"
+						placeholder="Nessun Valore"
 						value={value}
-						setValue={setValue}
+						onChange={value => setValue(value ?? "")}
 						defaultValue="Nessun Valore"
-						labelWidth={textWidth}
-						choices={sceneDetailsChoices.value} />
-					<hr/>
-					<InputGroup>
-						<InputGroup.Text style={{ width: textWidth, overflow: "hidden" }}>Sfondo:</InputGroup.Text>
-						{backgroundCharacters.size || backgroundObjects.size || backgroundLocations.size ?
-							<Col className="px-2">
-								{!!backgroundCharacters.size && <ChipList 
-									values={backgroundCharacters}
-									setValues={setBackgroundCharacters}
-									allValues={props.story.getElementsByType(StoryElementType.character)}
-									className="character-mention"
-									noElementsText="Nessun Personaggio" />}
-								{!!backgroundObjects.size && <ChipList 
-									values={backgroundObjects}
-									setValues={setBackgroundObjects}
-									allValues={props.story.getElementsByType(StoryElementType.object)}
-									className="object-mention"
-									noElementsText="Nessun Oggetto" />}
-								{!!backgroundLocations.size && <ChipList 
-									values={backgroundLocations}
-									setValues={setBackgroundLocations}
-									allValues={props.story.getElementsByType(StoryElementType.location)}
-									className="location-mention"
-									noElementsText="Nessun Luogo" />}
-							</Col>
-						:
-							<Form.Control disabled defaultValue="Nessun Elemento di Sfondo" style={{backgroundColor: "transparent", opacity: "66%"}}/>}
-						<Button
-							onClick={() => setBackgroundsModal(true)}
-							title="Modifica elementi di sfondo"
-							variant="secondary">
-							<i className="bi bi-pencil" aria-label="edit" />
-						</Button>
-					</InputGroup>
-					
-				</Form>
-			</Card.Body>
-		</Card>
+						data={sceneDetailsChoices.value}
+						clearable/>
+				</SimpleGrid>
+				<Divider label="Elementi di Sfondo"/>
+				<MultiSelect
+					label="Personaggi"
+					value={backgroundCharacters}
+					onChange={chars => setBackgroundCharacters(chars ?? [])}
+					data={props.story.getElementsByType(StoryElementType.character).map(element => {return {value: element.id, label: element.name}})}
+					placeholder={backgroundCharacters.length ? undefined : "Nessun Personaggio"}
+					renderOption={renderOptions}
+					nothingFoundMessage={allOptions[StoryElementType.character].length === 0 ? noElementsText(StoryElementType.character) : noMatchingElementsText(StoryElementType.character)}
+					hidePickedOptions
+					searchable/>
+				<MultiSelect
+					label="Oggetti"
+					value={backgroundObjects}
+					onChange={obj => setBackgroundObjects(obj ?? [])}
+					data={allOptions[StoryElementType.object]}
+					placeholder={backgroundObjects.length ? undefined : "Nessun Oggetto"}
+					renderOption={renderOptions}
+					nothingFoundMessage={allOptions[StoryElementType.object].length === 0 ? noElementsText(StoryElementType.object) : noMatchingElementsText(StoryElementType.object)}
+					hidePickedOptions
+					searchable/>
+				<Select
+					label="Luogo"
+					value={backgroundLocation}
+					onChange={loc => setBackgroundLocation(loc ?? "")}
+					data={allOptions[StoryElementType.location]}
+					placeholder={backgroundObjects.length ? undefined : "Nessun Luogo"}
+					renderOption={renderOptions}
+					nothingFoundMessage={allOptions[StoryElementType.location].length === 0 ? noElementsText(StoryElementType.location) : noMatchingElementsText(StoryElementType.location)}
+					clearable
+					searchable/>
+			</Stack>
+		</Fieldset>
 	);
 }
 

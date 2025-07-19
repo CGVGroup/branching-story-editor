@@ -7,7 +7,7 @@ type SceneDetails = {
     weather: string;
     tones: string[];
     value: string;
-    backgroundIds: [string[], string[], string[]];
+    backgroundIds: [string[], string[], string];
 }
 
 type HistoryElement = {
@@ -30,7 +30,7 @@ class Scene {
             weather: details?.weather ?? "",
             tones: details?.tones ?? [],
             value: details?.value ?? "",
-            backgroundIds: details?.backgroundIds ?? [[], [], []],
+            backgroundIds: details?.backgroundIds ?? [[], [], ""],
         };
         if (history === undefined) {
             this.history = new UndoStack([{prompt: "", fullText: ""}])

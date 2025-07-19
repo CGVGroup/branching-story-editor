@@ -1,20 +1,14 @@
 import "./App.css";
 import "bootstrap-icons/font/bootstrap-icons.css";
+import '@mantine/core/styles.css';
 import { v4 as uuidv4 } from "uuid";
 import { createContext, useCallback, useEffect, useRef, useState } from "react";
 import { Navigate, Route, BrowserRouter as Router, Routes } from "react-router-dom";
 import StoriesDashboard from "./Layout/StoriesDashboard.tsx";
 import StoryEditor from "./Layout/StoryEditor.tsx";
 import Story from "./StoryElements/Story.ts";
-import GenericModal, { ModalContents } from "./Layout/GenericModal.tsx";
 import { DbContext, getAll, getEnums, getModels, getTaxonomies, SceneDetailsEnums, Taxonomies } from "./Misc/DB.ts";
-import { Col, Spinner } from "react-bootstrap";
-import { StoryElementType, StoryElementTypeDictionary } from "./StoryElements/StoryElement.ts";
-
-type ReactSelectOption = {
-  label: string,
-  value: string
-}
+import { Center, Loader, MantineProvider } from "@mantine/core";
 
 export const SceneDetailsEnumsContext = createContext<SceneDetailsEnums | null>(null);
 export const TaxonomiesContext = createContext<Taxonomies | null>(null);
@@ -24,8 +18,6 @@ export const ChosenModelContext = createContext<[string, React.Dispatch<React.Se
 function App() {
   const [stories, setStories] = useState(new Map<string, Story>());
   const [lastOpenStory, setLastOpenStory] = useState<string | null>(null);
-  const [showModal, setShowModal] = useState<boolean>(false);
-  const [modalContents, setModalContents] = useState<ModalContents>({});
   const [db, setDb] = useState<Object | null>(null);
   const [taxonomies, setTaxonomies] = useState<Taxonomies | null>(null);
   const [enums, setEnums] = useState<SceneDetailsEnums | null>(null);
@@ -47,11 +39,6 @@ function App() {
   const deleteStory = useCallback((id: string) => {
     setStories(stories => {stories.delete(id); return new Map(stories);});
   }, []);
-  
-  const setModal = useCallback((contents: ModalContents) => {
-    setModalContents(contents);
-    setShowModal(true);
-  }, []);
 
   // Parse stories from localStorage
   useEffect(() => {
@@ -68,6 +55,7 @@ function App() {
   // Save stories on exit
   useEffect(() => {
     const onBeforeUnload = (e: Event) => {
+      e.preventDefault();
 			localStorage.setItem("stories", JSON.stringify([...storiesRef.current.entries()]));
 		}
 		window.addEventListener('beforeunload', onBeforeUnload);
@@ -104,45 +92,45 @@ function App() {
   }, []);
   
   return (
-    db === null ?
-      <Col>
-        Loading...
-        <Spinner/>
-      </Col>
-    :
-      <div className="App">
-        <GenericModal show={showModal} setShow={setShowModal} {...modalContents}/>
-        <DbContext.Provider value={{db}}>
-        <TaxonomiesContext.Provider value={taxonomies}>
-        <ModelListContext.Provider value={models}>
-        <ChosenModelContext.Provider value={[chosenModel, setChosenModel]}>
-        <SceneDetailsEnumsContext.Provider value={enums}>
-          <Router>
-            <Routes>
-              <Route path="/" element={<Navigate to="/stories"/>} />
-              <Route path="/stories" element={
-                <StoriesDashboard
-                  stories={stories}
-                  setStory={setStory}
-                  addStory={addStory}
-                  deleteStory={deleteStory}
-                  lastOpenStory={lastOpenStory}
-                  setLastOpenStory={setLastOpenStory}
-                  setModal={setModal} />
-              } />
-              <Route path="/stories/:id" element={
-                <StoryEditor
-                  stories={stories}
-                  setStory={setStory}
-                  setModal={setModal} />} />
-            </Routes>
-          </Router>
-        </SceneDetailsEnumsContext.Provider>
-        </ChosenModelContext.Provider>
-        </ModelListContext.Provider>
-        </TaxonomiesContext.Provider>
-        </DbContext.Provider>
-      </div>
+    <MantineProvider>
+      {db === null ?
+        <Center>
+          Loading...
+          <Loader/>
+        </Center>
+      :
+        <div className="App">
+          <DbContext.Provider value={{db}}>
+          <TaxonomiesContext.Provider value={taxonomies}>
+          <ModelListContext.Provider value={models}>
+          <ChosenModelContext.Provider value={[chosenModel, setChosenModel]}>
+          <SceneDetailsEnumsContext.Provider value={enums}>
+            <Router>
+              <Routes>
+                <Route path="/" element={<Navigate to="/stories"/>} />
+                <Route path="/stories" element={
+                  <StoriesDashboard
+                    stories={stories}
+                    setStory={setStory}
+                    addStory={addStory}
+                    deleteStory={deleteStory}
+                    lastOpenStory={lastOpenStory}
+                    setLastOpenStory={setLastOpenStory}/>
+                } />
+                <Route path="/stories/:id" element={
+                  <StoryEditor
+                    stories={stories}
+                    setStory={setStory}/>
+                } />
+              </Routes>
+            </Router>
+          </SceneDetailsEnumsContext.Provider>
+          </ChosenModelContext.Provider>
+          </ModelListContext.Provider>
+          </TaxonomiesContext.Provider>
+          </DbContext.Provider>
+        </div>}
+    </MantineProvider>
   );
 }
 

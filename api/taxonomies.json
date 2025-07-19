@@ -802,14 +802,6 @@
                             ]
                         }
                     ]
-                },
-                {
-                    "name": "Ambiente Casa",
-                    "children": []
-                },
-                {
-                    "name": "Ambiente Tempio",
-                    "children": []
                 }
             ]
         }

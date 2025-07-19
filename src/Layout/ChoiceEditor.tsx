@@ -1,10 +1,9 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Button, Card, Col, Form, InputGroup, Stack } from "react-bootstrap";
+import { getConnectedEdges } from "@xyflow/react";
+import { ActionIcon, ActionIconGroup, Button, Group, Stack, TextInput } from "@mantine/core";
 import { debounce } from "throttle-debounce";
 import Story from "../StoryElements/Story.tsx";
 import Choice from "../StoryElements/Choice.ts";
-import DynamicTextField from "./DynamicTextField.tsx";
-import { getConnectedEdges } from "@xyflow/react";
 
 function ChoiceEditor(props: {
     story: Story,
@@ -58,62 +57,49 @@ function ChoiceEditor(props: {
     useEffect(() => handleSave(localChoice), [handleSave, localChoice]);
 
     return (
-        <Col>
-            <Stack gap={2}>
-                <DynamicTextField
-                    initialValue={localChoice.title}
-                    onSubmit={setTitle}
-                    baseProps={{
-                        id: "title",
-                        size: "lg",
-                        placeholder: "Nessun interrogativo"
-                    }}/>
-                {localChoice.choices.map((choice, choiceIndex, choices) => 
-                    <Card key={choiceIndex} className={choice.wrong ? "wrong-choice" : ""}>
-                        <Card.Header className="d-flex align-items-center">
-                            <InputGroup className="flex-grow-1">
-                                <InputGroup.Text>    
-                                    <Card.Title className="m-0">
-                                        {`Scelta ${choiceIndex + 1}:`}
-                                    </Card.Title>
-                                </InputGroup.Text>
-                                <Form.Control
-                                    value={choice.text}
-                                    onChange={e => setChoiceText(choiceIndex, e.target.value)}
-                                    disabled={props.readOnly} />
-                                {!props.readOnly &&
-                                    <>
-                                        <Button variant="danger" onClick={() => deleteChoice(choiceIndex)} title="Elimina">
-                                            <i className="bi bi-trash" aria-label="delete" /> 
-                                        </Button>
-                                        <Button variant="primary"
-                                            onClick={() => props.onClickEditNode(nextSceneIds[choiceIndex]!)}
-                                            title="Apri scena successiva"
-                                            disabled={nextSceneIds[choiceIndex] === null}>
-                                            <i className="bi bi-box-arrow-up-right" aria-label="open" /> 
-                                        </Button>
-                                        <Button variant="secondary" onClick={() => moveChoiceUp(choiceIndex)} disabled={choiceIndex === 0} title="Sposta su">
-                                            <i className="bi bi-chevron-up" aria-label="move up" /> 
-                                        </Button>
-                                        <Button variant="secondary" onClick={() => moveChoiceDown(choiceIndex)} disabled={choiceIndex === choices.length - 1} title="Sposta giù">
-                                            <i className="bi bi-chevron-down" aria-label="move down" /> 
-                                        </Button>
-                                    </>
-                                }
-                            </InputGroup>
-                        </Card.Header>
-                    </Card>
-                )}
-                {!props.readOnly &&
-                    <Button variant="light" onClick={addNewChoice}>
-                        <Col>
-                            <i className="bi bi-plus-square-dotted" style={{display: "block", fontSize:"xxx-large"}} />
-                            Aggiungi Scelta
-                        </Col>
-                    </Button>
-                }
-            </Stack>
-        </Col>
+        <Stack gap={2}>
+            <TextInput
+                defaultValue={localChoice.title}
+                onChange={e => setTitle(e.currentTarget.value)}
+                size="lg"
+                placeholder="Nessun interrogativo"
+                label="Interrogativo"/>
+            {localChoice.choices.map((choice, choiceIndex, choices) => 
+                <Group key={choiceIndex} className={choice.wrong ? "wrong-choice" : ""}>
+                    <TextInput
+                        value={choice.text}
+                        size="md"
+                        onChange={e => setChoiceText(choiceIndex, e.target.value)}
+                        disabled={props.readOnly}
+                        label={`Scelta ${choiceIndex + 1}`}
+                        style={{flexGrow: 1}}/>
+                    {!props.readOnly &&
+                        <ActionIconGroup>
+                            <ActionIcon onClick={() => deleteChoice(choiceIndex)} title="Elimina" size="lg">
+                                <i className="bi bi-trash" aria-label="delete" /> 
+                            </ActionIcon>
+                            <ActionIcon
+                                onClick={() => props.onClickEditNode(nextSceneIds[choiceIndex]!)}
+                                title="Apri scena successiva"
+                                disabled={nextSceneIds[choiceIndex] === null} size="lg">
+                                <i className="bi bi-box-arrow-up-right" aria-label="open" /> 
+                            </ActionIcon>
+                            <ActionIcon onClick={() => moveChoiceUp(choiceIndex)} disabled={choiceIndex === 0} title="Sposta su" size="lg">
+                                <i className="bi bi-chevron-up" aria-label="move up" /> 
+                            </ActionIcon>
+                            <ActionIcon onClick={() => moveChoiceDown(choiceIndex)} disabled={choiceIndex === choices.length - 1} title="Sposta giù" size="lg">
+                                <i className="bi bi-chevron-down" aria-label="move down" /> 
+                            </ActionIcon>
+                        </ActionIconGroup>
+                    }
+                </Group>
+            )}
+            {!props.readOnly &&
+                <Button size="xl" variant="subtle" onClick={addNewChoice} title="Aggiungi Scelta">
+                    <i className="bi bi-plus-square-dotted" style={{display: "block", fontSize:"xxx-large"}} />
+                </Button>
+            }
+        </Stack>
     );
 }
 

@@ -1,11 +1,12 @@
-import { Button, Card, Col, Container, FloatingLabel, Form, InputGroup, ListGroup, Row, Spinner, Stack } from "react-bootstrap";
 import { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import {ActionIcon, AppShell, Button, Center, Fieldset, FileButton, Flex, Group, Modal, NavLink, Paper, ScrollArea, Select, SimpleGrid, Stack, Textarea, TextInput, Title} from "@mantine/core";
+import {useDisclosure} from "@mantine/hooks";
 import Story from "../StoryElements/Story.ts";
 import StoryFlowChartViewer from "../Flow/StoryFlowChartViewer.tsx";
 import StoryElements from "./StoryElements.tsx";
-import { ModalContents } from "./GenericModal.tsx";
 import { ChosenModelContext, ModelListContext } from "../App.tsx";
+import classes from "../GrowColumn.module.css"
 
 function StoriesDashboard(props: {
 	stories: Map<string, Story>,
@@ -14,14 +15,14 @@ function StoriesDashboard(props: {
 	deleteStory: (id: string) => void,
 	lastOpenStory: string | null,
 	setLastOpenStory: (id: string) => void,
-	setModal: (contents: ModalContents) => void,
 }) {	
 	const navigate = useNavigate();
 	
-	const [selectedId, setSelectedId] = useState<string | null>(props.lastOpenStory);
-	const [fileUploading, setFileUploading] = useState(false);
-
 	const [chosenModel, setChosenModel] = useContext(ChosenModelContext)!;
+
+	const [deleteStory, {open: openDeleteStory, close: closeDeleteStory}] = useDisclosure(false);
+	const [selectedId, setSelectedId] = useState<string | null>(props.lastOpenStory);
+	const [fileUploading, fileUploadingHandler] = useDisclosure(false);
 
 	const fileUpload = useRef<HTMLInputElement>(null);
 	const modelNamesContext = useContext(ModelListContext);
@@ -31,35 +32,25 @@ function StoriesDashboard(props: {
 		setSelectedId(newId);
 	}, [props.addStory])
 
-	const onClickDelete = useCallback((id: string) => {
-		props.setModal({
-			title:`Eliminare "${props.stories.get(id)?.title}"?`,
-			okProps: {variant:"danger", onClick: () => props.deleteStory(id)},
-			okText: "Elimina",
-			cancelProps: {variant: "secondary"},
-			cancelText: "Annulla"
-		});
-	}, [props.stories, props.deleteStory]);
-
 	const onClickEdit = useCallback((id: string) => {
 		navigate(`${id}`);
 		setSelectedId(id);
 		props.setLastOpenStory(id);
 	}, []);
 	
-	const onUpload = useCallback(async (files?: FileList | null) => {
+	const onUpload = useCallback(async (files?: File[] | null) => {
 		if (!files) {
-			setFileUploading(false);
+			fileUploadingHandler.close();
 			return;
 		}
 		try {
-			for (const file of Array.from(files)) {
+			for (const file of files) {
 				addStory(Story.fromJSON(await file.text()));
 			}
 		} catch(err) {
 			console.error(err);
 		} finally {
-			setFileUploading(false);
+			fileUploadingHandler.close();
 		}
 	}, [addStory])
 
@@ -73,9 +64,22 @@ function StoriesDashboard(props: {
 
 	const selectedStory = useMemo(() => props.stories.get(selectedId!), [props.stories, selectedId]);
 
+	const deleteStoryModal = useMemo(() => 
+		selectedId && 
+			<Modal
+				opened={deleteStory}
+				onClose={closeDeleteStory}
+				title={<Title order={4}>Eliminare <b>{selectedStory?.title}</b>?</Title>}>
+				<Group justify="flex-end">
+					<Button color="gray" variant="light" onClick={closeDeleteStory}>Annulla</Button>
+					<Button color="red" variant="filled" onClick={() => {props.deleteStory(selectedId); closeDeleteStory();}}>Conferma</Button>
+				</Group>
+			</Modal>
+	, [deleteStory, selectedId, selectedStory, props.deleteStory])
+
 	// Handler for aborting file upload dialog
 	useEffect(() => {
-		const onCancelDialog = () => setFileUploading(false)
+		const onCancelDialog = () => fileUploadingHandler.close()
 		fileUpload.current?.addEventListener("cancel", onCancelDialog);
 		return () => fileUpload.current?.removeEventListener("cancel", onCancelDialog);
 	}, []);
@@ -85,146 +89,135 @@ function StoriesDashboard(props: {
 	}, []);
 	
 	return (
-		<Container className="h-100" fluid>
-			<Row style={{height:"10%", alignItems:"center"}}>
-				<h3>Story Editor</h3>
-			</Row>
-			<Form.Select
-				defaultValue={chosenModel}
-				style={{position: "absolute", right: "0", top: "0", width: "10%"}}
-				onChange={e => setChosenModel(e.target.value)}>
-				<option value={"default"}>default</option>
-				{modelNamesContext?.map((model, idx) =>
-					<option key={idx} value={model}>{model}</option>)
+		<AppShell 
+			header={{ height: "10vh" }}
+			navbar={{ width: "20vw", breakpoint: "sm" }}
+			styles={{ main: {display: "flex"} }}>
+			<AppShell.Header p="xs">
+				<Title order={1} ta="center" h="100%">Story Editor</Title>
+				<Select
+					label="LLM"
+					allowDeselect={false}
+					defaultValue={chosenModel}
+					style={{position: "absolute", right: "0", top: "0", width: "10%"}}
+					onChange={choice => setChosenModel(choice!)}
+					data={modelNamesContext!}/>
+			</AppShell.Header>
+			<AppShell.Navbar p="md">
+				<AppShell.Section pb="xs">
+					<Group justify="space-between">
+						<Title order={3} ta="center" style={{flexGrow: 1}}> Storie Salvate </Title>
+						<ActionIcon.Group>
+							<ActionIcon onClick={onAddNew} title="Crea una nuova storia" size="lg">
+								<i className="bi bi-file-earmark-plus"/>
+							</ActionIcon>
+							<FileButton
+								onChange={files => {fileUploadingHandler.open(); onUpload(files);}}
+								multiple
+								accept=".story">
+								{props =>
+									<ActionIcon 
+										{...props}
+										title="Carica una storia da file"
+										loading={fileUploading}
+										size="lg">
+											<i className="bi bi-cloud-upload" />
+									</ActionIcon>}
+							</FileButton>
+						</ActionIcon.Group>
+					</Group>
+				</AppShell.Section>
+				<AppShell.Section grow component={ScrollArea}>
+					{[...props.stories.keys()].map(id =>
+						<NavLink
+							key={id}
+							active={selectedId === id}
+							label={props.stories.get(id)!.title}
+							title={props.stories.get(id)!.title}
+							onClick={() => setSelectedId(id)}
+							style={{fontStyle: props.stories.get(id)!.flow.nodes.length === 0 ? "italic" : ""}}
+							rightSection={
+								<ActionIcon
+									size="lg"
+									variant="light"
+									onClick={() => onClickEdit(id)}>
+										<i className="bi bi-pencil-square" aria-label="edit"/>
+								</ActionIcon>
+							}/>
+					)}
+				</AppShell.Section>
+			</AppShell.Navbar>
+			<AppShell.Main pe="sm">
+				{deleteStoryModal}
+				{selectedId && selectedStory ?
+					<Stack gap={0} style={{flexGrow: 1}}>
+						<Group>
+							<ActionIcon.Group>
+								<ActionIcon size="lg" color="red" onClick={openDeleteStory} title="Elimina">
+									<i className="bi bi-trash" aria-label="delete"/> 
+								</ActionIcon>
+								<ActionIcon size="lg" variant="light" onClick={() => onClickCopy(selectedStory)} title="Duplica">
+									<i className="bi bi-copy" aria-label="duplicate"/> 
+								</ActionIcon>
+								<ActionIcon size="lg" variant="filled" onClick={() => onClickEdit(selectedId)} title="Modifica">
+									<i className="bi bi-pencil-square" aria-label="edit"/>
+								</ActionIcon>
+							</ActionIcon.Group>
+							<TextInput
+								size="md"
+								placeholder="Nessun titolo"
+								value={selectedStory.title}
+								onChange={e => props.setStory(selectedId, selectedStory.cloneAndSetTitle(e.target.value))}
+								style={{flexGrow: 1}}/>
+						</Group>
+						<Paper h="40%">
+							<StoryFlowChartViewer story={selectedStory} storyId={selectedId}/>
+						</Paper>
+						<SimpleGrid cols={2} flex={1}>
+							<Paper>
+								<StoryElements
+									story={selectedStory}
+									readOnly={true} />
+							</Paper>
+							<Fieldset legend="Dettagli Storia" h="100%">
+								<Stack h="100%">
+									<Textarea
+										label="Riassunto"
+										placeholder="Riassunto"
+										value={selectedStory.summary}
+										onChange={e => props.setStory(selectedId, selectedStory.cloneAndSetSummary(e.target.value))}
+										className={classes.growcol}
+										classNames={{wrapper: classes.growcol}}
+										styles={{input: { flexGrow: 1 }}}/>
+									<Textarea
+										label="Note"
+										placeholder="Note"
+										value={selectedStory.notes}
+										onChange={e => props.setStory(selectedId, selectedStory.cloneAndSetNotes(e.target.value))}
+										autosize={false}
+										className={classes.growcol}
+										classNames={{wrapper: classes.growcol}}
+										styles={{input: { flexGrow: 1 }}}/>
+								</Stack>
+							</Fieldset>
+						</SimpleGrid>
+					</Stack>
+				:
+					<Flex direction="column" style={{flexGrow: 1}}>
+						<div style={{
+							flexGrow: 1,
+							backgroundImage:"url(/Desert.jpg)",
+							backgroundSize:"cover",
+							opacity:"0.15"}}>
+							<Center>
+								Crea o seleziona una Storia
+							</Center>
+						</div>
+						
+					</Flex>
 				}
-			</Form.Select>
-			<Row style={{height:"90%"}}>
-				<Col sm={3} className="h-100">
-					<Card className="h-100">
-						<Card.Header>
-							<Stack gap={1} direction="horizontal">
-								<h5> Storie Salvate </h5>
-								<Button variant="primary" className={"ms-auto"} onClick={onAddNew} title="Crea una nuova storia">
-									<i className="bi bi-file-earmark-plus"/>
-								</Button>
-								<Button variant="primary" onClick={() => {setFileUploading(true); fileUpload.current?.click()}} title="Carica una storia da file">							
-									{fileUploading ?
-										<Spinner size="sm" /> : <i className="bi bi-cloud-upload" />}
-								</Button>
-								<input
-									ref={fileUpload}
-									id="upload-story"
-									type="file"
-									accept=".story"
-									multiple
-									onChange={e => onUpload((e.target as HTMLInputElement).files)}
-									style={{display:"none"}}
-								/>
-							</Stack>
-						</Card.Header>
-						<Card.Body style={{padding:"0", maxHeight:"100%", overflow:"auto"}}>
-							<ListGroup variant="flush">
-								{[...props.stories.keys()].map(id =>
-									<ListGroup.Item key={id}>
-										<ListGroup horizontal>
-											<ListGroup.Item
-												action
-												title="Visualizza"
-												onClick={() => setSelectedId(id)}
-												className={id === selectedId ? "active" : ""}
-												style={{fontStyle: props.stories.get(id)!.flow.nodes.length === 0 ? "italic" : ""}}>
-												{props.stories.get(id)!.title}
-											</ListGroup.Item>
-											<ListGroup.Item
-												action
-												variant="secondary"
-												title="Modifica"
-												onClick={() => onClickEdit(id)}
-												style={{width:"3em"}}>
-												<i className="bi bi-pencil-square" aria-label="edit"/>
-											</ListGroup.Item>
-										</ListGroup>
-									</ListGroup.Item>
-								)}
-							</ListGroup>
-						</Card.Body>
-					</Card>
-				</Col>
-				<Col className="h-100">
-					<Card className="h-100">
-						{selectedId && selectedStory ?
-							<>
-								<Card.Header>
-									<InputGroup>
-										<Button variant="danger" onClick={() => onClickDelete(selectedId)} title="Elimina">
-											<i className="bi bi-trash" aria-label="delete"/> 
-										</Button>
-										<Button variant="secondary" onClick={() => onClickCopy(selectedStory)} title="Duplica">
-											<i className="bi bi-copy" aria-label="duplicate"/> 
-										</Button>
-										<Button variant="primary" onClick={() => onClickEdit(selectedId)} title="Modifica">
-											<i className="bi bi-pencil-square" aria-label="edit"/>
-										</Button>
-										<Form.Control
-											value={selectedStory.title}
-											onChange={e => props.setStory(selectedId, selectedStory.cloneAndSetTitle(e.target.value))}/>
-									</InputGroup>
-								</Card.Header>
-								<Card.Body>
-									<Card style={{height:"40%"}}>
-										<StoryFlowChartViewer story={selectedStory} storyId={selectedId}/>
-									</Card>
-									<Row style={{height:"60%"}}>
-										<Col xs={6} className="h-100">
-											<Card className="h-100">
-												<Card.Body className="h-100 custom-tabs" style={{display: "flex", flexDirection: "column"}}>
-													<StoryElements
-														story={selectedStory}
-														readOnly={true} />
-												</Card.Body>
-											</Card>
-										</Col>
-										<Col>
-											<FloatingLabel className="h-50" label="Riassunto:">
-												<Form.Control
-													as="textarea"
-													placeholder="Riassunto"
-													className="h-100"
-													value={selectedStory.summary}
-													onChange={e => props.setStory(selectedId, selectedStory.cloneAndSetSummary(e.target.value))}/>
-											</FloatingLabel>
-											<FloatingLabel className="h-50" label="Note:">
-												<Form.Control
-													as="textarea"
-													placeholder="Note"
-													className="h-100"
-													value={selectedStory.notes}
-													onChange={e => props.setStory(selectedId, selectedStory.cloneAndSetNotes(e.target.value))}/>
-											</FloatingLabel>
-										</Col>
-									</Row>
-								</Card.Body>
-							</>
-						:
-							<Card.Body className="p-0 d-flex flex-column">
-								<div style={{
-									width:"100%",
-									height:"100%",
-									backgroundImage:"url(/Desert.jpg)",
-									backgroundSize:"cover",
-									opacity:"0.15"}}>
-								</div>
-								<Col style={{position:"absolute", top:"33%", width:"100%", fontSize:"x-large", alignContent:"center"}}>
-									<span>
-										Crea o seleziona una Storia
-									</span>
-								</Col>
-							</Card.Body>
-						}
-					</Card>
-				</Col>
-			</Row>
-		</Container>
+			</AppShell.Main>
+		</AppShell>
 	);
 }
 

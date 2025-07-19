@@ -1,5 +1,7 @@
 import { Handle, NodeProps, NodeToolbar, Position, useReactFlow } from "@xyflow/react";
-import { Button, ButtonGroup, Col, InputGroup, OverlayTrigger, Tooltip } from "react-bootstrap";
+import { ActionIcon, Center, Divider, Flex, Menu, Stack } from "@mantine/core";
+import { isNotEmpty } from "@mantine/form";
+import { useDisclosure } from "@mantine/hooks";
 import { changeStoryNodeName, ChoiceNodeType, deleteStoryNode, StoryNode } from "./StoryNode.tsx";
 import { LabeledHandle } from "./LabeledHandle.tsx";
 import DynamicTextField from "../Layout/DynamicTextField.tsx";
@@ -7,6 +9,8 @@ import Choice from "../StoryElements/Choice.ts";
 
 function ChoiceNode(props: NodeProps<ChoiceNodeType>) {
   const rfInstance = useReactFlow();
+
+  const [locked, lockedHandler] = useDisclosure(true);
   
   const handleDelete = () => {
     deleteStoryNode(rfInstance, props.id);
@@ -36,35 +40,38 @@ function ChoiceNode(props: NodeProps<ChoiceNodeType>) {
   return (
     <StoryNode selected={props.selected} indirectSelected={props.data.indirectSelected} className="choice">
       <Handle type="target" position={Position.Left} />
-      <Col className="w-100 px-0">
-        <div className="w-100 px-1 mb-1">
-          <DynamicTextField
-            initialValue={props.data.label}
-            focusOnDoubleClick={true}
-            onSubmit={handleSubmitChoiceName}
-            isInvalid={label => label === ""}
-            baseProps={{
-              id: "name",
-              className: "name",
-              size: "sm",
-              style: {marginBottom: "0.5em"}
-            }}/>
-          <DynamicTextField
-            initialValue={props.data.choice?.title}
-            focusOnDoubleClick={true}
-            onSubmit={handleSubmitChoiceTitle}
-            baseProps={{
-              id: "title",
-              className: "title",
-              size: "sm",
-              placeholder: "Nessun interrogativo",
-              style: {fontSize:"x-small"}
-            }}/>
-        </div>
+      <Flex direction="column" px={0}>
+        <ActionIcon
+          pos="absolute"
+          right="-0.5em"
+          top="-0.5em"
+          size="xs"
+          variant="subtle"
+          radius="md"
+          onClick={lockedHandler.toggle}>
+          {locked ? <i className="bi bi-lock"/> : <i className="bi bi-unlock"/>}
+        </ActionIcon>
+          <Center>
+            <Stack px="xs" gap="xs">
+              <DynamicTextField
+                initialValue={props.data.label}
+                validate={isNotEmpty("Il nome della scena non può essere vuoto")}
+                onSubmit={handleSubmitChoiceName}
+                locked={locked}
+                lockedHandler={lockedHandler}
+                baseProps={{className: "name"}}/>
+              <DynamicTextField
+                initialValue={props.data.choice?.title}
+                onSubmit={handleSubmitChoiceTitle}
+                locked={locked}
+                lockedHandler={lockedHandler}
+                baseProps={{className: "title", placeholder: "Nessun Titolo"}}/>
+            </Stack>
+          </Center>
         {props.data.choice.choices.length > 0 && 
           props.data.choice.choices.map((choice, idx) =>
             <div key={idx}>
-              {idx > 0 && <hr className="my-1"/>}
+              {idx > 0 && <Divider my={0.5} color="gray" size="xs"/>}
               <LabeledHandle
                 type="source"
                 title={choice.text}
@@ -74,33 +81,30 @@ function ChoiceNode(props: NodeProps<ChoiceNodeType>) {
             </div> 
           )
         }
-      </Col>
+      </Flex>
       <NodeToolbar isVisible={props.selected && !props.data.indirectSelected} className="nodrag nopan">
-        <InputGroup>
-          <ButtonGroup>
-            <Button variant="secondary" onClick={props.data.onClickEdit} title="Modifica">
-              <i className="bi bi-pencil" aria-label="edit" />
-            </Button>
-            <OverlayTrigger
-              key={"delete"}
-              placement={"right"}
-              trigger="focus"
-              overlay={<Tooltip>
-                <ButtonGroup vertical>
-                  <Button variant="danger" onClick={handleDelete} title="Conferma">
-                    <i className="bi bi-check-lg" aria-label="edit" />
-                  </Button>
-                  <Button variant="secondary" title="Annulla">
-                    <i className="bi bi-x-lg" aria-label="delete" />
-                  </Button>
-                </ButtonGroup>
-              </Tooltip>}>
-                <Button variant="danger" title="Elimina">
-                  <i className="bi bi-trash3" aria-label="delete" />
-                </Button>
-            </OverlayTrigger>
-          </ButtonGroup>
-        </InputGroup>
+        <ActionIcon.Group>
+          <ActionIcon onClick={props.data.onClickEdit} title="Modifica">
+            <i className="bi bi-pencil" aria-label="edit" />
+          </ActionIcon>
+          <Menu position="right">
+            <Menu.Target>
+              <ActionIcon title="Elimina">
+                <i className="bi bi-trash3" aria-label="delete" />
+              </ActionIcon>
+            </Menu.Target>
+            <Menu.Dropdown>
+              <ActionIcon.Group orientation="vertical">
+                <ActionIcon onClick={handleDelete} title="Conferma">
+                  <i className="bi bi-check-lg" aria-label="edit" /> 
+                </ActionIcon>
+                <ActionIcon title="Annulla">
+                  <i className="bi bi-x-lg" aria-label="delete" /> 
+                </ActionIcon>
+              </ActionIcon.Group>
+            </Menu.Dropdown>
+          </Menu>
+        </ActionIcon.Group>
       </NodeToolbar>
     </StoryNode>
   );

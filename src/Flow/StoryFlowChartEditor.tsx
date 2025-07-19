@@ -1,9 +1,9 @@
 import "@xyflow/react/dist/style.css";
+import React, { useCallback, useState, useMemo, useEffect, useRef } from "react";
+import { ReactFlow, Controls, Background, applyNodeChanges, Panel, ReactFlowInstance, Edge, NodeChange, Node, addEdge, Connection, EdgeChange, applyEdgeChanges, Viewport, MarkerType, getOutgoers, getConnectedEdges} from "@xyflow/react";
 import { v4 as uuidv4 } from "uuid";
 import { debounce } from "throttle-debounce";
-import React, { useCallback, useState, useMemo, useEffect, useRef } from "react";
-import { Button, Card, Stack } from "react-bootstrap";
-import { ReactFlow, Controls, Background, applyNodeChanges, Panel, ReactFlowInstance, Edge, NodeChange, Node, addEdge, Connection, EdgeChange, applyEdgeChanges, Viewport, MarkerType, getOutgoers, getConnectedEdges} from "@xyflow/react";
+import { ActionIcon, Stack } from "@mantine/core";
 import Story from "../StoryElements/Story.ts";
 import { ChoiceNodeProps, createNewChoiceNode, createNewSceneNode, EdgeType, NodeType, SceneNodeProps, storyEdgeTypes, storyNodeTypes } from "./StoryNode.tsx";
 import Choice from "../StoryElements/Choice.ts";
@@ -238,39 +238,43 @@ function StoryFlowChartEditor (props: {
   const edgeTypes = useMemo(() => storyEdgeTypes, []);
 
   return (
-    <Card className="p-0 h-100">
-      <ReactFlow
-        nodes={nodes}
-        edges={edges}
-        viewport={viewport}
-        nodeTypes={nodeTypes}
-        edgeTypes={edgeTypes}
-        onNodesChange={onNodesChange}
-        onEdgesChange={onEdgesChange}
-        onViewportChange={onViewportChange}
-        onPaneClick={onPaneClick}
-        onConnect={onConnect}
-        onInit={handleInit}
-        deleteKeyCode={['Backspace', 'Delete']}
-        multiSelectionKeyCode={'Control'}
-        defaultEdgeOptions={{type: EdgeType.button, markerEnd: {type: MarkerType.ArrowClosed, width: 20, height: 20}}}
-        className="gx-0 h-100"
-        ref={flowRef}
-        minZoom={0.2} >
-        <Panel position="top-right">
-          <Stack direction="vertical" gap={1}>
-            <Button variant="primary" size="lg" onClick={() => addNewNode(NodeType.scene)} title="Aggiungi Scena">
-                <i className="bi bi-textarea" aria-label="scene"/>
-            </Button>
-            <Button variant="primary" size="lg" onClick={() => addNewNode(NodeType.choice)} title="Aggiungi Scelta">
-                <i className="bi bi-question-square" aria-label="choice"/>
-            </Button>
-          </Stack>
-        </Panel>
-        <Controls />
-        <Background />
-      </ReactFlow>
-    </Card>
+    <ReactFlow
+      nodes={nodes}
+      edges={edges}
+      viewport={viewport}
+      nodeTypes={nodeTypes}
+      edgeTypes={edgeTypes}
+      onNodesChange={onNodesChange}
+      onEdgesChange={onEdgesChange}
+      onViewportChange={onViewportChange}
+      onPaneClick={onPaneClick}
+      onConnect={onConnect}
+      onInit={handleInit}
+      deleteKeyCode={['Backspace', 'Delete']}
+      multiSelectionKeyCode={'Control'}
+      defaultEdgeOptions={{type: EdgeType.button, markerEnd: {type: MarkerType.ArrowClosed, width: 20, height: 20}}}
+      ref={flowRef}
+      minZoom={0.2}
+      style={{flexGrow: 1}}>
+      <Panel position="top-right">
+        <Stack gap="xs">
+          <ActionIcon
+            size="xl"
+            onClick={() => addNewNode(NodeType.scene)}
+            title="Aggiungi Scena">
+            <i className="bi bi-textarea" aria-label="scene"/>
+          </ActionIcon>
+          <ActionIcon
+            size="xl"
+            onClick={() => addNewNode(NodeType.choice)}
+            title="Aggiungi Scelta">
+            <i className="bi bi-question-square" aria-label="choice"/>
+          </ActionIcon>
+        </Stack>
+      </Panel>
+      <Controls />
+      <Background />
+    </ReactFlow>
   );
 };
 

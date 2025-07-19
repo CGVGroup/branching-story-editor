@@ -1,5 +1,5 @@
+import { ActionIcon } from '@mantine/core';
 import { BaseEdge, EdgeLabelRenderer, getBezierPath, useReactFlow, type EdgeProps } from '@xyflow/react';
-import { Button } from 'react-bootstrap';
  
 export default function ButtonEdge({
 	id,
@@ -24,22 +24,20 @@ export default function ButtonEdge({
 		<>
 			<BaseEdge path={edgePath} markerEnd={markerEnd} style={style} />
 			<EdgeLabelRenderer>
-				<div
-					className="nodrag nopan"
-					style={{
-						position: "absolute",
-						pointerEvents: "all",
-						zIndex: "1000",
-						transformOrigin: "center",
-						transform: `translate(-50%, -50%) translate(${labelX}px,${labelY}px)`}}>
-					{selected && 
-						<Button
-							onClick={onEdgeClick}
-							variant="secondary"
-							className="story-edge-button">
-							<i className='bi bi-x'/>
-						</Button>}
-				</div>
+				{selected && 
+					<ActionIcon
+						onClick={onEdgeClick}
+						radius="xl"
+						p={0}
+						className="story-edge-button nodrag nopan"
+						style={{
+							position: "absolute",
+							pointerEvents: "all",
+							zIndex: "1000",
+							transformOrigin: "center",
+							transform: `translate(-50%, -50%) translate(${labelX}px,${labelY}px)`}}>
+						<i className='bi bi-x'/>
+					</ActionIcon>}
 			</EdgeLabelRenderer>
 		</>
 	);

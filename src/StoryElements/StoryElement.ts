@@ -19,6 +19,12 @@ export const StoryElementTypeDictionary = {
     }
 }
 
+export const StoryElementColorArray = ["orange", "blue", "green"];
+
+export const noElementsText = (type: StoryElementType) => `Non sono presenti ${StoryElementTypeDictionary.ita.plural[type]} in questa storia`;
+export const shortNoElementsText = (type: StoryElementType) => `Nessun ${StoryElementTypeDictionary.ita.singular[type]}`;
+export const noMatchingElementsText = (type: StoryElementType) => `Nessun ${StoryElementTypeDictionary.ita.singular[type]} corrisponde alla ricerca`;
+
 export type StoryElement = {
     id: string;
     name: string;

@@ -1,11 +1,15 @@
-import { Button, ButtonGroup, InputGroup, OverlayTrigger, Stack, Tooltip } from "react-bootstrap";
 import { Handle, NodeProps, NodeToolbar, Position, useReactFlow } from "@xyflow/react";
+import { ActionIcon, Flex, Group, Menu, Stack, Textarea } from "@mantine/core";
+import { isNotEmpty } from "@mantine/form";
+import { useDisclosure } from "@mantine/hooks";
 import DynamicTextField from "../Layout/DynamicTextField.tsx";
 import { changeStoryNodeName, deleteStoryNode, SceneNodeType, StoryNode } from "./StoryNode.tsx";
 import Scene from "../StoryElements/Scene.ts";
 
 function SceneNode(props: NodeProps<SceneNodeType>) {
   const rfInstance = useReactFlow();
+
+  const [locked, lockedHandler] = useDisclosure(true);
   
   const handleDelete = () => {
     deleteStoryNode(rfInstance, props.id);
@@ -37,63 +41,63 @@ function SceneNode(props: NodeProps<SceneNodeType>) {
 
   return (
     <StoryNode selected={props.selected} indirectSelected={props.data.indirectSelected} className="scene">
-      <Stack className="px-1" gap={1}>
-        <DynamicTextField 
-          initialValue={props.data.label}
-          focusOnDoubleClick={true}
-          onSubmit={handleSubmitSceneName}
-          isInvalid={label => label === ""}
-          baseProps={{
-            id: "name",
-            className: "name",
-            size: "sm",
-            style: {maxWidth: "100%"}
-          }}/>
-        <DynamicTextField
-          initialValue={props.data.scene?.details.title}
-          focusOnDoubleClick={true}
-          onSubmit={handleSubmitSceneTitle}
-          baseProps={{
-            id: "title",
-            className: "title",
-            size: "sm",
-            placeholder: "Nessun Titolo",
-          }}/>
-      </Stack>
+      <Flex direction="column" px={0}>
+        <ActionIcon
+          pos="absolute"
+          right="-0.5em"
+          top="-0.5em"
+          size="xs"
+          variant="subtle"
+          radius="md"
+          onClick={lockedHandler.toggle}>
+          {locked ? <i className="bi bi-lock"/> : <i className="bi bi-unlock"/>}
+        </ActionIcon>
+        <Stack gap="xs" px="xs">
+          <DynamicTextField
+            initialValue={props.data.label}
+            validate={isNotEmpty("Il nome della scena non può essere vuoto")}
+            onSubmit={handleSubmitSceneName}
+            locked={locked}
+            lockedHandler={lockedHandler}
+            baseProps={{className: "name"}}/>
+          <DynamicTextField
+            initialValue={props.data.scene?.details.title}
+            onSubmit={handleSubmitSceneTitle}
+            locked={locked}
+            lockedHandler={lockedHandler}
+            baseProps={{className: "title", placeholder: "Nessun Titolo"}}/>
+        </Stack>
+      </Flex>
       <Handle type="target" position={Position.Left}/>
       <Handle type="source" position={Position.Right}/>
-      <NodeToolbar isVisible={props.selected && !props.data.indirectSelected} className="nodrag nopan">
-        <InputGroup>
+      <NodeToolbar isVisible={props.selected && !props.data.indirectSelected} className="nodrag nopan nowheel">
+        <Group>
           {props.data.scene?.details.summary && 
-            <InputGroup.Text className="story-node-summary">
-              {props.data.scene.details.summary}
-            </InputGroup.Text>
+            <Textarea className="story-node-summary" value={props.data.scene.details.summary} readOnly/>
           }
-          <ButtonGroup vertical={!!props.data.scene?.details.summary}>
-            <Button variant="secondary" onClick={props.data.onClickEdit} title="Modifica">
+          <ActionIcon.Group orientation={`${props.data.scene?.details.summary ? "vertical" : "horizontal"}`}>
+            <ActionIcon onClick={props.data.onClickEdit} title="Modifica">
               <i className="bi bi-pencil" aria-label="edit" />
-            </Button>
-            <OverlayTrigger
-                key={"delete"}
-                placement={"right"}
-                trigger="focus"
-                overlay={
-                  <Tooltip>
-                    <ButtonGroup vertical>
-                      <Button variant="danger" onClick={handleDelete} title="Conferma">
-                        <i className="bi bi-check-lg" aria-label="edit" /> 
-                      </Button>
-                      <Button variant="secondary" title="Annulla">
-                        <i className="bi bi-x-lg" aria-label="delete" /> 
-                      </Button>
-                    </ButtonGroup>
-                  </Tooltip>}>
-              <Button variant="danger"title="Elimina">
-                <i className="bi bi-trash3" aria-label="delete" />
-              </Button>
-            </OverlayTrigger>
-          </ButtonGroup>
-        </InputGroup>
+            </ActionIcon>
+            <Menu position="right">
+              <Menu.Target>
+                <ActionIcon title="Elimina">
+                  <i className="bi bi-trash3" aria-label="delete" />
+                </ActionIcon>
+              </Menu.Target>
+              <Menu.Dropdown>
+                <ActionIcon.Group orientation="vertical">
+                  <ActionIcon onClick={handleDelete} title="Conferma">
+                    <i className="bi bi-check-lg" aria-label="edit" /> 
+                  </ActionIcon>
+                  <ActionIcon title="Annulla">
+                    <i className="bi bi-x-lg" aria-label="delete" /> 
+                  </ActionIcon>
+                </ActionIcon.Group>
+              </Menu.Dropdown>
+            </Menu>
+          </ActionIcon.Group>
+        </Group>
       </NodeToolbar>
     </StoryNode>
   );

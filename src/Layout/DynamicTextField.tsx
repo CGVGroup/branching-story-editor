@@ -1,51 +1,51 @@
-import { useCallback, useEffect, useState } from "react";
-import { Form, FormControlProps } from "react-bootstrap";
+import { useCallback, useEffect } from "react";
+import { TextInput, TextInputProps } from "@mantine/core";
+import { useField } from "@mantine/form"
+import { UseDisclosureHandlers } from "@mantine/hooks";
 
 function DynamicTextField(props: {
 	initialValue?: string,
 	focusOnDoubleClick?: boolean,
-	onChange?: (value: string) => void,
+	//onChange?: (value: string) => void,
 	onSubmit?: (value: string) => void,
-	isInvalid?: (value: string) => boolean,
-	baseProps?: FormControlProps
+	validate?: (value: unknown) => React.ReactNode,
+	locked?: boolean,
+	lockedHandler?: UseDisclosureHandlers
+	baseProps?: TextInputProps
 }) {
-	const [value, setValue] = useState(props.initialValue ?? "");
-	const [focus, setFocus] = useState(false);
-
+	const field = useField({
+		initialValue: props.initialValue ?? "",
+		validate: props.validate,
+		validateOnBlur: true
+	});
+	
 	const handleSubmit = useCallback((value: string) => {
-		if ((props.isInvalid !== undefined && !props.isInvalid(value))
-			|| props.isInvalid === undefined) {
-			props.onSubmit?.(value);
-			setFocus(false);
-		}
-	}, [props.isInvalid, props.onSubmit]);
+		props.onSubmit?.(value);
+		props.lockedHandler?.open();
+	}, []);
 
 	useEffect(() => {
-		if (props.initialValue) setValue(props.initialValue);
-	}, [props.initialValue])
+		if (props.initialValue) field.setValue(props.initialValue);
+	}, [props.initialValue]);
 
 	return (
-		<Form onSubmit={e => { e.preventDefault(); handleSubmit(value); }}>
-			<Form.Control
-				{...props.baseProps}
-				className={`dynamic-text-field ${props.baseProps?.className ?? ""} ${focus ? "focus nodrag" : ""}`}
-				value={value}
-				title={value}
-				readOnly={!focus}
-				isInvalid={props.isInvalid?.(value)}
-				autoComplete="off"
-
-				onChange={e => { setValue(e.target.value); props.onChange?.(value) }}
-				onClick={props.focusOnDoubleClick ? undefined : () => setFocus(true)}
-				onDoubleClick={props.focusOnDoubleClick ? () => setFocus(true) : undefined}
-				onBlur={() => handleSubmit(value)}
-
-				style={{
-					cursor: focus ? "text" : "inherit",
-					userSelect: focus ? "auto" : "none",
-					...props.baseProps?.style
-				}} />
-		</Form>
+		<TextInput
+			{...field.getInputProps()}
+			size="sm"
+			readOnly={props.locked}
+			classNames={{input: `dynamic-text-field ${props.baseProps?.className ?? ""} ${!props?.locked && "focus nodrag"}`}}
+			onBlur={e => handleSubmit(e.currentTarget.value)}
+			onKeyDown={e => { if (e.key === "Enter") e.currentTarget.blur();}}
+			onDoubleClick={e => {props.lockedHandler?.close(); e.currentTarget.focus();}}
+			rightSection={props.locked !== undefined && <i className={props.locked ? "bi bi-lock" : "bi bi-unlock"} style={{opacity: "0.5"}}/>}
+			rightSectionPointerEvents="none"
+			styles={{
+				input: {
+					cursor: props.locked ? "inherit" : "text",
+					userSelect: props.locked ? "none" : "auto",
+				}
+			}}
+			{...props.baseProps}/>
 	);
 }
 
