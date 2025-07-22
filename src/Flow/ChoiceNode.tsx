@@ -2,7 +2,7 @@ import { Handle, NodeProps, NodeToolbar, Position, useReactFlow } from "@xyflow/
 import { ActionIcon, Center, Divider, Flex, Menu, Stack } from "@mantine/core";
 import { isNotEmpty } from "@mantine/form";
 import { useDisclosure } from "@mantine/hooks";
-import { changeStoryNodeName, ChoiceNodeType, deleteStoryNode, StoryNode } from "./StoryNode.tsx";
+import { changeStoryNodeName, ChoiceNodeType, deleteStoryNode, NodeType, StoryNode, storyNodeColorArray } from "./StoryNode.tsx";
 import { LabeledHandle } from "./LabeledHandle.tsx";
 import DynamicTextField from "../Layout/DynamicTextField.tsx";
 import Choice from "../StoryElements/Choice.ts";
@@ -84,24 +84,30 @@ function ChoiceNode(props: NodeProps<ChoiceNodeType>) {
       </Flex>
       <NodeToolbar isVisible={props.selected && !props.data.indirectSelected} className="nodrag nopan">
         <ActionIcon.Group>
-          <ActionIcon onClick={props.data.onClickEdit} title="Modifica">
+          <ActionIcon onClick={props.data.onClickEdit} color={storyNodeColorArray[NodeType.choice]} variant="light" title="Modifica">
             <i className="bi bi-pencil" aria-label="edit" />
           </ActionIcon>
           <Menu position="right">
             <Menu.Target>
-              <ActionIcon title="Elimina">
+              <ActionIcon color="red" variant="light" title="Elimina">
                 <i className="bi bi-trash3" aria-label="delete" />
               </ActionIcon>
             </Menu.Target>
-            <Menu.Dropdown>
-              <ActionIcon.Group orientation="vertical">
-                <ActionIcon onClick={handleDelete} title="Conferma">
-                  <i className="bi bi-check-lg" aria-label="edit" /> 
-                </ActionIcon>
-                <ActionIcon title="Annulla">
-                  <i className="bi bi-x-lg" aria-label="delete" /> 
-                </ActionIcon>
-              </ActionIcon.Group>
+            <Menu.Dropdown p={0}>
+              <Menu.Item
+                component="button"
+                color="red"
+                onClick={handleDelete}
+                title="Conferma">
+                    <i className="bi bi-check-lg" aria-label="yes" /> 
+                </Menu.Item>
+                <Menu.Item
+                  component="button"
+                  color="gray"
+                  title="Annulla"
+                  closeMenuOnClick>
+                  <i className="bi bi-x-lg" aria-label="no" /> 
+                </Menu.Item>
             </Menu.Dropdown>
           </Menu>
         </ActionIcon.Group>

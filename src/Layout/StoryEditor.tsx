@@ -1,7 +1,7 @@
 import { useCallback, useContext, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router";
 import { debounce } from "throttle-debounce";
-import { ActionIcon, Anchor, AppShell, Button, Center, CloseButton, Grid, Group, Modal, Tabs, Text, TextInput, Title } from "@mantine/core";
+import { ActionIcon, Anchor, AppShell, Button, Center, CloseButton, Divider, Grid, Group, Modal, Tabs, Text, TextInput, Title } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import StoryFlowChartEditor from "../Flow/StoryFlowChartEditor.tsx";
 import StoryElements from "./StoryElements.tsx";
@@ -11,8 +11,10 @@ import Scene from "../StoryElements/Scene.ts";
 import SceneEditor from "./SceneEditor.tsx";
 import Choice from "../StoryElements/Choice.ts";
 import ChoiceEditor from "./ChoiceEditor.tsx";
+import { Info } from "../Flow/InfoNode.tsx";
+import InfoEditor from "./InfoEditor.tsx";
 import StoryTexts from "./StoryTexts.tsx";
-import { NodeType } from "../Flow/StoryNode.tsx";
+import { NodeType, storyNodeClassNames, storyNodeColorArray } from "../Flow/StoryNode.tsx";
 import { ChosenModelContext } from "../App.tsx";
 // @ts-ignore
 import {ReactComponent as AiPen} from "../img/ai-pen.svg";
@@ -74,8 +76,12 @@ function StoryEditor(props: {
 			if (!node) return story;
 			return story.cloneAndSetFlow({...story.flow, edges: story.flow.edges.filter(edge => 
 				edge.source !== node.id || edge.sourceHandle !== `source-${idx}`)
-			})
+			});
 		});
+	}, []);
+
+	const onInfoEdited = useCallback((id: string, newInfo: Info) => {
+		setLocalStory(story => story.cloneAndSetInfo(id, newInfo))
 	}, []);
 
 	const onClickTabClose = useCallback((id: string) => {
@@ -175,6 +181,7 @@ function StoryEditor(props: {
 					onClose={requestAllTextsClose}
 					title={<Title order={4}>Generare i testi per tutta la storia?</Title>}>
 					Eventuali testi già presenti verranno sovrascritti.
+					<Divider my="md"/>
 					<Group justify="flex-end">
 						<Button color="gray" variant="light" onClick={requestAllTextsClose}>
 							Annulla
@@ -203,7 +210,7 @@ function StoryEditor(props: {
 						</Tabs.Tab>
 						{openNodes.map(nodeId => {
 							const node = localStory.getNode(nodeId);
-							if (node === undefined) return null;
+							if (node === undefined || node.type === undefined) return null;
 							return (
 								<Tabs.Tab
 									component={Anchor}
@@ -218,7 +225,10 @@ function StoryEditor(props: {
 												onClickTabClose(nodeId)
 											}}
 											title="Chiudi"/>}
-									style={{textDecoration: "none"}}>
+									color={storyNodeColorArray[node.type!]}
+									className={storyNodeClassNames[node.type!]}
+									style={{textDecoration: "none"}}
+									styles={{tabSection: {margin: 0}}}>
 									{node.data.label as string}
 								</Tabs.Tab>
 							);
@@ -260,6 +270,11 @@ function StoryEditor(props: {
 										onChoiceMoved={(oldIdx, newIdx) => onChoiceMoved(nodeId, oldIdx, newIdx)}
 										onChoiceDeleted={idx => onChoiceDeleted(nodeId, idx)}
 										onClickEditNode={onClickEditNode}/>}
+								{node.type === NodeType.info &&
+									<InfoEditor 
+										nodeId={nodeId}
+										info={node.data.info as Info}
+										setInfo={newInfo => onInfoEdited(nodeId, newInfo)}/>}
 							</Tabs.Panel>
 						);
 					})}

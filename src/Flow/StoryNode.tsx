@@ -7,17 +7,21 @@ import Choice from "../StoryElements/Choice.ts";
 import SceneNode from "./SceneNode.tsx";
 import ChoiceNode from "./ChoiceNode.tsx";
 import ButtonEdge from "./ButtonEdge.tsx";
+import InfoNode, { Info } from "./InfoNode.tsx";
 
 export enum NodeType {
     scene = "sceneNode",
-    choice = "choiceNode"
+    choice = "choiceNode",
+    info = "infoNode"
 }
 
 export enum EdgeType {
     button = "buttonEdge"
 }
 
-export const storyNodeTypes = {sceneNode: SceneNode, choiceNode: ChoiceNode};
+export const storyNodeTypes = {sceneNode: SceneNode, choiceNode: ChoiceNode, infoNode: InfoNode};
+export const storyNodeClassNames = {sceneNode: "scene", choiceNode: "choice", infoNode: "info"};
+export const storyNodeColorArray = {sceneNode: "pink", choiceNode: "violet", infoNode: "teal"}
 export const storyEdgeTypes = {buttonEdge: ButtonEdge}
 
 export type StoryNodeFunctionProps = {
@@ -39,6 +43,11 @@ export type ChoiceNodeProps =
     StoryNodeFunctionProps & {
         choice: Choice;
     };
+export type InfoNodeProps =
+    StoryNodeProps & 
+    StoryNodeFunctionProps & {
+        info: Info;
+    };
 
 export type StoryNodeObject = {
     id: string;
@@ -53,6 +62,10 @@ export type ChoiceNodeObject = StoryNodeObject & {
     data: ChoiceNodeProps;
     type: NodeType.choice
 };
+export type InfoNodeObject = StoryNodeObject & {
+    data: InfoNodeProps;
+    type: NodeType.info
+};
 
 export type SceneNodeType = Node<
     SceneNodeProps,
@@ -61,6 +74,10 @@ export type SceneNodeType = Node<
 export type ChoiceNodeType = Node<
     ChoiceNodeProps,
     "ChoiceNode"
+>;
+export type InfoNodeType = Node<
+    InfoNodeProps,
+    "InfoNode"
 >;
 
 export function deleteStoryNode(rfInstance: ReactFlowInstance, id: string) {
@@ -111,6 +128,28 @@ export function createNewChoiceNode(
             onClickEdit: onClickEdit,
         },
         type: NodeType.choice
+    };
+}
+
+export function createNewInfoNode(
+    id: string,
+    onClickEdit: () => void,
+    label?: string,
+    position?: XYPosition,
+    data?: InfoNodeProps
+): InfoNodeObject {
+    return {
+        id: id ?? uuidv4(),
+        position: position ?? { x: 0, y: 0 },
+        data: {
+            label: label ?? data?.label ?? "Approfondimento senza nome",
+            info: {
+                title: data?.info.title ?? "",
+                text: data?.info.text ?? ""
+            },
+            onClickEdit: onClickEdit,
+        },
+        type: NodeType.info
     };
 }
 

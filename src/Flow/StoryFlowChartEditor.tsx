@@ -5,7 +5,7 @@ import { v4 as uuidv4 } from "uuid";
 import { debounce } from "throttle-debounce";
 import { ActionIcon, Stack } from "@mantine/core";
 import Story from "../StoryElements/Story.ts";
-import { ChoiceNodeProps, createNewChoiceNode, createNewSceneNode, EdgeType, NodeType, SceneNodeProps, storyEdgeTypes, storyNodeTypes } from "./StoryNode.tsx";
+import { ChoiceNodeProps, createNewChoiceNode, createNewInfoNode, createNewSceneNode, EdgeType, InfoNodeProps, NodeType, SceneNodeProps, storyEdgeTypes, storyNodeColorArray, storyNodeTypes } from "./StoryNode.tsx";
 import Choice from "../StoryElements/Choice.ts";
 
 function StoryFlowChartEditor (props: {
@@ -185,6 +185,13 @@ function StoryFlowChartEditor (props: {
           `Scelta ${maxLabel}`,
           position);
       break;
+      case NodeType.info:
+        newNode = createNewInfoNode(
+          id,
+          () => onClickEdit(id),
+          `Approfondimento ${maxLabel}`,
+          position);
+      break;
     }
     newNode.selected = true;
     setNodes(nodes => [...nodes, newNode]);
@@ -209,6 +216,14 @@ function StoryFlowChartEditor (props: {
           undefined,
           node.position,
           node.data as ChoiceNodeProps);
+      break;
+      case NodeType.info:
+        newNode = createNewInfoNode(
+          node.id,
+          () => onClickEdit(node.id),
+          undefined,
+          node.position,
+          node.data as InfoNodeProps);
       break;
     }
     newNode.selected = false;
@@ -261,14 +276,26 @@ function StoryFlowChartEditor (props: {
           <ActionIcon
             size="xl"
             onClick={() => addNewNode(NodeType.scene)}
+            color={storyNodeColorArray[NodeType.scene]}
+            variant="light"
             title="Aggiungi Scena">
             <i className="bi bi-textarea" aria-label="scene"/>
           </ActionIcon>
           <ActionIcon
             size="xl"
             onClick={() => addNewNode(NodeType.choice)}
+            color={storyNodeColorArray[NodeType.choice]}
+            variant="light"
             title="Aggiungi Scelta">
             <i className="bi bi-question-square" aria-label="choice"/>
+          </ActionIcon>
+          <ActionIcon
+            size="xl"
+            onClick={() => addNewNode(NodeType.info)}
+            color={storyNodeColorArray[NodeType.info]}
+            variant="light"
+            title="Aggiungi Approfondimento">
+            <i className="bi bi-info-square" aria-label="info"/>
           </ActionIcon>
         </Stack>
       </Panel>

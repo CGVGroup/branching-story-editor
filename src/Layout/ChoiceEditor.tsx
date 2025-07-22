@@ -4,6 +4,7 @@ import { ActionIcon, ActionIconGroup, Button, Group, Stack, TextInput } from "@m
 import { debounce } from "throttle-debounce";
 import Story from "../StoryElements/Story.tsx";
 import Choice from "../StoryElements/Choice.ts";
+import { NodeType, storyNodeColorArray } from "../Flow/StoryNode.tsx";
 
 function ChoiceEditor(props: {
     story: Story,
@@ -48,11 +49,14 @@ function ChoiceEditor(props: {
         props.setChoice(localChoice);
     }), []);
 
-    const nextSceneIds = useMemo(() => {
+    const nextNodes = useMemo(() => {
         const thisNode = props.story.getNode(props.nodeId)!;
         const outgoingEdges = getConnectedEdges([thisNode], props.story.flow.edges).filter(edge => edge.source === thisNode.id);
-        return localChoice.choices.map((_, idx) => outgoingEdges.find(edge => edge.sourceHandle === `source-${idx}`)?.target ?? null);
-    }, [localChoice])
+        return localChoice.choices.map((_, idx) => {
+            const nodeId = outgoingEdges.find(edge => edge.sourceHandle === `source-${idx}`)?.target;
+            return nodeId ? props.story.getNode(nodeId)! : null
+        });
+    }, [localChoice, props.story])
 
     useEffect(() => handleSave(localChoice), [handleSave, localChoice]);
 
@@ -75,13 +79,20 @@ function ChoiceEditor(props: {
                         style={{flexGrow: 1}}/>
                     {!props.readOnly &&
                         <ActionIconGroup>
-                            <ActionIcon onClick={() => deleteChoice(choiceIndex)} title="Elimina" size="lg">
+                            <ActionIcon
+                                color="red"
+                                onClick={() => deleteChoice(choiceIndex)}
+                                title="Elimina"
+                                size="lg">
                                 <i className="bi bi-trash" aria-label="delete" /> 
                             </ActionIcon>
                             <ActionIcon
-                                onClick={() => props.onClickEditNode(nextSceneIds[choiceIndex]!)}
-                                title="Apri scena successiva"
-                                disabled={nextSceneIds[choiceIndex] === null} size="lg">
+                                onClick={() => nextNodes[choiceIndex]?.id && props.onClickEditNode(nextNodes[choiceIndex].id)}
+                                color={nextNodes[choiceIndex] !== null && storyNodeColorArray[nextNodes[choiceIndex].type!]}
+                                variant="light"
+                                title={nextNodes[choiceIndex] !== null ? `Apri ${nextNodes[choiceIndex].data.label}` : "Nessun nodo collegato"}
+                                disabled={nextNodes[choiceIndex] === null}
+                                size="lg">
                                 <i className="bi bi-box-arrow-up-right" aria-label="open" /> 
                             </ActionIcon>
                             <ActionIcon onClick={() => moveChoiceUp(choiceIndex)} disabled={choiceIndex === 0} title="Sposta su" size="lg">
@@ -95,7 +106,7 @@ function ChoiceEditor(props: {
                 </Group>
             )}
             {!props.readOnly &&
-                <Button size="xl" variant="subtle" onClick={addNewChoice} title="Aggiungi Scelta">
+                <Button size="xl" color={storyNodeColorArray[NodeType.choice]} variant="subtle" onClick={addNewChoice} title="Aggiungi Scelta">
                     <i className="bi bi-plus-square-dotted" style={{display: "block", fontSize:"xxx-large"}} />
                 </Button>
             }

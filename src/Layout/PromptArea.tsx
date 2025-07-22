@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { RichTextarea, RichTextareaHandle } from "rich-textarea"
-import { Flex, ScrollArea, Tabs, UnstyledButton } from "@mantine/core";
+import { Flex, Paper, ScrollArea, Tabs, UnstyledButton } from "@mantine/core";
 import Story from "../StoryElements/Story.ts";
 import { StoryElementType, StoryElementTypeArray, StoryElementTypeDictionary } from "../StoryElements/StoryElement.ts";
 import { storyElementTabsArray } from "./StoryElements.tsx";
@@ -154,30 +154,30 @@ function PromptArea(props: {
 
 	const elements = useMemo(() => {
 		if (allElements.length === 0) {
-		  return <ScrollArea>
-			  <PromptAreaMenuElement
-			  value={"Non sono presenti elementi nella storia attuale"}
-			  type={null} />
-		  </ScrollArea>
+			return <Paper>
+				<PromptAreaMenuElement
+					value={"Non sono presenti elementi nella storia attuale"}
+					type={null} />
+			</Paper>
 		}
 		if (filtered.length === 0) {
-		  return <ScrollArea>
-			  <PromptAreaMenuElement
-			  value={"Nessuna corrispondenza"}
-			  type={null} />
-		  </ScrollArea>
+			return <Paper>
+				<PromptAreaMenuElement
+					value={"Nessuna corrispondenza"}
+					type={null} />
+			</Paper>
 		}
 		if (filtered.length <= maxElementsShown) {
-		  return <ScrollArea className="story-elements">
-			{filtered.map(element =>
-			  <PromptAreaMenuElement
-				key={element.id} 
-				value={element.name}
-				type={element.elementType}
-				selected={element.id === menuSelected}
-				onMouseEnter={() => setMenuSelected(element.id)}
-				onClick={() => complete(element.id)} />)}
-		  </ScrollArea>
+			return <Paper className="story-elements">
+				{filtered.map(element =>
+					<PromptAreaMenuElement
+						key={element.id} 
+						value={element.name}
+						type={element.elementType}
+						selected={element.id === menuSelected}
+						onMouseEnter={() => setMenuSelected(element.id)}
+						onClick={() => complete(element.id)} />)}
+				</Paper>
 		}
 		return (
 		<Tabs
@@ -255,12 +255,12 @@ function PromptArea(props: {
 			</RichTextarea>
 			{refApp.current && showMenu && !props.readOnly &&
 				createPortal(
-					<div
+					<Paper
 						className="prompt-area-menu d-flex flex-column"
 						onBlur={closeMenu}
 						style={{height: filtered.length > maxElementsShown ? "18em" : "", transform: `translate(min(${pos?.left ?? 0}px, calc(100vw - 100%)), max(${pos?.top ?? 0}px - 100%, 0px))`}}>
 						{elements}
-					</div>,
+					</Paper>,
 					refApp.current)
 			}
 		</Flex>

@@ -2,6 +2,7 @@ import { getIncomers, getOutgoers, Node, ReactFlowJsonObject } from "@xyflow/rea
 import { StoryElementType, StoryElement } from "./StoryElement.ts";
 import Scene from "./Scene.ts";
 import Choice from "./Choice.ts";
+import { Info } from "../Flow/InfoNode.tsx";
 import { NodeType } from "../Flow/StoryNode.tsx";
 import { sendToLLM } from "../Misc/LLM.ts";
 import { getElementFromDB } from "../Misc/DB.ts";
@@ -83,6 +84,12 @@ class Story {
     cloneAndSetChoice(id: string, choice: Choice): Story {
         const cloned = this.clone();
         cloned.getNode(id)!.data.choice = choice;
+        return cloned;
+    }
+    
+    cloneAndSetInfo(id: string, info: Info): Story {
+        const cloned = this.clone();
+        cloned.getNode(id)!.data.info = info;
         return cloned;
     }
 

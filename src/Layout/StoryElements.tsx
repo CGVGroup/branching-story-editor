@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo, useState } from "react";
-import { ActionIcon, Avatar, Badge, Button, Center, Group, Menu, NavLink, ScrollArea, Stack, Tabs } from "@mantine/core";
+import { ActionIcon, Avatar, Badge, Box, Button, Center, Group, Menu, NavLink, ScrollArea, Stack, Tabs } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import { StoryElementType, StoryElement, shortNoElementsText, StoryElementColorArray } from "../StoryElements/StoryElement.ts";
 import ElementModal from "./AddElementModal.tsx";
@@ -66,33 +66,32 @@ function StoryElements (props: {
               <Menu key={element.id} position="right" disabled={readOnly}>
                 <Menu.Target>
                   <NavLink
-                    active={!readOnly}
+                    active
                     color={storyElementTabsArray[type].color}
                     variant="light"
                     label={element.name}
                     description={element.type}
                     leftSection={<Avatar></Avatar>}
                     onClick={() => setSelectedElement(element)}
-                    //className={`${className} ${readOnly ? "disabled" : ""}`}
                     style={{fontStyle: element.resident ? "italic" : undefined}}/>
                 </Menu.Target>
-                <Menu.Dropdown p="xs">
-                  <ActionIcon.Group orientation="vertical">
-                    {element.resident && (
-                      <ActionIcon
-                        variant="subtle"
-                        color={storyElementTabsArray[type].color}
-                        onClick={() => onElementEditButtonClicked(element)}>
-                        <i className="bi bi-pencil" aria-label="edit" />
-                      </ActionIcon>
-                    )}
-                    <ActionIcon
+                <Menu.Dropdown p={0}>
+                  {element.resident && (
+                    <Menu.Item 
+                      component="button"
                       variant="subtle"
-                      color="red"
-                      onClick={() => onElementDeleteButtonClicked(element)}>
-                      <i className="bi bi-trash" aria-label="delete" /> 
-                    </ActionIcon>
-                  </ActionIcon.Group>
+                      color={storyElementTabsArray[type].color}
+                      onClick={() => onElementEditButtonClicked(element)}>
+                      <i className="bi bi-pencil" aria-label="edit" />
+                    </Menu.Item>
+                  )}
+                  <Menu.Item
+                    component="button"
+                    variant="subtle"
+                    color="red"
+                    onClick={() => onElementDeleteButtonClicked(element)}>
+                    <i className="bi bi-trash" aria-label="delete" /> 
+                  </Menu.Item>
                 </Menu.Dropdown>
               </Menu>
             ))
@@ -140,7 +139,7 @@ function StoryElements (props: {
         </Tabs.List>
         {storyElementTabsArray.map((tab, idx) =>
         <Tabs.Panel key={idx} value={tab.type.toString()}>
-          <Stack pt="xs" gap="xs">
+          <Stack pt="xs" gap="xs" className={classes.growcol}>
             {!props.readOnly && 
               <Center>
                 <Group gap="xs">
@@ -159,10 +158,10 @@ function StoryElements (props: {
                   </Button>
                 </Group>
               </Center>
-              }
-            <ScrollArea className={classes.growcol}>
+            }
+            <Box>
               {elementList(tab.type, props.readOnly)}
-            </ScrollArea>
+            </Box>
           </Stack>
         </Tabs.Panel>
         )}

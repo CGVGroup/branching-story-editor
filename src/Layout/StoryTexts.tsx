@@ -4,10 +4,12 @@ import { Accordion, ActionIcon, Center, Grid, Textarea } from "@mantine/core";
 import Story from "../StoryElements/Story.ts";
 import Choice from "../StoryElements/Choice.ts";
 import ChoiceEditor from "./ChoiceEditor.tsx";
-import { ChoiceNodeProps, NodeType, SceneNodeProps } from "../Flow/StoryNode.tsx";
+import { ChoiceNodeProps, InfoNodeProps, NodeType, SceneNodeProps } from "../Flow/StoryNode.tsx";
 import PromptArea from "./PromptArea.tsx";
 import LoadingPlaceholders from "../Misc/LoadingPlaceholders.tsx";
 import { ChosenModelContext } from "../App.tsx";
+import InfoEditor from "./InfoEditor.tsx";
+import { Info } from "../Flow/InfoNode.tsx";
 
 function StoryTexts(props: {
     story: Story,
@@ -35,9 +37,12 @@ function StoryTexts(props: {
     })}, []);
     
     const onChoiceEdited = useCallback((id: string, newChoice: Choice) => {
-        setLocalStory(story => {
-            return story.cloneAndSetChoice(id, newChoice);
-    })}, []);
+        setLocalStory(story => story.cloneAndSetChoice(id, newChoice))
+    }, []);
+
+    const onInfoEdited = useCallback((id: string, newInfo: Info) => {
+        setLocalStory(story => story.cloneAndSetInfo(id, newInfo))
+    }, []);
 
     const onSendButtonClicked = useCallback(async (id: string) => {
         const index = localStory.getNodes().findIndex(node => node.id === id);
@@ -121,11 +126,28 @@ function StoryTexts(props: {
                                         key={idx}
                                         story={localStory}
                                         nodeId={node.id}
-                                        choice={node.data.choice as Choice}
+                                        choice={data.choice}
                                         setChoice={newChoice => onChoiceEdited(id, newChoice)}
                                         onChoiceMoved={(oldIdx, newIdx) => props.onChoiceMoved(node.id, oldIdx, newIdx)}
                                         onChoiceDeleted={idx => props.onChoiceDeleted(node.id, idx)}
                                         onClickEditNode={props.onClickEditNode}/>
+                                </Accordion.Panel>
+                            </Accordion.Item>
+                        );
+                    }
+                    case(NodeType.info): {
+                        const data = node.data as InfoNodeProps;
+                        return (
+                            <Accordion.Item value={id} key={idx} className="info">
+                                <Accordion.Control icon={<i className="bi bi-info-circle"/>}>
+                                    {data.label}
+                                </Accordion.Control>
+                                <Accordion.Panel>
+                                    <InfoEditor
+                                        key={idx}
+                                        nodeId={node.id}
+                                        info={data.info}
+                                        setInfo={newInfo => onInfoEdited(id, newInfo)}/>
                                 </Accordion.Panel>
                             </Accordion.Item>
                         );

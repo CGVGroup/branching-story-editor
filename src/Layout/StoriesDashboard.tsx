@@ -1,6 +1,6 @@
 import { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import {ActionIcon, AppShell, Button, Center, Fieldset, FileButton, Flex, Group, Modal, NavLink, Paper, ScrollArea, Select, SimpleGrid, Stack, Textarea, TextInput, Title} from "@mantine/core";
+import {ActionIcon, AppShell, Button, Center, Divider, Fieldset, FileButton, Flex, Group, Modal, NavLink, Paper, ScrollArea, Select, SimpleGrid, Stack, Textarea, TextInput, Title} from "@mantine/core";
 import {useDisclosure} from "@mantine/hooks";
 import Story from "../StoryElements/Story.ts";
 import StoryFlowChartViewer from "../Flow/StoryFlowChartViewer.tsx";
@@ -150,7 +150,7 @@ function StoriesDashboard(props: {
 			<AppShell.Main pe="sm">
 				{deleteStoryModal}
 				{selectedId && selectedStory ?
-					<Stack gap={0} style={{flexGrow: 1}}>
+					<Flex className={classes.growcol}>
 						<Group>
 							<ActionIcon.Group>
 								<ActionIcon size="lg" color="red" onClick={openDeleteStory} title="Elimina">
@@ -170,38 +170,40 @@ function StoriesDashboard(props: {
 								onChange={e => props.setStory(selectedId, selectedStory.cloneAndSetTitle(e.target.value))}
 								style={{flexGrow: 1}}/>
 						</Group>
-						<Paper h="40%">
-							<StoryFlowChartViewer story={selectedStory} storyId={selectedId}/>
-						</Paper>
-						<SimpleGrid cols={2} flex={1}>
-							<Paper>
-								<StoryElements
-									story={selectedStory}
-									readOnly={true} />
+						<Flex className={classes.growcol}>
+							<Paper h="50%">
+								<StoryFlowChartViewer story={selectedStory} storyId={selectedId}/>
 							</Paper>
-							<Fieldset legend="Dettagli Storia" h="100%">
-								<Stack h="100%">
-									<Textarea
-										label="Riassunto"
-										placeholder="Riassunto"
-										value={selectedStory.summary}
-										onChange={e => props.setStory(selectedId, selectedStory.cloneAndSetSummary(e.target.value))}
-										className={classes.growcol}
-										classNames={{wrapper: classes.growcol}}
-										styles={{input: { flexGrow: 1 }}}/>
-									<Textarea
-										label="Note"
-										placeholder="Note"
-										value={selectedStory.notes}
-										onChange={e => props.setStory(selectedId, selectedStory.cloneAndSetNotes(e.target.value))}
-										autosize={false}
-										className={classes.growcol}
-										classNames={{wrapper: classes.growcol}}
-										styles={{input: { flexGrow: 1 }}}/>
-								</Stack>
-							</Fieldset>
-						</SimpleGrid>
-					</Stack>
+							<Paper h="50%">
+								<SimpleGrid cols={2} h="100%">
+									<StoryElements
+										story={selectedStory}
+										readOnly={true} />
+									<Fieldset legend="Dettagli Storia" h="100%">
+										<Stack h="100%">
+											<Textarea
+												label="Riassunto"
+												placeholder="Riassunto"
+												value={selectedStory.summary}
+												onChange={e => props.setStory(selectedId, selectedStory.cloneAndSetSummary(e.target.value))}
+												className={classes.growcol}
+												classNames={{wrapper: classes.growcol}}
+												styles={{input: { flexGrow: 1 }}}/>
+											<Textarea
+												label="Note"
+												placeholder="Note"
+												value={selectedStory.notes}
+												onChange={e => props.setStory(selectedId, selectedStory.cloneAndSetNotes(e.target.value))}
+												autosize={false}
+												className={classes.growcol}
+												classNames={{wrapper: classes.growcol}}
+												styles={{input: { flexGrow: 1 }}}/>
+										</Stack>
+									</Fieldset>
+								</SimpleGrid>
+							</Paper>
+						</Flex>
+					</Flex>
 				:
 					<Flex direction="column" style={{flexGrow: 1}}>
 						<div style={{

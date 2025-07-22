@@ -1,6 +1,6 @@
 import React, { useCallback, useContext, useEffect, useState } from "react";
 import { debounce } from 'throttle-debounce';
-import { ActionIcon, Box, Button, Fieldset, Grid, Group, LoadingOverlay, Menu, Modal, SimpleGrid, Stack, Textarea, Title } from "@mantine/core";
+import { ActionIcon, Box, Button, Divider, Fieldset, Grid, Group, LoadingOverlay, Menu, Modal, SimpleGrid, Stack, Textarea, Title } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import Story from "../StoryElements/Story.ts";
 import Scene, { SceneDetails as SceneDetailsType } from "../StoryElements/Scene.ts";
@@ -67,6 +67,7 @@ function SceneEditor(props: {
 				onClose={requestNewTextClose}
 				title={<Title order={4}>Vuoi richiedere un altro testo?</Title>}>
 				<span>È possibile ritornare alle proposte precedenti e successive con i tasti <i className="bi bi-arrow-90deg-left"/> e <i className="bi bi-arrow-90deg-right"/>.</span>
+				<Divider my="md"/>
 				<Group justify="flex-end">
 					<Button color="gray" variant="light" onClick={requestNewTextClose}>
 						No

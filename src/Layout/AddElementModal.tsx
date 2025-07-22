@@ -83,58 +83,57 @@ function ElementModal(props: {
             keepMounted={false}
             zIndex={500}>
             <form onSubmit={form.onSubmit(values => onSubmit(values))}>
-                <Stack gap="md">
-                    <Stack gap="xs">
-                        <TextInput
-                            label="Nome"
-                            placeholder="Nessun nome"
-                            autoFocus
-                            key={form.key("name")}
-                            {...form.getInputProps("name")} />
-                        <TreeSelect
-                            form={form}
-                            formKey="type"
-                            placeholder="Nessun tipo"
-                            inputProps={{label: "Tipo"}}
-                            data={typeOptions}/>
-                        <TreeMultiSelect
-                            form={form}
-                            formKey="dating"
-                            placeholder="Nessuna datazione"
-                            inputProps={{label: "Datazioni"}}
-                            data={datingOptions}/>
-                        <TextInput
-                            label="Descrizione"
-                            placeholder="Nessuna descrizione"
-                            key={form.key("description")}
-                            {...form.getInputProps("description")}/>
-                        {props.elementType === StoryElementType.object &&
-                            <>
-                                <Divider/>
-                                <TreeMultiSelect
-                                    form={form}
-                                    formKey="materials"
-                                    placeholder="Nessun materiale"
-                                    inputProps={{label: "Materiali"}}
-                                    data={materialOptions}/>
-                                <TreeSelect
-                                    form={form}
-                                    formKey="origin"
-                                    placeholder="Origine"
-                                    inputProps={{label: "Origine"}}
-                                    data={originOptions}/>
-                            </>
-                        }
-                    </Stack>
-                    <Group justify="flex-end">
-                        <Button color="gray" variant="light" onClick={props.handlers.close}>
-                            Annulla
-                        </Button>
-                        <Button color={StoryElementColorArray[props.elementType]} type="submit">
-                            {buttonString}
-                        </Button>
-                    </Group>
+                <Stack gap="xs">
+                    <TextInput
+                        label="Nome"
+                        placeholder="Nessun nome"
+                        autoFocus
+                        key={form.key("name")}
+                        {...form.getInputProps("name")} />
+                    <TreeSelect
+                        form={form}
+                        formKey="type"
+                        placeholder="Nessun tipo"
+                        inputProps={{label: "Tipo"}}
+                        data={typeOptions}/>
+                    <TreeMultiSelect
+                        form={form}
+                        formKey="dating"
+                        placeholder="Nessuna datazione"
+                        inputProps={{label: "Datazioni"}}
+                        data={datingOptions}/>
+                    <TextInput
+                        label="Descrizione"
+                        placeholder="Nessuna descrizione"
+                        key={form.key("description")}
+                        {...form.getInputProps("description")}/>
+                    {props.elementType === StoryElementType.object &&
+                        <>
+                            <Divider/>
+                            <TreeMultiSelect
+                                form={form}
+                                formKey="materials"
+                                placeholder="Nessun materiale"
+                                inputProps={{label: "Materiali"}}
+                                data={materialOptions}/>
+                            <TreeSelect
+                                form={form}
+                                formKey="origin"
+                                placeholder="Origine"
+                                inputProps={{label: "Origine"}}
+                                data={originOptions}/>
+                        </>
+                    }
                 </Stack>
+                <Divider my="md"/>
+                <Group justify="flex-end">
+                    <Button color="gray" variant="light" onClick={props.handlers.close}>
+                        Annulla
+                    </Button>
+                    <Button color={StoryElementColorArray[props.elementType]} type="submit">
+                        {buttonString}
+                    </Button>
+                </Group>
             </form>
         </Modal>
     );

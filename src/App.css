@@ -6,25 +6,23 @@
   --location-color: #004e03;
   --location-color-light: #dcffdc;
 
-  --choice-color: #2e0c64;
-  --choice-color-light: var(--mantine-color-violet-1);
+  --scene-color: var(--mantine-color-pink-0);
+  --choice-color: var(--mantine-color-violet-0);
+  --info-color: var(--mantine-color-teal-0);
 
-  --story-node-color: #f2f2f5;
+  --story-node-color: var(--mantine-color-gray-1);
 
   --node-highlight-color: #ff0072;
   --node-indirect-highlight-color: #ff509f;
 
   text-align: center;
   height: 100vh;
-  padding: 8px 16px;
-
+  padding: 0px 16px;
+  overflow: hidden;
+  
   /*Overrides*/
 
   --bs-list-group-active-bg: black;
-  
-  textarea {
-    resize: none;
-  }
 
   .form-control:focus, select:focus{
     box-shadow: none;
@@ -41,10 +39,22 @@
   }
 
   /*Custom Classes*/
+  
+  .scene {
+    background-color: var(--scene-color);
+  }
+
+  .choice {
+    background-color: var(--choice-color);
+  }
+
+  .info {
+    background-color: var(--info-color);
+  }
 
   .accordion-item.choice {
     .accordion-header {
-      background-color: var(--choice-color-light);
+      background-color: var(--choice-color);
     }
     .accordion-button {
       background-color: transparent;
@@ -66,7 +76,6 @@
   .story-node {
     padding: 10px 20px;
     border-radius: 5px;
-    background-color: var(--story-node-color);
     color: #222;                  /* theme.nodeColor */
     border: 1px solid #222;       /* theme.nodeBorder */
     width: 10em;
@@ -77,10 +86,6 @@
 
     &.indirect-selected {
       border-color: var(--node-indirect-highlight-color);
-    }
-
-    &.choice {
-      background-color: var(--choice-color-light);
     }
     
     .name {
@@ -229,10 +234,13 @@
       padding: calc(var(--bs-nav-link-padding-y)/2) calc(var(--bs-nav-link-padding-x)/2);
 
       &.scene {  
-        background-color: var(--story-node-color);
+        background-color: var(--scene-color);
       }
       &.choice {
-        background-color: var(--choice-color-light);
+        background-color: var(--choice-color);
+      }
+      &.info {
+        background-color: var(--info-color);
       }
 
       &:not(.active) {
