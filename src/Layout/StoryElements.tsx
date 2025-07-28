@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo, useState } from "react";
-import { ActionIcon, Avatar, Badge, Box, Button, Center, Group, Menu, NavLink, ScrollArea, Stack, Tabs } from "@mantine/core";
+import { Avatar, Badge, Box, Button, Center, Group, Menu, NavLink, ScrollArea, Stack, Tabs } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import { StoryElementType, StoryElement, shortNoElementsText, StoryElementColorArray } from "../StoryElements/StoryElement.ts";
 import ElementModal from "./AddElementModal.tsx";
@@ -60,7 +60,7 @@ function StoryElements (props: {
     return (
         <>
           {elements.length === 0 ?
-            <NavLink disabled label={<Center>{shortNoElementsText(type)}</Center>}/>
+            <NavLink disabled label={<Center>{shortNoElementsText[type]}</Center>}/>
           :
             elements.map(element => (
               <Menu key={element.id} position="right" disabled={readOnly}>

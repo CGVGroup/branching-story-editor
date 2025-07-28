@@ -19,11 +19,13 @@ export const StoryElementTypeDictionary = {
     }
 }
 
+export const StoryElementTypeMentions = ["character-mention", "object-mention", "location-mention"];
+
 export const StoryElementColorArray = ["orange", "blue", "green"];
 
-export const noElementsText = (type: StoryElementType) => `Non sono presenti ${StoryElementTypeDictionary.ita.plural[type]} in questa storia`;
-export const shortNoElementsText = (type: StoryElementType) => `Nessun ${StoryElementTypeDictionary.ita.singular[type]}`;
-export const noMatchingElementsText = (type: StoryElementType) => `Nessun ${StoryElementTypeDictionary.ita.singular[type]} corrisponde alla ricerca`;
+export const noElementsText = StoryElementTypeDictionary.ita.plural.map(typeText => `Non sono presenti ${typeText} in questa storia`);
+export const shortNoElementsText = StoryElementTypeDictionary.ita.singular.map(typeText => `Nessun ${typeText}`);
+export const noMatchingElementsText = StoryElementTypeDictionary.ita.singular.map(typeText => `Nessun ${typeText} corrisponde alla ricerca`);
 
 export type StoryElement = {
     id: string;
@@ -35,6 +37,8 @@ export type StoryElement = {
     resident: boolean;
     elementType: StoryElementType;
 }
+
+export type SmartSerializedStoryElement = Omit<CharacterElement | ObjectElement | LocationElement, "elementType" | "resident">
 
 export type CharacterElement = StoryElement & {
     elementType: StoryElementType.character
@@ -76,4 +80,9 @@ export function createNewElement(type: StoryElementType) {
             newElement.name = "Nuovo Luogo";
             return newElement as LocationElement;
     }
+}
+
+export function smartSerializeStoryElement(element: StoryElement): SmartSerializedStoryElement {
+    const {resident, elementType, ...filtered} = element;
+    return filtered;
 }

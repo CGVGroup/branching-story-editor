@@ -37,7 +37,6 @@ function TreeMultiSelect(props: {
             onOptionSubmit={val => handleValueSelect(val)}>
             <Combobox.Target>
                 <PillsInput
-                    component="button"
                     pointer
                     rightSection={<Combobox.Chevron/>}
                     rightSectionPointerEvents="none"

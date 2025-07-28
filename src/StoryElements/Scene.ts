@@ -1,4 +1,5 @@
 import UndoStack from "../Misc/UndoStack.ts";
+import { StoryElementType } from "./StoryElement.ts";
 
 type SceneDetails = {
     title: string;
@@ -13,6 +14,17 @@ type SceneDetails = {
 type HistoryElement = {
     prompt: string;
     fullText: string;
+}
+
+type SmartSerializedScene = {
+    title: string,
+    time: string,
+    weather: string,
+    backgroundIds: {
+        characters: string[],
+        objects: string[],
+        location: string
+    }
 }
 
 class Scene {
@@ -81,6 +93,19 @@ class Scene {
         return {details: this.details, history: this.history.serialize()}
     }
 
+    smartSerialize(): SmartSerializedScene {
+        return {
+            title: this.details.title,
+            time: this.details.time,
+            weather: this.details.weather,
+            backgroundIds: {
+                characters: this.details.backgroundIds[StoryElementType.character],
+                objects: this.details.backgroundIds[StoryElementType.object],
+                location: this.details.backgroundIds[StoryElementType.location]
+            }
+        }
+    }
+
     toJson(): string {  //Renamed to lowercase to avoid JSON.stringify from using this
         return JSON.stringify(this.serialize());
     }
@@ -99,4 +124,4 @@ class Scene {
 }
 
 export default Scene;
-export {type SceneDetails};
+export {type SceneDetails, type SmartSerializedScene};

@@ -21,7 +21,7 @@ export enum EdgeType {
 
 export const storyNodeTypes = {sceneNode: SceneNode, choiceNode: ChoiceNode, infoNode: InfoNode};
 export const storyNodeClassNames = {sceneNode: "scene", choiceNode: "choice", infoNode: "info"};
-export const storyNodeColorArray = {sceneNode: "pink", choiceNode: "violet", infoNode: "teal"}
+export const storyNodeColorArray = {sceneNode: "yellow", choiceNode: "violet", infoNode: "teal"}
 export const storyEdgeTypes = {buttonEdge: ButtonEdge}
 
 export type StoryNodeFunctionProps = {

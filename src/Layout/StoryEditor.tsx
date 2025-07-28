@@ -3,6 +3,7 @@ import { useNavigate, useParams } from "react-router";
 import { debounce } from "throttle-debounce";
 import { ActionIcon, Anchor, AppShell, Button, Center, CloseButton, Divider, Grid, Group, Modal, Tabs, Text, TextInput, Title } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
+import { modals } from "@mantine/modals";
 import StoryFlowChartEditor from "../Flow/StoryFlowChartEditor.tsx";
 import StoryElements from "./StoryElements.tsx";
 import Story from "../StoryElements/Story.ts";
@@ -33,7 +34,6 @@ function StoryEditor(props: {
 	const [currentTab, setCurrentTab] = useState<string>(defaultTab);
 
 	const [sideTab, {toggle: toggleSideTab}] = useDisclosure(true);
-	const [requestAllTexts, {open: requestAllTextsOpen, close: requestAllTextsClose}] = useDisclosure(false);
 
 	const [loading, setLoading] = useState(false);
 	const [loadingPercentage, setLoadingPercentage] = useState(0);
@@ -115,6 +115,15 @@ function StoryEditor(props: {
 		props.setStory(id, localStory);
 	}), []);
 
+	const onRequestAllTexts = useCallback(() => {
+		modals.openConfirmModal({
+			title: <Title order={4}>Generare i testi per tutta la storia?</Title>,
+			children: "Eventuali testi già presenti verranno sovrascritti.",
+			labels: { confirm: "Continua", cancel: "Annulla" },
+			onConfirm: onConfirmGenerateAll,
+		})
+	}, [onConfirmGenerateAll]);
+
 	// Keeps page title updated with story title
 	useEffect(() => {document.title = localStory.title}, [localStory.title]);
 
@@ -139,7 +148,8 @@ function StoryEditor(props: {
 								<ActionIcon
 									size="xl"
 									variant="light"
-									onClick={() => saveToDisk(localStory.toJSON(), `${localStory.title}.story`, "application/json")} title="Scarica">
+									//onClick={() => saveToDisk(localStory.toJSON(), `${localStory.title}.story`, "application/json")} title="Scarica">
+									onClick={() => console.log(localStory.smartSerialize())} title="Scarica">
 									<i className="bi bi-download" aria-label="download" />
 								</ActionIcon>
 								<ActionIcon
@@ -153,7 +163,7 @@ function StoryEditor(props: {
 									size="xl"
 									variant="light"
 									title={"Genera tutti i testi"}
-									onClick={requestAllTextsOpen}
+									onClick={onRequestAllTexts}
 									loading={loading}>
 									<AiPen/>
 								</ActionIcon>
@@ -176,21 +186,6 @@ function StoryEditor(props: {
 					readOnly={false} />
 			</AppShell.Navbar>
 			<AppShell.Main>
-				<Modal
-					opened={requestAllTexts}
-					onClose={requestAllTextsClose}
-					title={<Title order={4}>Generare i testi per tutta la storia?</Title>}>
-					Eventuali testi già presenti verranno sovrascritti.
-					<Divider my="md"/>
-					<Group justify="flex-end">
-						<Button color="gray" variant="light" onClick={requestAllTextsClose}>
-							Annulla
-						</Button>
-						<Button onClick={onConfirmGenerateAll}>
-							Continua
-						</Button>
-					</Group>
-				</Modal>
 				<Tabs
 					keepMounted={false}
 					value={currentTab}

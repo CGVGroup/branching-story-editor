@@ -87,7 +87,6 @@ def send_default():
 def get_models():
     models_folder = Path(CONFIG_PATH)
     configs = [config.stem for config in models_folder.iterdir() if config.is_file() and config.name.endswith(".yaml")]
-    print(configs)
     return configs
 
 @app.route('/db', methods = ['GET']) 

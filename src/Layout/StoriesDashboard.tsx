@@ -1,7 +1,8 @@
 import { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import {ActionIcon, AppShell, Button, Center, Divider, Fieldset, FileButton, Flex, Group, Modal, NavLink, Paper, ScrollArea, Select, SimpleGrid, Stack, Textarea, TextInput, Title} from "@mantine/core";
+import {ActionIcon, AppShell, Button, Center, Divider, Fieldset, FileButton, Flex, Group, Modal, NavLink, Paper, ScrollArea, Select, SimpleGrid, Stack, Text, Textarea, TextInput, Title} from "@mantine/core";
 import {useDisclosure} from "@mantine/hooks";
+import { modals } from '@mantine/modals'; 
 import Story from "../StoryElements/Story.ts";
 import StoryFlowChartViewer from "../Flow/StoryFlowChartViewer.tsx";
 import StoryElements from "./StoryElements.tsx";
@@ -19,8 +20,6 @@ function StoriesDashboard(props: {
 	const navigate = useNavigate();
 	
 	const [chosenModel, setChosenModel] = useContext(ChosenModelContext)!;
-
-	const [deleteStory, {open: openDeleteStory, close: closeDeleteStory}] = useDisclosure(false);
 	const [selectedId, setSelectedId] = useState<string | null>(props.lastOpenStory);
 	const [fileUploading, fileUploadingHandler] = useDisclosure(false);
 
@@ -64,18 +63,14 @@ function StoriesDashboard(props: {
 
 	const selectedStory = useMemo(() => props.stories.get(selectedId!), [props.stories, selectedId]);
 
-	const deleteStoryModal = useMemo(() => 
-		selectedId && 
-			<Modal
-				opened={deleteStory}
-				onClose={closeDeleteStory}
-				title={<Title order={4}>Eliminare <b>{selectedStory?.title}</b>?</Title>}>
-				<Group justify="flex-end">
-					<Button color="gray" variant="light" onClick={closeDeleteStory}>Annulla</Button>
-					<Button color="red" variant="filled" onClick={() => {props.deleteStory(selectedId); closeDeleteStory();}}>Conferma</Button>
-				</Group>
-			</Modal>
-	, [deleteStory, selectedId, selectedStory, props.deleteStory])
+	const openDeleteModal = useCallback((story: Story, id: string) => {
+		modals.openConfirmModal({
+			title: <Title order={4}>Eliminare <b>{story.title}</b>?</Title>,
+			labels: { confirm: "Conferma", cancel: "Annulla" },
+			confirmProps: {color: "red", variant: "filled"},
+			onConfirm: () => props.deleteStory(id),
+		})
+	}, [props.deleteStory]);
 
 	// Handler for aborting file upload dialog
 	useEffect(() => {
@@ -148,12 +143,11 @@ function StoriesDashboard(props: {
 				</AppShell.Section>
 			</AppShell.Navbar>
 			<AppShell.Main pe="sm">
-				{deleteStoryModal}
 				{selectedId && selectedStory ?
 					<Flex className={classes.growcol}>
 						<Group>
 							<ActionIcon.Group>
-								<ActionIcon size="lg" color="red" onClick={openDeleteStory} title="Elimina">
+								<ActionIcon size="lg" color="red" onClick={() => openDeleteModal(selectedStory, selectedId)} title="Elimina">
 									<i className="bi bi-trash" aria-label="delete"/> 
 								</ActionIcon>
 								<ActionIcon size="lg" variant="light" onClick={() => onClickCopy(selectedStory)} title="Duplica">

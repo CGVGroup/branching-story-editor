@@ -85,6 +85,7 @@ function ElementModal(props: {
             <form onSubmit={form.onSubmit(values => onSubmit(values))}>
                 <Stack gap="xs">
                     <TextInput
+                        data-autofocus
                         label="Nome"
                         placeholder="Nessun nome"
                         autoFocus

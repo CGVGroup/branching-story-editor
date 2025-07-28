@@ -1,9 +1,9 @@
-import { getIncomers, getOutgoers, Node, ReactFlowJsonObject } from "@xyflow/react";
-import { StoryElementType, StoryElement } from "./StoryElement.ts";
-import Scene from "./Scene.ts";
-import Choice from "./Choice.ts";
+import { getConnectedEdges, getIncomers, getOutgoers, Node, ReactFlowJsonObject } from "@xyflow/react";
+import { StoryElementType, StoryElement, SmartSerializedStoryElement, smartSerializeStoryElement } from "./StoryElement.ts";
+import Scene, { SmartSerializedScene } from "./Scene.ts";
+import Choice, { SmartSerializedChoice } from "./Choice.ts";
 import { Info } from "../Flow/InfoNode.tsx";
-import { NodeType } from "../Flow/StoryNode.tsx";
+import { NodeType, storyNodeClassNames, storyNodeTypes } from "../Flow/StoryNode.tsx";
 import { sendToLLM } from "../Misc/LLM.ts";
 import { getElementFromDB } from "../Misc/DB.ts";
 import getAllOutgoers from "../Misc/GraphUtils.ts";
@@ -15,6 +15,20 @@ type SerializedStory = {
     title: string,
     summary: string,
     notes: string
+}
+
+type SmartSerializedStory = {
+    title: string,
+    summary: string,
+    notes: string,
+    dbElements: string[],
+    localElements: SmartSerializedStoryElement[],
+    nodes: SmartSerializedNode[]
+}
+
+type SmartSerializedNode = {
+    type: string,
+    contents: SmartSerializedScene & {next: string} | SmartSerializedChoice | Info & {next: string},
 }
 
 class Story {
@@ -167,6 +181,41 @@ class Story {
                     {...node, data: {...node.data, scene: (node.data.scene as Scene).serialize()}}
                 :
                     node)}
+        }
+    }
+
+    smartSerialize(): SmartSerializedStory {
+        return {
+            title: this.title,
+            summary: this.summary,
+            notes: this.notes,
+            dbElements: this.elements.filter(element => element.resident === false).map(element => element.id),
+            localElements: this.elements.filter(element => element.resident === true).map(element => smartSerializeStoryElement(element)),
+            nodes: this.flow.nodes.map(node => {
+                let contents: SmartSerializedScene & {next: string} | SmartSerializedChoice | Info & {next: string};
+                switch (node.type) {
+                    case (NodeType.scene):
+                        contents = {...(node.data.scene as Scene).smartSerialize(),
+                            next: getOutgoers(node, this.flow.nodes, this.flow.edges)?.[0]?.data.label as string ?? ""}
+                    break;
+                    case (NodeType.choice):
+                        contents = (node.data.choice as Choice).smartSerialize();
+                        const edges = getConnectedEdges([node], this.flow.edges)
+                            .filter(edge => edge.source === node.id);
+                        for (const edge of edges) {
+                            contents.choices[Number.parseInt(edge.sourceHandle!.split("-")[1])].next = this.getNode(edge.target)?.data.label as string;
+                        }
+                    break;
+                    case (NodeType.info):
+                        contents = {...(node.data.info as Info),
+                            next: getOutgoers(node, this.flow.nodes, this.flow.edges)?.[0]?.data.label as string ?? ""}
+                    break;
+                }
+                return {
+                    type: storyNodeClassNames[node.type!],
+                    contents: contents!
+                }
+            })
         }
     }
 

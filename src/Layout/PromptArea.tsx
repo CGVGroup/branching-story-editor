@@ -1,10 +1,10 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { createPortal } from "react-dom";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { RichTextarea, RichTextareaHandle } from "rich-textarea"
-import { Flex, Paper, ScrollArea, Tabs, UnstyledButton } from "@mantine/core";
+import { Combobox, Flex, InputBase, Text, useCombobox } from "@mantine/core";
 import Story from "../StoryElements/Story.ts";
-import { StoryElementType, StoryElementTypeArray, StoryElementTypeDictionary } from "../StoryElements/StoryElement.ts";
-import { storyElementTabsArray } from "./StoryElements.tsx";
+import { StoryElementType, StoryElementTypeArray, StoryElementTypeMentions } from "../StoryElements/StoryElement.ts";
+import PromptAreaMenu from "./PromptAreaMenu.tsx";
+import classes from "../GrowColumn.module.css"
 
 type Position = {
 	top: number;
@@ -13,7 +13,7 @@ type Position = {
 };
 
 const MENTION_REGEX = /\B@([\w]*)$/;
-const maxElementsShown = 8;
+const maxElementsShown = 6;
 
 function PromptArea(props: {
 	story: Story,
@@ -23,18 +23,18 @@ function PromptArea(props: {
 	readOnly?: boolean
 }) {
 	const ref = useRef<RichTextareaHandle>(null);
-	const refApp = useRef(document.getElementsByClassName("App").item(0));
-	const selectedRef = useRef<HTMLAnchorElement>(null);
 
 	const [text, setText] = useState(props.initialText ?? "");
 	const [pos, setPos] = useState<Position | null>(null);
-	const [showMenu, setShowMenu] = useState(false);
-	const [menuSelected, setMenuSelected] = useState<string | undefined>();
-	const [menuTabKey, setMenuTabKey] = useState(StoryElementType.character);
 
+	const combobox = useCombobox({
+		onDropdownOpen: () => combobox.selectFirstOption(),
+		onDropdownClose: () => combobox.resetSelectedOption(),
+	});
+	
 	const allElements = useMemo(() => props.story.getElements(), [props.story]);
 	
-	const [match, name] = useMemo(() => {
+	const [match, search] = useMemo(() => {
 		const targetText = pos ? text.slice(0, pos.caret) : text;
 		const match = pos && targetText.match(MENTION_REGEX);
 		return [match, match?.[1] ?? ""];
@@ -51,70 +51,6 @@ function PromptArea(props: {
 				.map(element => `@${element.name}`)
 				.join("|")}$)`)
 	), [allElements]);
-
-	const filtered = useMemo(() =>
-		allElements.filter(element =>
-			element.name.toLowerCase()
-				.startsWith(name.toLowerCase()))
-	, [allElements, name]);
-
-	const closeMenu = useCallback(() => {
-		setShowMenu(false);
-		setMenuTabKey(StoryElementType.character);
-	}, []);
-
-	const changeTab = useCallback((key?: string | null) => {
-		if (key !== undefined) {
-			setMenuTabKey(Number.parseInt(key ?? "0"));
-		} else {
-			setMenuTabKey(key => (key+1) % StoryElementTypeArray.length);
-		}
-		setMenuSelected(undefined);
-	}, []);
-
-	const complete = useCallback((id: string | undefined) => {
-		if (!ref.current || !pos || !id) return;
-		const previousWord = [...text.matchAll(highlight_all)].find(m => m.index === match?.index)?.[0];
-		const wordStart = pos.caret - name.length - 1;
-		const wordEnd = previousWord ? wordStart + previousWord.length : pos.caret; 
-		ref.current.setRangeText(
-			`@${allElements.find(element => element.id === id)!.name} `,
-			wordStart,
-			wordEnd,
-			"end");
-		ref.current.focus();
-		setShowMenu(false);
-	},[ref, pos, text, name, match, highlight_all, allElements]);
-
-	const onKeyDown = useCallback((e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-		if (!pos || !filtered.length || !showMenu || allElements.length === 0) return;
-		switch (e.code) {
-			case "ArrowUp":
-			case "ArrowDown":
-				e.preventDefault();
-				setMenuSelected(selected => {
-					const list = filtered.length > maxElementsShown ? filtered.filter(element => element.elementType === menuTabKey) : filtered;
-					const idx = list.findIndex(element => element.id === selected);
-					if (e.code === "ArrowUp") return list[idx <= 0 ? list.length - 1 : idx - 1].id;
-					if (e.code === "ArrowDown") return list[idx >= list.length - 1 ? 0 : idx + 1].id;
-				});
-			break;
-			case "Enter":
-				e.preventDefault();
-				complete(menuSelected);
-			break;
-			case "Tab":
-				e.preventDefault();
-				changeTab();
-			break;
-			case "Escape":
-				e.preventDefault();
-				closeMenu();
-			break;
-			default:
-			break;
-		}
-	}, [pos, filtered, showMenu, allElements, complete, menuSelected, menuTabKey, changeTab, closeMenu]);
 
 	const textSplitter = useCallback((text: string, spaces: boolean) => {
 		const split = allElements.length > 0 ? text.split(highlight_all) : [text];
@@ -139,154 +75,128 @@ function PromptArea(props: {
 		return null;
 	}, [highlight_characters, highlight_objects, highlight_locations]);
 
+	const complete = useCallback((id: string | undefined) => {
+		if (!ref.current || !pos || !id) return;
+		const previousWord = [...text.matchAll(highlight_all)].find(m => m.index === match?.index)?.[0];
+		const wordStart = pos.caret - search.length - 1;
+		const wordEnd = previousWord ? wordStart + previousWord.length : pos.caret; 
+		ref.current.setRangeText(
+			`@${allElements.find(element => element.id === id)!.name} `,
+			wordStart,
+			wordEnd,
+			"end");
+	}, [ref, pos, text, search, match, highlight_all, allElements]);
+
 	const renderer = useCallback((text: string) => {
 		return textSplitter(text, true)
 			.map((word, idx) => {
 				if (word.startsWith("@")) {
 					const mentionType = mentionMatcher(word);
-					const mentionClass = `${mentionType === null ? "no" : StoryElementTypeDictionary.eng.singular[mentionType]}-mention`
-					return <span key={idx} className={mentionClass} style={{borderRadius: "3px" }}>{word}</span>
+					const mentionClass = mentionType === null ? "no-mention" : StoryElementTypeMentions[mentionType];
+					return <Text key={idx} span className={mentionClass} size="sm">{word}</Text>;
 				}
 				return word;
 			}
 		);
 	}, [textSplitter, mentionMatcher]);
 
-	const elements = useMemo(() => {
-		if (allElements.length === 0) {
-			return <Paper>
-				<PromptAreaMenuElement
-					value={"Non sono presenti elementi nella storia attuale"}
-					type={null} />
-			</Paper>
-		}
-		if (filtered.length === 0) {
-			return <Paper>
-				<PromptAreaMenuElement
-					value={"Nessuna corrispondenza"}
-					type={null} />
-			</Paper>
-		}
-		if (filtered.length <= maxElementsShown) {
-			return <Paper className="story-elements">
-				{filtered.map(element =>
-					<PromptAreaMenuElement
-						key={element.id} 
-						value={element.name}
-						type={element.elementType}
-						selected={element.id === menuSelected}
-						onMouseEnter={() => setMenuSelected(element.id)}
-						onClick={() => complete(element.id)} />)}
-				</Paper>
-		}
-		return (
-		<Tabs
-			value={menuTabKey.toString()}
-			onChange={k => changeTab(k)}
-			onMouseDown={e => {e.preventDefault(); ref?.current?.focus()}}
-			className="custom-tabs">
-				<Tabs.List>
-					{storyElementTabsArray.map(tab => 
-						<Tabs.Tab key={tab.type} value={tab.type.toString()} style={{fontSize:"0.5em"}}>
-							{tab.tabContents}
-						</Tabs.Tab>)}
-				</Tabs.List>
-				{storyElementTabsArray.map(tab => 
-					<Tabs.Panel value={tab.type.toString()}>
-						<ScrollArea className="story-elements">
-							{filtered.filter(element => element.elementType === tab.type).map((element, idx) => 
-								<PromptAreaMenuElement
-								key={idx}
-								selectedRef={element.id === menuSelected ? selectedRef : null}
-								value={element.name}
-								type={element.elementType}
-								selected={element.id === menuSelected}
-								id={element.id}
-								onMouseEnter={() => setMenuSelected(element.id)}
-								onClick={() => complete(element.id)} />)}
-						</ScrollArea>
-					</Tabs.Panel>
-				)}
-		</Tabs>
-	)}, [allElements, filtered, menuTabKey, menuSelected, selectedRef, changeTab, complete]);
-
 	useEffect(() => setText(props.initialText ?? ""), [props.initialText]);
-	useEffect(() => {if (filtered.length > 0) setMenuSelected(filtered[0].id)}, [filtered]);
-	useEffect(() => selectedRef.current?.scrollIntoView({block:"end"}), [selectedRef]);
 
 	return (
-		<Flex className="prompt-area" h="100%" direction="column" style={{flexGrow: 1}}>
-			<RichTextarea
-				ref={ref}
-				value={text}
-				className="form-control"
-				id="prompt-text-area"
-				placeholder='Usa "@" per citare gli elementi della storia'
-				style={{width:"100%", height:"100%", left:"0px", background:"white", maxHeight:"100%"}}
-				onBlur={e => {
-					e.preventDefault();
-					if (!e.relatedTarget?.closest(".prompt-area-menu")) {
-						props.onBlur?.(text);
-						closeMenu();
-					}
-				}}
-				onChange={e => {
-					setText(e.target.value);
-					props.setText?.(e.target.value);
-				}}
-				onKeyDown={onKeyDown}
-				onSelectionChange={r => {
-					if (r.focused) {
-						if (MENTION_REGEX.test(text.slice(0, r.selectionStart))) {
-							setPos({
-								top: r.top/* + r.height*/,
-								left: r.left,
-								caret: r.selectionStart
-							});
-							setShowMenu(true);
-						} else {
-							closeMenu();
-						}
-					}
-				}}
-				
-				disabled={props.readOnly}>
-				{renderer}
-			</RichTextarea>
-			{refApp.current && showMenu && !props.readOnly &&
-				createPortal(
-					<Paper
-						className="prompt-area-menu d-flex flex-column"
-						onBlur={closeMenu}
-						style={{height: filtered.length > maxElementsShown ? "18em" : "", transform: `translate(min(${pos?.left ?? 0}px, calc(100vw - 100%)), max(${pos?.top ?? 0}px - 100%, 0px))`}}>
-						{elements}
-					</Paper>,
-					refApp.current)
-			}
+		<Flex className={`${classes.growcol} prompt-area`}>
+			<Combobox
+				withinPortal={false}
+				store={combobox}
+				position="top"
+				classNames={{dropdown: "prompt-area-menu"}}>
+				<Combobox.Target>
+					<InputBase
+						component={RichTextarea}
+						ref={ref}
+						value={text}
+						label="Prompt"
+						description='Usa "@" per menzionare gli elementi della storia'
+						placeholder="Prompt"
+						multiline
+						styles={{input: {width: "100%", resize: "vertical"}}}
+						onBlur={e => {
+							e.preventDefault();
+							if (!e.relatedTarget?.closest(".prompt-area-menu")) {
+								props.onBlur?.(text);
+								combobox.closeDropdown();
+							}
+						}}
+						onChange={e => {
+							setText(e.target.value);
+							props.setText?.(e.target.value);
+						}}
+						onSelectionChange={r => {
+							if (r.focused) {
+								setPos({top: r.top, left: r.left, caret: r.selectionStart});
+								if (MENTION_REGEX.test(text.slice(0, r.selectionStart))) {
+									combobox.openDropdown();
+								} else {
+									combobox.closeDropdown();
+								}
+							}
+						}}
+						disabled={props.readOnly}>
+						{renderer}
+					</InputBase>
+				</Combobox.Target>
+				<Combobox.DropdownTarget>
+					<div
+						className="prompt-area-menu-target"
+						style={{top: `${pos?.top}px`, left: `${pos?.left}px`}}/>
+				</Combobox.DropdownTarget>
+				<Combobox.Dropdown>					
+					<PromptAreaMenu
+						allElements={allElements}
+						search={search}
+						maxElementsShown={maxElementsShown}
+						onClick={complete}
+						promptAreaRef={ref}/>
+				</Combobox.Dropdown>
+			</Combobox>
 		</Flex>
 	);
 }
 
-function PromptAreaMenuElement(props: {
-  value: string,
-  type: StoryElementType | null,
-  selected?: boolean,
-  selectedRef?: React.Ref<HTMLAnchorElement> | null,
-  id?: string,
-  onMouseEnter?: () => void,
-  onClick?: () => void
-}) {
-  return (
-	<UnstyledButton
-		//action={!!props.onClick}
-		id={"id-"+props.id}
-		//ref={props.selectedRef ?? undefined}
-		className={`${props.type === null ? "no" : StoryElementTypeDictionary.eng.singular[props.type]}-mention ${props.selected ? "selected" : ""}`}
-		onMouseEnter={props.onMouseEnter}
-		onClick={props.onClick}>
-		{props.value}
-	</UnstyledButton>
-  );
-}
+// Nel caso dovessero saltare fuori problemi con InputBase
+/*<Input.Wrapper
+	label="Prompt"
+	description={'Usa "@" per menzionare gli elementi della storia'}>
+	<Combobox.Target>
+		<RichTextarea						
+			ref={ref}
+			value={text}
+			placeholder='Prompt'
+			style={{width:"100%", height:"100%", left:"0px", background:"transparent", resize:"none"}}
+			onBlur={e => {
+				e.preventDefault();
+				if (!e.relatedTarget?.closest(".prompt-area-menu")) {
+					props.onBlur?.(text);
+					combobox.closeDropdown();
+				}
+			}}
+			onChange={e => {
+				setText(e.target.value);
+				props.setText?.(e.target.value);
+			}}
+			onSelectionChange={r => {
+				if (r.focused) {
+					setPos({top: r.top, left: r.left, caret: r.selectionStart});
+					if (MENTION_REGEX.test(text.slice(0, r.selectionStart))) {
+						combobox.openDropdown();
+					} else {
+						combobox.closeDropdown();
+					}
+				}
+			}}
+			disabled={props.readOnly}>
+			{renderer}
+		</RichTextarea>
+	</Combobox.Target>
+</Input.Wrapper>*/
 
 export default PromptArea;

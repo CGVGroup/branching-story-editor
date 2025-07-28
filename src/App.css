@@ -1,12 +1,18 @@
 .App {
-  --character-color: #b05e00;
-  --character-color-light: #ffecd7;
-  --object-color: #003468;
-  --object-color-light: #e1f7ff;
-  --location-color: #004e03;
-  --location-color-light: #dcffdc;
+  --character-color: var(--mantine-color-orange-6);
+  --character-color-light: var(--mantine-color-orange-0);
+  --character-color-dark: var(--mantine-color-orange-7);
+  --object-color: var(--mantine-color-blue-6);
+  --object-color-light: var(--mantine-color-blue-0);
+  --object-color-dark: var(--mantine-color-blue-7);
+  --location-color: var(--mantine-color-green-6);
+  --location-color-light: var(--mantine-color-green-0);
+  --location-color-dark: var(--mantine-color-green-7);
+  --no-mention-color: var(--mantine-color-dark-6);
+  --no-mention-color-light: var(--mantine-color-dark-0);
+  --no-mention-color-dark: var(--mantine-color-dark-7);
 
-  --scene-color: var(--mantine-color-pink-0);
+  --scene-color: var(--mantine-color-yellow-0);
   --choice-color: var(--mantine-color-violet-0);
   --info-color: var(--mantine-color-teal-0);
 
@@ -18,25 +24,6 @@
   text-align: center;
   height: 100vh;
   padding: 0px 16px;
-  overflow: hidden;
-  
-  /*Overrides*/
-
-  --bs-list-group-active-bg: black;
-
-  .form-control:focus, select:focus{
-    box-shadow: none;
-  }
-
-  .tab-content {
-    flex-grow: 1;
-    overflow-y: auto;
-    overflow-x: hidden;
-  }
-
-  .tab-pane {
-    height: 100%;
-  }
 
   /*Custom Classes*/
   
@@ -52,18 +39,58 @@
     background-color: var(--info-color);
   }
 
-  .accordion-item.choice {
-    .accordion-header {
-      background-color: var(--choice-color);
+  .character-mention {
+    background: var(--character-color-light);
+    color: var(--character-color-dark);
+    border-color: var(--character-color);
+    &[data-combobox-selected] {
+      background: var(--character-color);
+      color: var(--mantine-color-white);
     }
-    .accordion-button {
-      background-color: transparent;
+  }
+  .mantine-Popover-dropdown {
+    .character-mention:hover {
+      background: var(--character-color-dark);
+      color: var(--mantine-color-white);
     }
   }
 
-  /*.list-group-item.active {
-    background-color: #d0d0ff;
-  }*/
+  .object-mention {
+    background: var(--object-color-light);
+    color: var(--object-color-dark);
+    border-color: var(--object-color);
+    &[data-combobox-selected] {
+      background: var(--object-color);
+      color: var(--mantine-color-white);
+    }
+  }
+  .mantine-Popover-dropdown {
+    .object-mention:hover {
+      background: var(--object-color-dark);
+      color: var(--mantine-color-white);
+    }
+  }
+
+  .location-mention {
+    background: var(--location-color-light);
+    color: var(--location-color-dark);
+    border-color: var(--location-color);
+    &[data-combobox-selected] {
+      background: var(--location-color);
+      color: var(--mantine-color-white);
+    }
+  }
+  .mantine-Popover-dropdown {
+    .location-mention:hover {
+      background: var(--location-color-dark);
+      color: var(--mantine-color-white);
+    }
+  }
+
+  .no-mention {
+    background: var(--no-mention-color-light);
+    color: var(--no-mention-color);
+  }
 
   /*Custom Elements*/
 
@@ -172,86 +199,7 @@
     }
   }
 
-  .mention-chip {
-    display: inline-block;
-    cursor: default;
-    padding: 0.25em 0.5em;
-    width: auto;
-  }
-
-  .character-mention {
-    background: var(--character-color-light);
-    color: var(--character-color);
-    border-color: var(--character-color);
-
-    &:focus, &.selected, &.active {
-      background: var(--character-color);
-      color: var(--character-color-light);
-      border-color: var(--character-color-light);
-    }
-  }
-
-  .object-mention {
-    background: var(--object-color-light);
-    color: var(--object-color);
-    border-color: var(--object-color);
-
-    &:focus, &.selected, &.active {
-      background: var(--object-color);
-      color: var(--object-color-light);
-      border-color: var(--object-color-light);
-    }
-  }
-
-  .location-mention {
-    background: var(--location-color-light);
-    color: var(--location-color);
-    border-color: var(--location-color);
-
-    &:focus, &.selected, &.active {
-      background: var(--location-color);
-      color: var(--location-color-light);
-      border-color: var(--location-color-light);
-    }
-  }
-
-  .no-mention {
-    background: #eee;
-    color: #000;
-  }
-
   .custom-tabs {
-    .nav-underline {
-      align-items: end;
-      gap: 0.25rem;
-    }
-    
-    >li {
-      background: white;
-    }
-    
-    .nav-link {
-      padding: calc(var(--bs-nav-link-padding-y)/2) calc(var(--bs-nav-link-padding-x)/2);
-
-      &.scene {  
-        background-color: var(--scene-color);
-      }
-      &.choice {
-        background-color: var(--choice-color);
-      }
-      &.info {
-        background-color: var(--info-color);
-      }
-
-      &:not(.active) {
-        opacity: 0.75;
-      }
-    }
-
-    .scene {
-      background-color: #eee;
-    }
-
     .close-button {
       visibility: hidden;
     }
@@ -261,29 +209,6 @@
     }
   }
 
-  .story-elements {
-    .character-mention {
-      &.active, &:hover{
-        background: var(--character-color);
-        color: var(--character-color-light);
-        border-color: var(--character-color-light);
-      }
-    }
-    .object-mention {
-      &.active, &:hover{
-        background: var(--object-color);
-        color: var(--object-color-light);
-        border-color: var(--object-color-light);
-      }
-    }
-    .location-mention {
-      &.active, &:hover{
-        background: var(--location-color);
-        color: var(--location-color-light);
-        border-color: var(--location-color-light);
-      }
-    }
-  }
   .close-button {
     margin-left: 0.5em;
     pointer-events: all;
@@ -304,16 +229,13 @@
     position: fixed;
     top: 0;
     left: 0;
-    width: 15em;
     z-index: 1500;
     font-size: small;
-    
-    .nav-tabs {
-      font-size: large;
-    }
   }
 
-  .full-text:disabled {
-    cursor: wait;
+  .prompt-area-menu-target {
+    position: absolute;
+    width: 15em;
+    pointer-events: none;
   }
 }

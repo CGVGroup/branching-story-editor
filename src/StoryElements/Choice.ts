@@ -3,6 +3,15 @@ type ChoiceDetails = {
     wrong: boolean;
 }
 
+type SmartSerializedChoice = {
+    title: string,
+    choices: {
+        text: string,
+        wrong: boolean,
+        next: string
+    }[]
+}
+
 class Choice {
     title: string;
     choices: ChoiceDetails[];
@@ -54,6 +63,17 @@ class Choice {
         cloned.choices = cloned.choices.filter((_, idx) => idx !== index);
         return cloned;
     }
+    
+    smartSerialize(): SmartSerializedChoice {
+        return {
+            title: this.title,
+            choices: this.choices.map(choice => {return {
+                text: choice.text,
+                wrong: choice.wrong,
+                next: ""
+            }})
+        }
+    }
 
     toJson(): string {  //Renamed to lowercase to avoid JSON.stringify from using this
         return JSON.stringify(this);
@@ -73,4 +93,4 @@ class Choice {
 }
 
 export default Choice;
-export {type ChoiceDetails};
+export {type ChoiceDetails, type SmartSerializedChoice};

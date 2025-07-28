@@ -10,6 +10,7 @@ import LoadingPlaceholders from "../Misc/LoadingPlaceholders.tsx";
 import { ChosenModelContext } from "../App.tsx";
 import InfoEditor from "./InfoEditor.tsx";
 import { Info } from "../Flow/InfoNode.tsx";
+import classes from "../GrowColumn.module.css"
 
 function StoryTexts(props: {
     story: Story,
@@ -88,7 +89,12 @@ function StoryTexts(props: {
                                                     <ActionIcon onClick={() => props.onClickOpenScene(id)} title="Vai alla scena">
                                                         <i className="bi bi-box-arrow-up-right" />
                                                     </ActionIcon>
-                                                    <ActionIcon onClick={() => onSendButtonClicked(id)} disabled={loadings[idx]} loading={loadings[idx]} title="Invia all'IA">
+                                                    <ActionIcon
+                                                        variant="light"
+                                                        onClick={() => onSendButtonClicked(id)}
+                                                        disabled={loadings[idx]}
+                                                        loading={loadings[idx]}
+                                                        title="Invia all'IA">
                                                         <i className="bi bi-send" />
                                                     </ActionIcon>
                                                 </ActionIcon.Group>    
@@ -99,11 +105,14 @@ function StoryTexts(props: {
                                                 <LoadingPlaceholders/>
                                             :   
                                                 <Textarea
+                                                    h="100%"
                                                     label="Testo completo"
                                                     value={data.scene?.history.current.fullText}
-                                                    className="full-text"
+                                                    className={classes.growcol}
                                                     placeholder="Testo Completo"
-                                                    style={{height:"100%", width:"100%"}}
+                                                    styles={{
+                                                        wrapper: {flexGrow: 1},
+                                                        input: {height: "100%"}}}
                                                     onChange={e => onFullTextEdited(id, e.target.value)}
                                                     disabled={loadings[idx]} >
                                                 </Textarea>

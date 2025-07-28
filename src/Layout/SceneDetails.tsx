@@ -3,7 +3,7 @@ import { debounce } from 'throttle-debounce';
 import { Avatar, Divider, Fieldset, Group, MultiSelect, Select, SimpleGrid, Stack, Text, Textarea, TextInput } from "@mantine/core";
 import Story from "../StoryElements/Story.ts";
 import { SceneDetails as SceneDetailsType} from "../StoryElements/Scene.ts";
-import { noElementsText, noMatchingElementsText, StoryElementType, StoryElementTypeArray } from "../StoryElements/StoryElement.ts";
+import { noElementsText, noMatchingElementsText, shortNoElementsText, StoryElementColorArray, StoryElementType, StoryElementTypeArray, StoryElementTypeDictionary, StoryElementTypeMentions } from "../StoryElements/StoryElement.ts";
 import { SceneDetailsEnumsContext } from "../App.tsx";
 
 function SceneDetails(props: {
@@ -22,6 +22,10 @@ function SceneDetails(props: {
 	const [backgroundLocation, setBackgroundLocation] = useState(props.details.backgroundIds[StoryElementType.location]);
 
 	const sceneDetailsChoices = useContext(SceneDetailsEnumsContext)!;
+
+	const searchPlaceholders = useMemo(() =>
+		StoryElementTypeDictionary.ita.singular.map(type => `Digita per cercare un ${type}`)
+	, []);
 
 	const renderOptions = useCallback(({ option }) => {
 		const element = props.story.getElement(option.value)!;
@@ -121,32 +125,41 @@ function SceneDetails(props: {
 					label="Personaggi"
 					value={backgroundCharacters}
 					onChange={chars => setBackgroundCharacters(chars ?? [])}
-					data={props.story.getElementsByType(StoryElementType.character).map(element => {return {value: element.id, label: element.name}})}
-					placeholder={backgroundCharacters.length ? undefined : "Nessun Personaggio"}
+					data={allOptions[StoryElementType.character]}
+					placeholder={backgroundCharacters.length ? searchPlaceholders[StoryElementType.character] : shortNoElementsText[StoryElementType.character]}
 					renderOption={renderOptions}
-					nothingFoundMessage={allOptions[StoryElementType.character].length === 0 ? noElementsText(StoryElementType.character) : noMatchingElementsText(StoryElementType.character)}
+					nothingFoundMessage={allOptions[StoryElementType.character].length === 0 ? noElementsText[StoryElementType.character] : noMatchingElementsText[StoryElementType.character]}
+					classNames={{pill: StoryElementTypeMentions[StoryElementType.character], option: StoryElementTypeMentions[StoryElementType.character]}}
+					comboboxProps={{withinPortal: false}}
 					hidePickedOptions
-					searchable/>
+					searchable
+					clearable/>
 				<MultiSelect
 					label="Oggetti"
 					value={backgroundObjects}
 					onChange={obj => setBackgroundObjects(obj ?? [])}
 					data={allOptions[StoryElementType.object]}
-					placeholder={backgroundObjects.length ? undefined : "Nessun Oggetto"}
+					placeholder={backgroundObjects.length ? searchPlaceholders[StoryElementType.object] : shortNoElementsText[StoryElementType.object]}
 					renderOption={renderOptions}
-					nothingFoundMessage={allOptions[StoryElementType.object].length === 0 ? noElementsText(StoryElementType.object) : noMatchingElementsText(StoryElementType.object)}
+					nothingFoundMessage={allOptions[StoryElementType.object].length === 0 ? noElementsText[StoryElementType.object] : noMatchingElementsText[StoryElementType.object]}
+					classNames={{pill: StoryElementTypeMentions[StoryElementType.object], option: StoryElementTypeMentions[StoryElementType.object]}}
+					comboboxProps={{withinPortal: false}}
 					hidePickedOptions
-					searchable/>
-				<Select
+					searchable
+					clearable/>
+				<MultiSelect
 					label="Luogo"
-					value={backgroundLocation}
-					onChange={loc => setBackgroundLocation(loc ?? "")}
+					value={backgroundLocation ? [backgroundLocation] : []}
+					onChange={loc => setBackgroundLocation(loc[loc.length - 1] ?? "")}
 					data={allOptions[StoryElementType.location]}
-					placeholder={backgroundObjects.length ? undefined : "Nessun Luogo"}
+					placeholder={backgroundLocation ? searchPlaceholders[StoryElementType.location] : shortNoElementsText[StoryElementType.location]}
 					renderOption={renderOptions}
-					nothingFoundMessage={allOptions[StoryElementType.location].length === 0 ? noElementsText(StoryElementType.location) : noMatchingElementsText(StoryElementType.location)}
-					clearable
-					searchable/>
+					nothingFoundMessage={allOptions[StoryElementType.location].length === 0 ? noElementsText[StoryElementType.location] : noMatchingElementsText[StoryElementType.location]}
+					classNames={{pill: StoryElementTypeMentions[StoryElementType.location], option: StoryElementTypeMentions[StoryElementType.location]}}
+					comboboxProps={{withinPortal: false}}
+					hidePickedOptions
+					searchable
+					clearable/>
 			</Stack>
 		</Fieldset>
 	);

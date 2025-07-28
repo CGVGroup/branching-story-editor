@@ -4,11 +4,12 @@ import '@mantine/core/styles.css';
 import { v4 as uuidv4 } from "uuid";
 import { createContext, useCallback, useEffect, useRef, useState } from "react";
 import { Navigate, Route, BrowserRouter as Router, Routes } from "react-router-dom";
+import { Center, Loader, MantineProvider } from "@mantine/core";
+import { ModalsProvider } from '@mantine/modals';
 import StoriesDashboard from "./Layout/StoriesDashboard.tsx";
 import StoryEditor from "./Layout/StoryEditor.tsx";
 import Story from "./StoryElements/Story.ts";
 import { DbContext, getAll, getEnums, getModels, getTaxonomies, SceneDetailsEnums, Taxonomies } from "./Misc/DB.ts";
-import { Center, Loader, MantineProvider } from "@mantine/core";
 
 export const SceneDetailsEnumsContext = createContext<SceneDetailsEnums | null>(null);
 export const TaxonomiesContext = createContext<Taxonomies | null>(null);
@@ -105,6 +106,8 @@ function App() {
           <ModelListContext.Provider value={models}>
           <ChosenModelContext.Provider value={[chosenModel, setChosenModel]}>
           <SceneDetailsEnumsContext.Provider value={enums}>
+          <MantineProvider>
+          <ModalsProvider>
             <Router>
               <Routes>
                 <Route path="/" element={<Navigate to="/stories"/>} />
@@ -124,6 +127,8 @@ function App() {
                 } />
               </Routes>
             </Router>
+          </ModalsProvider>
+          </MantineProvider>
           </SceneDetailsEnumsContext.Provider>
           </ChosenModelContext.Provider>
           </ModelListContext.Provider>
