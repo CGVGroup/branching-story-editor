@@ -199,9 +199,8 @@ function StoriesDashboard(props: {
 						</Flex>
 					</Flex>
 				:
-					<Flex direction="column" style={{flexGrow: 1}}>
-						<div style={{
-							flexGrow: 1,
+					<Flex className={classes.growcol}>
+						<div className={classes.growcol} style={{
 							backgroundImage:"url(/Desert.jpg)",
 							backgroundSize:"cover",
 							opacity:"0.15",

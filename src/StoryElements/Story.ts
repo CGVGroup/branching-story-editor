@@ -48,7 +48,16 @@ class Story {
         notes?: string
     ) {
         this.elements = elements?.map(id => getElementFromDB(id)).concat(residentElements ?? []) ?? [];
-        this.flow = flow;
+        this.flow = {...flow, nodes: flow.nodes.map(node => {
+            switch (node.type) {
+                case (NodeType.scene):
+                    return {...node, data: {...node.data, scene: Scene.from(node.data.scene as Scene)}};
+                case (NodeType.choice):
+                    return {...node, data: {...node.data, choice: Choice.from(node.data.choice as Choice)}};
+                default:
+                    return node;
+            }
+        })};
         this.title = title ?? "Storia senza titolo";
         this.summary = summary ?? "";
         this.notes = notes ?? "";
@@ -188,11 +197,14 @@ class Story {
             notes: this.notes,
             elements: this.elements.filter(element => !element.resident).map(element => element.id),
             residentElements: this.elements.filter(element => element.resident),
-            flow: {...this.flow, nodes: this.flow.nodes.map(node =>
-                node.type === NodeType.scene ?
-                    {...node, data: {...node.data, scene: (node.data.scene as Scene).serialize()}}
-                :
-                    node)}
+            flow: {...this.flow, nodes: this.flow.nodes.map(node => {
+                switch (node.type) {
+                    case (NodeType.scene):
+                        return {...node, data: {...node.data, scene: (node.data.scene as Scene).serialize()}};
+                    default:
+                        return node;
+                }
+            })}
         }
     }
 
