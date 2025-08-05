@@ -1,4 +1,5 @@
 import UndoStack from "../Misc/UndoStack.ts";
+import Story from "./Story.ts";
 import { StoryElementType } from "./StoryElement.ts";
 
 type SceneDetails = {
@@ -20,11 +21,14 @@ type SmartSerializedScene = {
     title: string,
     time: string,
     weather: string,
+    ids: string[],
     backgroundIds: {
         characters: string[],
         objects: string[],
         location: string
-    }
+    },
+    prompt: string,
+    fullText: string
 }
 
 class Scene {
@@ -93,16 +97,20 @@ class Scene {
         return {details: this.details, history: this.history.serialize()}
     }
 
-    smartSerialize(): SmartSerializedScene {
+    smartSerialize(story: Story): SmartSerializedScene {
+        const [matchAll, , , ] = story.getMatchRegExps();
         return {
             title: this.details.title,
             time: this.details.time,
             weather: this.details.weather,
+            ids: [...new Set(this.history.current.prompt.match(matchAll))].map(name => story.getElementByName(name.split("@")[1])!.id),
             backgroundIds: {
                 characters: this.details.backgroundIds[StoryElementType.character],
                 objects: this.details.backgroundIds[StoryElementType.object],
                 location: this.details.backgroundIds[StoryElementType.location]
-            }
+            },
+            prompt: this.history.current.prompt,
+            fullText: this.history.current.fullText
         }
     }
 

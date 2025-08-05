@@ -1,8 +1,8 @@
 import React, { useMemo } from "react";
 import { RichTextareaHandle } from "rich-textarea";
 import { Combobox, ComboboxOptionProps, ScrollArea, Tabs } from "@mantine/core";
-import { shortNoElementsText, StoryElement, StoryElementType, StoryElementTypeArray, StoryElementTypeDictionary, StoryElementTypeMentions } from "../StoryElements/StoryElement.ts";
-import { storyElementTabsArray } from "./StoryElements.tsx";
+import { shortNoElementsText, StoryElement, StoryElementType, StoryElementTypeArray, StoryElementTypeDictionary, StoryElementTypeMentions } from "../../StoryElements/StoryElement.ts";
+import { storyElementTabsArray } from "../StoryElements.tsx";
 
 function PromptAreaMenu(props: {
     allElements: StoryElement[],
@@ -45,6 +45,7 @@ function PromptAreaMenu(props: {
                             style={{textTransform: "capitalize"}}>
                             {filtered.map(element => 
                                 <ComboboxElementOption
+                                    key={element.id}
                                     element={element}
                                     onClick={() => props.onClick(element.id)}/>
                             )}
@@ -75,6 +76,7 @@ function PromptAreaMenu(props: {
                             {searchAndTypeFiltered[tab.type]
                                 .map(element => 
                                     <ComboboxElementOption
+                                        key={element.id}
                                         element={element}
                                         onClick={() => props.onClick(element.id)}/>
                             )}
@@ -94,7 +96,6 @@ function ComboboxElementOption(
 ) {
 	return (
 		<Combobox.Option
-			key={props.element.id}
 			value={props.element.name}
 			onClick={props.onClick}
 			style={{ fontStyle: props.element.resident ? "italic" : undefined }}

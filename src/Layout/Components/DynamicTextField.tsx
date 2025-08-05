@@ -6,7 +6,6 @@ import { UseDisclosureHandlers } from "@mantine/hooks";
 function DynamicTextField(props: {
 	initialValue?: string,
 	focusOnDoubleClick?: boolean,
-	//onChange?: (value: string) => void,
 	onSubmit?: (value: string) => void,
 	validate?: (value: unknown) => React.ReactNode,
 	locked?: boolean,
@@ -16,13 +15,15 @@ function DynamicTextField(props: {
 	const field = useField({
 		initialValue: props.initialValue ?? "",
 		validate: props.validate,
-		validateOnBlur: true
+		validateOnChange: true
 	});
 	
 	const handleSubmit = useCallback((value: string) => {
-		props.onSubmit?.(value);
-		props.lockedHandler?.open();
-	}, []);
+		if (!field.error) {
+			props.onSubmit?.(value);
+			props.lockedHandler?.open();
+		}
+	}, [field]);
 
 	useEffect(() => {
 		if (props.initialValue) field.setValue(props.initialValue);

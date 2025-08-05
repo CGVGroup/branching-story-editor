@@ -2,9 +2,9 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { RichTextarea, RichTextareaHandle } from "rich-textarea"
 import { Combobox, Flex, InputBase, Text, useCombobox } from "@mantine/core";
 import Story from "../StoryElements/Story.ts";
-import { StoryElementType, StoryElementTypeArray, StoryElementTypeMentions } from "../StoryElements/StoryElement.ts";
-import PromptAreaMenu from "./PromptAreaMenu.tsx";
-import classes from "../GrowColumn.module.css"
+import { StoryElementType, StoryElementTypeMentions } from "../StoryElements/StoryElement.ts";
+import PromptAreaMenu from "./Components/PromptAreaMenu.tsx";
+import classes from "./GrowColumn.module.css"
 
 type Position = {
 	top: number;
@@ -40,44 +40,33 @@ function PromptArea(props: {
 		return [match, match?.[1] ?? ""];
 	}, [pos, text]);
 	
-	const highlight_all = useMemo(() => {
-		if (allElements.length === 0) return /^$/;
-		else return new RegExp("(" + allElements.map(element => `@${element.name}`).sort((a, b) => b.length - a.length).join("|") + ")", "g");
-	}, [allElements]);
-
-	const [highlight_characters, highlight_objects, highlight_locations] = useMemo(() => 
-		StoryElementTypeArray.map(type => new RegExp(
-			`(^${allElements.filter(element => element.elementType === type)
-				.map(element => `@${element.name}`)
-				.join("|")}$)`)
-	), [allElements]);
-
+	const [highlightAll, highlightCharacters, highlightObjects, highlightLocations] = useMemo(() => props.story.getMatchRegExps(), [props.story]);
 	const textSplitter = useCallback((text: string, spaces: boolean) => {
-		const split = allElements.length > 0 ? text.split(highlight_all) : [text];
+		const split = allElements.length > 0 ? text.split(highlightAll) : [text];
 		let retArr: string[];
 		if (!spaces) retArr = split;
 		else {
 			retArr = split
 				.reduce((acc, spl) => {
-					if (spl.match(highlight_all))
+					if (spl.match(highlightAll))
 						return acc.concat(spl);
 					else
 						return acc.concat(spl.split(/(\s)/g));
 				}, new Array<string>());
 		}
 		return retArr.filter(s => s !== "");
-	}, [allElements, highlight_all]);
+	}, [allElements, highlightAll]);
 
 	const mentionMatcher = useCallback((mention: string) => {
-		if (mention.match(highlight_characters)) return StoryElementType.character;
-		if (mention.match(highlight_objects)) return StoryElementType.object;
-		if (mention.match(highlight_locations)) return StoryElementType.location;
+		if (mention.match(highlightCharacters)) return StoryElementType.character;
+		if (mention.match(highlightObjects)) return StoryElementType.object;
+		if (mention.match(highlightLocations)) return StoryElementType.location;
 		return null;
-	}, [highlight_characters, highlight_objects, highlight_locations]);
+	}, [highlightCharacters, highlightObjects, highlightLocations]);
 
 	const complete = useCallback((id: string | undefined) => {
 		if (!ref.current || !pos || !id) return;
-		const previousWord = [...text.matchAll(highlight_all)].find(m => m.index === match?.index)?.[0];
+		const previousWord = [...text.matchAll(highlightAll)].find(m => m.index === match?.index)?.[0];
 		const wordStart = pos.caret - search.length - 1;
 		const wordEnd = previousWord ? wordStart + previousWord.length : pos.caret; 
 		ref.current.setRangeText(
@@ -85,7 +74,7 @@ function PromptArea(props: {
 			wordStart,
 			wordEnd,
 			"end");
-	}, [ref, pos, text, search, match, highlight_all, allElements]);
+	}, [ref, pos, text, search, match, highlightAll, allElements]);
 
 	const renderer = useCallback((text: string) => {
 		return textSplitter(text, true)

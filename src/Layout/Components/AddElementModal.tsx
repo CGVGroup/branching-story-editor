@@ -1,10 +1,10 @@
 import { useCallback, useContext, useEffect, useMemo } from "react";
-import { StoryElementType, StoryElement, createNewElement, StoryElementTypeDictionary, ObjectElement, StoryElementColorArray } from "../StoryElements/StoryElement.ts";
-import { Button, Divider, Group, Modal, Stack, TextInput, Title } from "@mantine/core";
+import { StoryElementType, StoryElement, createNewElement, StoryElementTypeDictionary, ObjectElement, StoryElementColorArray } from "../../StoryElements/StoryElement.ts";
+import { Button, Divider, Group, Modal, Stack, Text, TextInput } from "@mantine/core";
 import { isNotEmpty, useForm } from "@mantine/form";
-import { TaxonomiesContext } from "../App.tsx";
 import { UseDisclosureHandlers } from "@mantine/hooks";
-import { taxonomyToTree } from "../Misc/DB.ts";
+import { TaxonomiesContext } from "../../App.tsx";
+import { taxonomyToTree } from "../../Misc/DB.ts";
 import TreeSelect from "./TreeSelect.tsx";
 import TreeMultiSelect from "./TreeMultiSelect.tsx";
 
@@ -79,7 +79,7 @@ function ElementModal(props: {
             opened={props.show}
             onClose={props.handlers.close}
             onExitTransitionEnd={() => {props.onExited(); form.reset()}}
-            title={<Title order={4}>{title}</Title>}
+            title={<Text size="lg">{title}</Text>}
             keepMounted={false}
             zIndex={500}>
             <form onSubmit={form.onSubmit(values => onSubmit(values))}>
@@ -121,6 +121,7 @@ function ElementModal(props: {
                                 form={form}
                                 formKey="origin"
                                 placeholder="Origine"
+                                position="top"
                                 inputProps={{label: "Origine"}}
                                 data={originOptions}/>
                         </>

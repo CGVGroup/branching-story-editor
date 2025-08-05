@@ -1,4 +1,4 @@
-import { Combobox, InputBase, Input, Tree, Group, useCombobox, TreeNodeData, InputBaseProps } from "@mantine/core";
+import { Combobox, InputBase, Input, Tree, Group, useCombobox, TreeNodeData, InputBaseProps, FloatingPosition } from "@mantine/core";
 import { UseFormReturnType } from "@mantine/form";
 import { useUncontrolled } from "@mantine/hooks";
 
@@ -7,7 +7,8 @@ function TreeSelect(props: {
     formKey: string,
     data: TreeNodeData[],
     inputProps: InputBaseProps,
-    placeholder?: string
+    placeholder?: string,
+    position?: FloatingPosition,
 }) {
     const combobox = useCombobox({onDropdownClose: () => combobox.resetSelectedOption()})
     const [_value, handleChange] = useUncontrolled({
@@ -21,7 +22,8 @@ function TreeSelect(props: {
             onOptionSubmit={val => {
                 handleChange(val);
                 combobox.closeDropdown();
-            }}>
+            }}
+            position={props.position}>
             <Combobox.Target>
                 <InputBase
                     component="button"
@@ -44,9 +46,9 @@ function TreeSelect(props: {
                             return (
                                 hasChildren ? (
                                     <Group gap={5} {...elementProps} onClick={() => tree.toggleExpanded(node.value)}>
-                                        {node.label}
                                         <i className="bi bi-chevron-down"
                                             style={{ display: "inline-block", transform: expanded ? 'rotate(180deg)' : 'rotate(0deg)' }}/>
+                                        {node.label}
                                     </Group>)
                                 :
                                     <Combobox.Option value={node.value} {...elementProps}>{node.label}</Combobox.Option>

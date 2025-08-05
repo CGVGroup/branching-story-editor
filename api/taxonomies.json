@@ -389,10 +389,6 @@
             "name": "Manufatto Funerario",
             "children": [
                 {
-                    "name": "Cassetta",
-                    "children": []
-                },
-                {
                     "name": "Cesta Funeraria",
                     "children": []
                 },
@@ -753,6 +749,10 @@
                 },
                 {
                     "name": "Tempio",
+                    "children": []
+                },
+                {
+                    "name": "Piramide",
                     "children": []
                 },
                 {

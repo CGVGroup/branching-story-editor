@@ -7,7 +7,7 @@ import Story from "../StoryElements/Story.ts";
 import StoryFlowChartViewer from "../Flow/StoryFlowChartViewer.tsx";
 import StoryElements from "./StoryElements.tsx";
 import { ChosenModelContext, ModelListContext } from "../App.tsx";
-import classes from "../GrowColumn.module.css"
+import classes from "./GrowColumn.module.css"
 
 function StoriesDashboard(props: {
 	stories: Map<string, Story>,
@@ -65,7 +65,7 @@ function StoriesDashboard(props: {
 
 	const openDeleteModal = useCallback((story: Story, id: string) => {
 		modals.openConfirmModal({
-			title: <Title order={4}>Eliminare <b>{story.title}</b>?</Title>,
+			title: <Text size="lg">Eliminare <b>{story.title}</b>?</Text>,
 			labels: { confirm: "Conferma", cancel: "Annulla" },
 			confirmProps: {color: "red", variant: "filled"},
 			onConfirm: () => props.deleteStory(id),
@@ -204,10 +204,10 @@ function StoriesDashboard(props: {
 							flexGrow: 1,
 							backgroundImage:"url(/Desert.jpg)",
 							backgroundSize:"cover",
-							opacity:"0.15"}}>
-							<Center>
-								Crea o seleziona una Storia
-							</Center>
+							opacity:"0.15",
+							alignItems:"center",
+							justifyContent:"center"}}>
+							<Text size="xl" pb={100}>Crea o seleziona una Storia</Text>
 						</div>
 						
 					</Flex>

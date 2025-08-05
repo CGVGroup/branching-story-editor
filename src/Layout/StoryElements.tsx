@@ -1,10 +1,11 @@
 import React, { useCallback, useMemo, useState } from "react";
-import { Avatar, Badge, Box, Button, Center, Group, Menu, NavLink, ScrollArea, Stack, Tabs } from "@mantine/core";
+import { Avatar, Badge, Box, Button, Center, Group, Menu, NavLink, Stack, Tabs } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import { StoryElementType, StoryElement, shortNoElementsText, StoryElementColorArray } from "../StoryElements/StoryElement.ts";
-import ElementModal from "./AddElementModal.tsx";
+import ElementModal from "./Components/AddElementModal.tsx";
 import Story from "../StoryElements/Story.ts";
-import classes from "../GrowColumn.module.css"
+import classes from "./GrowColumn.module.css"
+import DBBrowserModal from "./Components/DBBrowserModal.tsx";
 
 const storyElementTabsArray = [
   {type: StoryElementType.character, color: StoryElementColorArray[StoryElementType.character], tabContents: <img src={require("../img/character.png")} title="Personaggi" alt="characters" style={{height:"3em"}}/>},
@@ -108,20 +109,20 @@ function StoryElements (props: {
 
   return (
     <>
-      <ElementModal
+      {!props.readOnly && <ElementModal
         show = {newElementModal}
         handlers = {newElementModalHandlers}
         elementType = {key}
         initialElement = {selectedElement}
         allElements={props.story.getElementsByType(key)}
         onSubmit = {selectedElement === undefined ? onSubmitNewElement : onEditElement}
-        onExited={onNewElementModalExited}/>
-      {/*<DBBrowserModal
-        modal = {dbModal}
-        setModal = {setDbModal}
-        elements = {props.story.getElementsByType(key).map(el => el.id)}
+        onExited={onNewElementModalExited}/>}
+      {!props.readOnly && <DBBrowserModal
+        show = {dbModal}
+        handlers = {dbModalHandlers}
+        selectedElements = {props.story.getElements()}
         elementType = {key}
-        onSubmit = {onSubmitNewElement}/>*/}
+        onSubmit = {onSubmitNewElement}/>}
       <Tabs
         value={key.toString()}
         onChange={k => setKey(Number.parseInt(k ?? "0"))}

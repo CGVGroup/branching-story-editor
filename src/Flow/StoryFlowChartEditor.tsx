@@ -152,7 +152,7 @@ function StoryFlowChartEditor (props: {
     const id = uuidv4();
     const maxLabel = nodes
       .filter(node => node.type === type)
-      .map(node => Number.parseInt((node.data.label as string).match(/(\d+$)/)?.pop() ?? ""))
+      .map(node => Number.parseInt((node.data.label as string).match(/(\d+$)/)?.pop() ?? "0"))
       .reduce((max, n) => {
         if (!max || n > max) return n;
         return max;}, 0) + 1;

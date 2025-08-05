@@ -1,14 +1,14 @@
 import React, { useCallback, useContext, useEffect, useState } from "react";
 import { debounce } from 'throttle-debounce';
-import { ActionIcon, Box, Fieldset, Grid, Group, LoadingOverlay, Menu, SimpleGrid, Stack, Textarea, Title } from "@mantine/core";
+import { ActionIcon, Box, Fieldset, Grid, Group, LoadingOverlay, Menu, SimpleGrid, Stack, Text, Textarea, Title } from "@mantine/core";
 import { modals } from "@mantine/modals";
-import Story from "../StoryElements/Story.ts";
-import Scene, { SceneDetails as SceneDetailsType } from "../StoryElements/Scene.ts";
-import SceneDetails from "./SceneDetails.tsx";
-import PromptArea from "./PromptArea.tsx";
-import { ChosenModelContext } from "../App.tsx";
+import Story from "../../StoryElements/Story.ts";
+import Scene, { SceneDetails as SceneDetailsType } from "../../StoryElements/Scene.ts";
+import SceneDetails from "../SceneDetails.tsx";
+import PromptArea from "../PromptArea.tsx";
+import { ChosenModelContext } from "../../App.tsx";
 // @ts-ignore
-import {ReactComponent as AiPen} from "../img/ai-pen.svg";
+import {ReactComponent as AiPen} from "../../img/ai-pen.svg";
 import classes from "../GrowColumn.module.css"
 
 function SceneEditor(props: {
@@ -59,7 +59,7 @@ function SceneEditor(props: {
 
 	const onRequestNewText = useCallback(() => {
 		modals.openConfirmModal({
-			title: <Title order={4}>Richiedere un altro testo?</Title>,
+			title: <Text size="lg">Richiedere un altro testo?</Text>,
 			children: (
 				<span>
 					È possibile ritornare alle proposte precedenti e successive con i tasti <i className="bi bi-arrow-90deg-left"/> e <i className="bi bi-arrow-90deg-right"/>.

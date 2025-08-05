@@ -1,5 +1,5 @@
 import { getConnectedEdges, getIncomers, getOutgoers, Node, ReactFlowJsonObject } from "@xyflow/react";
-import { StoryElementType, StoryElement, SmartSerializedStoryElement, smartSerializeStoryElement } from "./StoryElement.ts";
+import { StoryElementType, StoryElement, SmartSerializedStoryElement, smartSerializeStoryElement, StoryElementTypeArray } from "./StoryElement.ts";
 import Scene, { SmartSerializedScene } from "./Scene.ts";
 import Choice, { SmartSerializedChoice } from "./Choice.ts";
 import { Info } from "../Flow/InfoNode.tsx";
@@ -28,6 +28,7 @@ type SmartSerializedStory = {
 
 type SmartSerializedNode = {
     type: string,
+    name: string,
     contents: SmartSerializedScene & {next: string} | SmartSerializedChoice | Info & {next: string},
 }
 
@@ -157,6 +158,10 @@ class Story {
         return this.elements.find(element => element.id === id);
     }
 
+    getElementByName(name: string): StoryElement | undefined {
+        return this.elements.find(element => element.name === name);
+    }
+
     getNode(id: string): Node | undefined {
         return this.flow.nodes.find(node => node.id === id);
     }
@@ -167,6 +172,13 @@ class Story {
 
     getNodes(): Node[] {
         return this.flow.nodes;
+    }
+
+    getMatchRegExps(): [RegExp, RegExp, RegExp, RegExp] {
+        const allSorted = [...this.elements].sort((a, b) => b.name.length - a.name.length);
+        const matchArray = [allSorted, ...StoryElementTypeArray.map(type => allSorted.filter(element => element.elementType === type))];
+        return matchArray.map(array =>
+            array.length === 0 ? /^$/ : new RegExp("(" + array.map(element => `@${element.name}`).join("|") + ")", "g")) as [RegExp, RegExp, RegExp, RegExp];
     }
 
     serialize(): SerializedStory {
@@ -195,7 +207,7 @@ class Story {
                 let contents: SmartSerializedScene & {next: string} | SmartSerializedChoice | Info & {next: string};
                 switch (node.type) {
                     case (NodeType.scene):
-                        contents = {...(node.data.scene as Scene).smartSerialize(),
+                        contents = {...(node.data.scene as Scene).smartSerialize(this),
                             next: getOutgoers(node, this.flow.nodes, this.flow.edges)?.[0]?.data.label as string ?? ""}
                     break;
                     case (NodeType.choice):
@@ -213,6 +225,7 @@ class Story {
                 }
                 return {
                     type: storyNodeClassNames[node.type!],
+                    name: node.data.label as string,
                     contents: contents!
                 }
             })

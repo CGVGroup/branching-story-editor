@@ -38,7 +38,7 @@ export type StoryElement = {
     elementType: StoryElementType;
 }
 
-export type SmartSerializedStoryElement = Omit<CharacterElement | ObjectElement | LocationElement, "elementType" | "resident">
+export type SmartSerializedStoryElement = {elementType: string} & Omit<CharacterElement | ObjectElement | LocationElement, "elementType" | "resident">;
 
 export type CharacterElement = StoryElement & {
     elementType: StoryElementType.character
@@ -84,5 +84,5 @@ export function createNewElement(type: StoryElementType) {
 
 export function smartSerializeStoryElement(element: StoryElement): SmartSerializedStoryElement {
     const {resident, elementType, ...filtered} = element;
-    return filtered;
+    return {elementType: StoryElementTypeDictionary.eng.singular[element.elementType], ...filtered};
 }

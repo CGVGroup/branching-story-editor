@@ -2,9 +2,9 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { getConnectedEdges } from "@xyflow/react";
 import { ActionIcon, ActionIconGroup, Button, Group, Stack, TextInput } from "@mantine/core";
 import { debounce } from "throttle-debounce";
-import Story from "../StoryElements/Story.tsx";
-import Choice from "../StoryElements/Choice.ts";
-import { NodeType, storyNodeColorArray } from "../Flow/StoryNode.tsx";
+import Story from "../../StoryElements/Story.tsx";
+import Choice from "../../StoryElements/Choice.ts";
+import { NodeType, storyNodeColorArray } from "../../Flow/StoryNode.tsx";
 
 function ChoiceEditor(props: {
     story: Story,

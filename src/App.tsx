@@ -7,7 +7,7 @@ import { Navigate, Route, BrowserRouter as Router, Routes } from "react-router-d
 import { Center, Loader, MantineProvider } from "@mantine/core";
 import { ModalsProvider } from '@mantine/modals';
 import StoriesDashboard from "./Layout/StoriesDashboard.tsx";
-import StoryEditor from "./Layout/StoryEditor.tsx";
+import StoryEditor from "./Layout/Editors/StoryEditor.tsx";
 import Story from "./StoryElements/Story.ts";
 import { DbContext, getAll, getEnums, getModels, getTaxonomies, SceneDetailsEnums, Taxonomies } from "./Misc/DB.ts";
 

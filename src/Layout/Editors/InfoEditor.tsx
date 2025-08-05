@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { debounce } from 'throttle-debounce';
 import { Stack, Textarea, TextInput } from "@mantine/core";
-import { Info } from "../Flow/InfoNode.tsx";
+import { Info } from "../../Flow/InfoNode.tsx";
 
 function InfoEditor(props: {
 	nodeId: string,

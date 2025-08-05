@@ -3,14 +3,14 @@ import { debounce } from "throttle-debounce";
 import { Accordion, ActionIcon, Center, Grid, Textarea } from "@mantine/core";
 import Story from "../StoryElements/Story.ts";
 import Choice from "../StoryElements/Choice.ts";
-import ChoiceEditor from "./ChoiceEditor.tsx";
+import ChoiceEditor from "./Editors/ChoiceEditor.tsx";
 import { ChoiceNodeProps, InfoNodeProps, NodeType, SceneNodeProps } from "../Flow/StoryNode.tsx";
 import PromptArea from "./PromptArea.tsx";
 import LoadingPlaceholders from "../Misc/LoadingPlaceholders.tsx";
 import { ChosenModelContext } from "../App.tsx";
-import InfoEditor from "./InfoEditor.tsx";
+import InfoEditor from "./Editors/InfoEditor.tsx";
 import { Info } from "../Flow/InfoNode.tsx";
-import classes from "../GrowColumn.module.css"
+import classes from "./GrowColumn.module.css"
 
 function StoryTexts(props: {
     story: Story,
@@ -23,7 +23,7 @@ function StoryTexts(props: {
     const [localStory, setLocalStory] = useState<Story>(props.story.clone());
     const [loadings, setLoadings] = useState<boolean[]>(new Array(localStory.flow.nodes.length).fill(false));
 
-    const [chosenModel, _] = useContext(ChosenModelContext)!;
+    const [chosenModel, ] = useContext(ChosenModelContext)!;
     
     const onFullTextEdited = useCallback((id: string, newText: string) => {
         setLocalStory(story => {

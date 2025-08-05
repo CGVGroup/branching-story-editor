@@ -2,7 +2,7 @@ import { Handle, NodeProps, NodeToolbar, Position, useReactFlow } from "@xyflow/
 import { ActionIcon, Flex, Menu, Stack } from "@mantine/core";
 import { isNotEmpty } from "@mantine/form";
 import { useDisclosure } from "@mantine/hooks";
-import DynamicTextField from "../Layout/DynamicTextField.tsx";
+import DynamicTextField from "../Layout/Components/DynamicTextField.tsx";
 import { changeStoryNodeName, deleteStoryNode, InfoNodeType, NodeType, StoryNode, storyNodeColorArray } from "./StoryNode.tsx";
 
 export type Info = {
@@ -56,7 +56,7 @@ function InfoNode(props: NodeProps<InfoNodeType>) {
         <Stack gap="xs" px="xs">
           <DynamicTextField
             initialValue={props.data.label}
-            validate={isNotEmpty("Il nome della scena non può essere vuoto")}
+            validate={value => isNotEmpty("Il nome dell'approfondimento non può essere vuoto")(value) || (rfInstance.getNodes().some(node => node.data.label === value) ? "Esiste già un nodo con questo nome" : null)}
             onSubmit={handleSubmitInfoName}
             locked={locked}
             lockedHandler={lockedHandler}

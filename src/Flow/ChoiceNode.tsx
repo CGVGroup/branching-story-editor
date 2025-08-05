@@ -4,7 +4,7 @@ import { isNotEmpty } from "@mantine/form";
 import { useDisclosure } from "@mantine/hooks";
 import { changeStoryNodeName, ChoiceNodeType, deleteStoryNode, NodeType, StoryNode, storyNodeColorArray } from "./StoryNode.tsx";
 import { LabeledHandle } from "./LabeledHandle.tsx";
-import DynamicTextField from "../Layout/DynamicTextField.tsx";
+import DynamicTextField from "../Layout/Components/DynamicTextField.tsx";
 import Choice from "../StoryElements/Choice.ts";
 
 function ChoiceNode(props: NodeProps<ChoiceNodeType>) {
@@ -55,7 +55,7 @@ function ChoiceNode(props: NodeProps<ChoiceNodeType>) {
             <Stack px="xs" gap="xs">
               <DynamicTextField
                 initialValue={props.data.label}
-                validate={isNotEmpty("Il nome della scena non può essere vuoto")}
+                validate={value => isNotEmpty("Il nome della scelta non può essere vuoto")(value) || (rfInstance.getNodes().some(node => node.data.label === value) ? "Esiste già un nodo con questo nome" : null)}
                 onSubmit={handleSubmitChoiceName}
                 locked={locked}
                 lockedHandler={lockedHandler}

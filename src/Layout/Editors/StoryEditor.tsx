@@ -4,21 +4,21 @@ import { debounce } from "throttle-debounce";
 import { ActionIcon, Anchor, AppShell, Button, Center, CloseButton, Divider, Grid, Group, Modal, Tabs, Text, TextInput, Title } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import { modals } from "@mantine/modals";
-import StoryFlowChartEditor from "../Flow/StoryFlowChartEditor.tsx";
-import StoryElements from "./StoryElements.tsx";
-import Story from "../StoryElements/Story.ts";
-import saveToDisk from "../Misc/SaveToDisk.ts";
-import Scene from "../StoryElements/Scene.ts";
+import StoryFlowChartEditor from "../../Flow/StoryFlowChartEditor.tsx";
+import StoryElements from "../StoryElements.tsx";
+import Story from "../../StoryElements/Story.ts";
+import saveToDisk from "../../Misc/SaveToDisk.ts";
+import Scene from "../../StoryElements/Scene.ts";
 import SceneEditor from "./SceneEditor.tsx";
-import Choice from "../StoryElements/Choice.ts";
+import Choice from "../../StoryElements/Choice.ts";
 import ChoiceEditor from "./ChoiceEditor.tsx";
-import { Info } from "../Flow/InfoNode.tsx";
+import { Info } from "../../Flow/InfoNode.tsx";
 import InfoEditor from "./InfoEditor.tsx";
-import StoryTexts from "./StoryTexts.tsx";
-import { NodeType, storyNodeClassNames, storyNodeColorArray } from "../Flow/StoryNode.tsx";
-import { ChosenModelContext } from "../App.tsx";
+import StoryTexts from "../StoryTexts.tsx";
+import { NodeType, storyNodeClassNames, storyNodeColorArray } from "../../Flow/StoryNode.tsx";
+import { ChosenModelContext } from "../../App.tsx";
 // @ts-ignore
-import {ReactComponent as AiPen} from "../img/ai-pen.svg";
+import {ReactComponent as AiPen} from "../../img/ai-pen.svg";
 import classes from "../GrowColumn.module.css";
 
 const defaultTab = "structure";
@@ -117,7 +117,7 @@ function StoryEditor(props: {
 
 	const onRequestAllTexts = useCallback(() => {
 		modals.openConfirmModal({
-			title: <Title order={4}>Generare i testi per tutta la storia?</Title>,
+			title: <Text size="lg">Generare i testi per tutta la storia?</Text>,
 			children: "Eventuali testi già presenti verranno sovrascritti.",
 			labels: { confirm: "Continua", cancel: "Annulla" },
 			onConfirm: onConfirmGenerateAll,

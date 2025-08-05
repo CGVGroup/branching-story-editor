@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { Combobox, Input, Tree, Group, useCombobox, TreeNodeData, PillsInput, Pill, PillsInputProps } from "@mantine/core";
+import { Combobox, Input, Tree, Group, useCombobox, TreeNodeData, PillsInput, Pill, PillsInputProps, FloatingPosition } from "@mantine/core";
 import { UseFormReturnType } from "@mantine/form";
 import { useUncontrolled } from "@mantine/hooks";
 
@@ -8,7 +8,8 @@ function TreeMultiSelect(props: {
     formKey: string,
     data: TreeNodeData[],
     inputProps: PillsInputProps,
-    placeholder?: string
+    placeholder?: string,
+    position?: FloatingPosition,
 }) {
     const combobox = useCombobox({
         onDropdownClose: () => combobox.resetSelectedOption(),
@@ -34,7 +35,8 @@ function TreeMultiSelect(props: {
     return(
         <Combobox
             store={combobox}
-            onOptionSubmit={val => handleValueSelect(val)}>
+            onOptionSubmit={val => handleValueSelect(val)}
+            position={props.position}>
             <Combobox.Target>
                 <PillsInput
                     pointer
@@ -64,9 +66,9 @@ function TreeMultiSelect(props: {
                             return (
                                 hasChildren ? (
                                     <Group gap={5} {...elementProps} onClick={() => tree.toggleExpanded(node.value)}>
-                                        {node.label}
                                         <i className="bi bi-chevron-down"
                                             style={{ display: "inline-block", transform: expanded ? 'rotate(180deg)' : 'rotate(0deg)' }}/>
+                                        {node.label}
                                     </Group>)
                                 :
                                     <Combobox.Option value={node.value} {...elementProps} active={multiValue.includes(node.value)}>
