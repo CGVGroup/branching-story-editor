@@ -1,12 +1,11 @@
 import { useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { debounce } from "throttle-debounce";
-import { Accordion, ActionIcon, Center, Grid, Textarea } from "@mantine/core";
+import { Accordion, ActionIcon, Center, Grid, LoadingOverlay, Textarea } from "@mantine/core";
 import Story from "../StoryElements/Story.ts";
 import Choice from "../StoryElements/Choice.ts";
 import ChoiceEditor from "./Editors/ChoiceEditor.tsx";
 import { ChoiceNodeProps, InfoNodeProps, NodeType, SceneNodeProps } from "../Flow/StoryNode.tsx";
 import PromptArea from "./PromptArea.tsx";
-import LoadingPlaceholders from "../Misc/LoadingPlaceholders.tsx";
 import { ChosenModelContext } from "../App.tsx";
 import InfoEditor from "./Editors/InfoEditor.tsx";
 import { Info } from "../Flow/InfoNode.tsx";
@@ -28,7 +27,7 @@ function StoryTexts(props: {
     const onFullTextEdited = useCallback((id: string, newText: string) => {
         setLocalStory(story => {
             const scene = story.getScene(id)!;
-            return story.cloneAndSetScene(id, scene.cloneAndSetFullText(newText));
+            return story.cloneAndSetScene(id, scene.cloneAndPushFullText(newText));
     })}, []);
     
     const onPromptTextEdited = useCallback((id: string, newPrompt: string) => {
@@ -49,11 +48,9 @@ function StoryTexts(props: {
         const index = localStory.getNodes().findIndex(node => node.id === id);
         setLoadings(loadings => loadings.map((loading, idx) => idx === index ? true : loading));
         const sceneText = await props.story.sendSceneToLLM(id, chosenModel);
-        if (sceneText) {
-            onFullTextEdited(id, sceneText);
-        }
+        if (sceneText) onFullTextEdited(id, sceneText);
         setLoadings(loadings => loadings.map((loading, idx) => idx === index ? false : loading));
-    }, [localStory, onFullTextEdited]);
+    }, [localStory, chosenModel, onFullTextEdited, props.story]);
 
     const handleSave = useCallback(debounce(250, (localStory: Story) => 
         props.setStory(localStory)
@@ -100,23 +97,21 @@ function StoryTexts(props: {
                                                 </ActionIcon.Group>    
                                             </Center>
                                         </Grid.Col>
-                                        <Grid.Col span={7}>
-                                            {loadings[idx] ?
-                                                <LoadingPlaceholders/>
-                                            :   
-                                                <Textarea
-                                                    h="100%"
-                                                    label="Testo completo"
-                                                    value={data.scene?.history.current.fullText}
-                                                    className={classes.growcol}
-                                                    placeholder="Testo Completo"
-                                                    styles={{
-                                                        wrapper: {flexGrow: 1},
-                                                        input: {height: "100%"}}}
-                                                    onChange={e => onFullTextEdited(id, e.target.value)}
-                                                    disabled={loadings[idx]} >
-                                                </Textarea>
-                                            }
+                                        <Grid.Col span={7} pos="relative">
+                                            <LoadingOverlay visible={loadings[idx]}/>
+                                            <Textarea
+                                                h="100%"
+                                                label="Testo completo"
+                                                placeholder="Testo completo"
+                                                value={data.scene?.history.current.fullText}
+                                                onChange={e => onFullTextEdited(id, e.target.value)}
+                                                disabled={loadings[idx]}
+                                                className={classes.growcol}
+                                                styles={{
+                                                    wrapper: {flexGrow: 1},
+                                                    input: {height: "100%"}
+                                                }}>
+                                            </Textarea>
                                         </Grid.Col>
                                     </Grid>
                                 </Accordion.Panel>
@@ -170,7 +165,7 @@ function StoryTexts(props: {
         <Accordion.Item value="no-stories">
             Nessuna Scena nella Storia
         </Accordion.Item>
-    , [localStory, loadings, onChoiceEdited, onFullTextEdited, onPromptTextEdited, onSendButtonClicked, props.onClickOpenScene]);
+    , [localStory, loadings, onChoiceEdited, onPromptTextEdited, onFullTextEdited, onInfoEdited, onSendButtonClicked, props.onClickOpenScene, props.onChoiceMoved, props.onChoiceDeleted, props.onClickEditNode]);
 
     useEffect(() => handleSave(localStory), [handleSave, localStory]);
 

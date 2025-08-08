@@ -3,10 +3,11 @@ import { StoryElementType, StoryElement, SmartSerializedStoryElement, smartSeria
 import Scene, { SmartSerializedScene } from "./Scene.ts";
 import Choice, { SmartSerializedChoice } from "./Choice.ts";
 import { Info } from "../Flow/InfoNode.tsx";
-import { NodeType, storyNodeClassNames, storyNodeTypes } from "../Flow/StoryNode.tsx";
+import { NodeType, storyNodeClassNames } from "../Flow/StoryNode.tsx";
 import { sendToLLM } from "../Misc/LLM.ts";
 import { getElementFromDB } from "../Misc/DB.ts";
 import getAllOutgoers from "../Misc/GraphUtils.ts";
+import { TextsLoadingInfo } from "../Layout/Components/GeneratingTextsDialog.tsx";
 
 type SerializedStory = {
     elements: string[],
@@ -227,7 +228,7 @@ class Story {
                         const edges = getConnectedEdges([node], this.flow.edges)
                             .filter(edge => edge.source === node.id);
                         for (const edge of edges) {
-                            contents.choices[Number.parseInt(edge.sourceHandle!.split("-")[1])].next = this.getNode(edge.target)?.data.label as string;
+                            contents.choices[Choice.getIndexFromHandleName(edge.sourceHandle!)].next = this.getNode(edge.target)?.data.label as string;
                         }
                     break;
                     case (NodeType.info):
@@ -296,7 +297,7 @@ class Story {
         });
     }
 
-    async *sendStoryToLLM(model: string, startingNodeId?: string): AsyncGenerator<{done: boolean, progress: number, newStory: Story}> {
+    async *sendStoryToLLM(model: string, startingNodeId?: string): AsyncGenerator<{done: boolean, progress: TextsLoadingInfo, newStory: Story}> {
         let processableNodes: Node[];
         if (startingNodeId) {
             processableNodes = Array.from(getAllOutgoers(this.flow, this.getNode(startingNodeId)!, node => node.type === NodeType.choice))
@@ -305,11 +306,14 @@ class Story {
         }
         let i = 0; 
         for (const node of processableNodes) {
+            const scene = node.data.scene as Scene;
+            yield {done: false, progress: {current: i, total: processableNodes.length, currentScene: node.data.label as string}, newStory: this}
             const fullText = await this.sendSceneToLLM(node.id, model);
-            if (fullText) (node.data.scene as Scene).history.current.fullText = fullText;
-            yield {done: false, progress: ++i*100 / processableNodes.length, newStory: this};
+            i++;
+            if (fullText) scene.history.push({prompt: scene.history.current.prompt, fullText: fullText});
+            yield {done: false, progress: {current: i, total: processableNodes.length, currentScene: node.data.label as string}, newStory: this};
         }
-        yield {done: true, progress: 100, newStory: this.clone()};
+        yield {done: true, progress: {current: i, total: processableNodes.length, currentScene: ""}, newStory: this.clone()};
     }
 }
 

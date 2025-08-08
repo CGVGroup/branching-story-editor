@@ -1,6 +1,6 @@
 import { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import {ActionIcon, AppShell, Button, Center, Divider, Fieldset, FileButton, Flex, Group, Modal, NavLink, Paper, ScrollArea, Select, SimpleGrid, Stack, Text, Textarea, TextInput, Title} from "@mantine/core";
+import {ActionIcon, AppShell, Fieldset, FileButton, Flex, Group, NavLink, Paper, ScrollArea, Select, SimpleGrid, Stack, Text, Textarea, TextInput, Title} from "@mantine/core";
 import {useDisclosure} from "@mantine/hooks";
 import { modals } from '@mantine/modals'; 
 import Story from "../StoryElements/Story.ts";

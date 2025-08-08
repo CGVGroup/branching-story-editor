@@ -87,7 +87,7 @@ function ChoiceEditor(props: {
                                 <i className="bi bi-trash" aria-label="delete" /> 
                             </ActionIcon>
                             <ActionIcon
-                                onClick={() => nextNodes[choiceIndex]?.id && props.onClickEditNode(nextNodes[choiceIndex].id)}
+                                onClick={() => nextNodes[choiceIndex] !== null && props.onClickEditNode(nextNodes[choiceIndex].id)}
                                 color={nextNodes[choiceIndex] !== null && storyNodeColorArray[nextNodes[choiceIndex].type!]}
                                 variant="light"
                                 title={nextNodes[choiceIndex] !== null ? `Apri ${nextNodes[choiceIndex].data.label}` : "Nessun nodo collegato"}

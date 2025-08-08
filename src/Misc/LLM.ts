@@ -5,7 +5,6 @@ export async function sendToLLM(payload: object, model: string): Promise<string>
         xhr.setRequestHeader("Content-Type", "application/json");
         xhr.onreadystatechange = () => {
             if (xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200) {
-                console.log(xhr.responseText)
                 resolve(xhr.responseText);
             }
             if (xhr.status !== 200) {

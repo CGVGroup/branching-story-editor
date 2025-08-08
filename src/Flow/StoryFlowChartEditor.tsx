@@ -1,6 +1,6 @@
 import "@xyflow/react/dist/style.css";
 import React, { useCallback, useState, useMemo, useEffect, useRef } from "react";
-import { ReactFlow, Controls, Background, applyNodeChanges, Panel, ReactFlowInstance, Edge, NodeChange, Node, addEdge, Connection, EdgeChange, applyEdgeChanges, Viewport, MarkerType, getOutgoers, getConnectedEdges} from "@xyflow/react";
+import { ReactFlow, Controls, Background, applyNodeChanges, Panel, ReactFlowInstance, Edge, NodeChange, Node, addEdge, Connection, EdgeChange, applyEdgeChanges, Viewport, MarkerType, getOutgoers, getConnectedEdges, getIncomers} from "@xyflow/react";
 import { v4 as uuidv4 } from "uuid";
 import { debounce } from "throttle-debounce";
 import { ActionIcon, Stack } from "@mantine/core";
@@ -20,84 +20,105 @@ function StoryFlowChartEditor (props: {
 
   const flowRef = useRef(null);
 
-  const setNodeProperties = useCallback((check: (node: Node) => boolean, properties: Partial<Node>) => {
-    setNodes(nodes => nodes.map(node => check(node) ? {...node, ...properties, data: {...node.data, ...properties.data}} : node ));
-  }, [])
-  const setEdgeProperties = useCallback((check: (edge: Edge) => boolean, properties: Partial<Edge>) => {
-    setEdges(edges => edges.map(edge => check(edge) ? {...edge, ...properties} : edge));
-  }, [])
+  const setNodeProperties = useCallback((check: (node: Node) => boolean, properties: Partial<Node>) =>
+    setNodes(nodes => nodes.map(node => check(node) ? {...node, ...properties, data: {...node.data, ...properties.data}} : node ))
+  , []);
+  const setEdgeProperties = useCallback((check: (edge: Edge) => boolean, properties: Partial<Edge>) =>
+    setEdges(edges => edges.map(edge => check(edge) ? {...edge, ...properties} : edge))
+  , []);
 
   const onNodesChange = useCallback((changes: NodeChange[]) => {
     setNodes(nodes => applyNodeChanges(changes, nodes));
-    //New node added
-    changes.filter(change => change.type === "dimensions").forEach(change => {
-      setNodeProperties(node => node.id !== change.id, {selected: false, data: {indirectSelected: false}})
-      setEdgeProperties(_ => true, {animated: false});
-    });
-    changes.filter(change => change.type === "select").forEach(change => {  
-      const timeout = change.selected ? 50 : 0;
-      setTimeout(() => {
-        if (rfInstance) {
-          const nodeConnections = rfInstance.getNodeConnections({nodeId: change.id});
-          const outgoing = nodeConnections.filter(nc => nc.source === change.id).map(nc => nc.target);
-          const incoming = nodeConnections.filter(nc => nc.target === change.id).map(nc => nc.source);
-          setNodeProperties(node => outgoing.includes(node.id) || incoming.includes(node.id), {data: {indirectSelected: change.selected}});
-          setEdgeProperties(edge => nodeConnections.map(conn => conn.edgeId).includes(edge.id), {animated: change.selected});
-        }
-      }, timeout);
-    });
+    for (const change of changes) {
+      switch (change.type) {
+        case ("dimensions"): //New node added
+          setNodeProperties(node => node.id !== change.id, {selected: false, data: {indirectSelected: false}})
+          setEdgeProperties(_ => true, {animated: false});
+        break;
+        case ("remove"):
+          if (rfInstance) {
+            const nodeConnections = rfInstance.getNodeConnections({type: "target", nodeId: change.id});
+            nodeConnections.forEach(nc => {
+              const sourceNode = rfInstance.getNode(nc.source)!;
+              if (sourceNode.type === NodeType.choice && nc.sourceHandle) {
+                const choiceIndex = Choice.getIndexFromHandleName(nc.sourceHandle!);
+                const newChoice = (sourceNode.data.choice as Choice).cloneAndSetChoiceWrong(choiceIndex, false);
+                setNodeProperties(node => node.id === sourceNode.id, {data: {choice: newChoice}})
+              }
+            });
+          }
+        break;
+        case ("select"):
+          const timeout = change.selected ? 50 : 0;
+          setTimeout(() => {
+            if (rfInstance) {
+              const nodeConnections = rfInstance.getNodeConnections({nodeId: change.id});
+              const outgoing = nodeConnections.filter(nc => nc.source === change.id).map(nc => nc.target);
+              const incoming = nodeConnections.filter(nc => nc.target === change.id).map(nc => nc.source);
+              setNodeProperties(node => outgoing.includes(node.id) || incoming.includes(node.id), {data: {indirectSelected: change.selected}});
+              setEdgeProperties(edge => nodeConnections.map(conn => conn.edgeId).includes(edge.id), {animated: change.selected});
+            }
+          }, timeout);
+        break;
+        default:
+        break;
+      }
+    }
   }, [rfInstance, setNodeProperties, setEdgeProperties]);
 
   const onEdgesChange = useCallback((changes: EdgeChange[]) => {
     setEdges(edges => applyEdgeChanges(changes, edges));
-    changes.filter(change => change.type === "remove").forEach(change => {
-      if (!rfInstance) return;
-      
-      const edge = rfInstance.getEdge(change.id)!;
-      setNodeProperties(
-        node => node.id === edge.source || node.id === edge.target,
-        {selected: false, data: {indirectSelected: false}});
-      
-      const snode = rfInstance.getNode(edge.source);
-      const tnode = rfInstance.getNode(edge.target);
+    if (!rfInstance) return;
 
-      if (!snode || !tnode || (snode.type !== NodeType.choice && tnode.type !== NodeType.choice)) return;
-      
-      let handle: string | null | undefined;
-      let affectedNode: Node | undefined;
-      
-      if (snode.type === NodeType.choice) {
-        handle = edge.sourceHandle;
-        affectedNode = snode;
-      }
-      if (tnode.type === NodeType.choice) {
-        handle = getConnectedEdges([snode], rfInstance.getEdges())
-          .find(edge => edge.source === tnode.id && edge.target === snode.id)?.sourceHandle;
-        affectedNode = tnode;
-      }
-      
-      if (!handle || !affectedNode) return;
-      
-      const choiceIndex = Number.parseInt(handle.split("-")[1]);
-      const choice = (affectedNode.data.choice as Choice);
-      
-      if (choice.choices[choiceIndex].wrong) {
-        const newChoice = choice.cloneAndSetChoiceWrong(choiceIndex, false);
-        setNodeProperties(node => node.id === affectedNode.id, {data: {choice: newChoice}})
-      }
-    });
-
-    changes.filter(change => change.type === "select").forEach(change => {
-      const timeout = change.selected ? 50 : 0;
-      setTimeout(() => {
-        if (rfInstance) {
-          setEdgeProperties(edge => edge.id === change.id, {animated: change.selected});
+    for (const change of changes) {
+      switch (change.type) {
+        case ("remove"):
+          const edge = rfInstance.getEdge(change.id)!;
           setNodeProperties(
-            node => node.id === rfInstance.getEdge(change.id)?.source || node.id === rfInstance.getEdge(change.id)?.target,
-            {data: {indirectSelected: change.selected}});
-        }
-      }, timeout);
-    });
+            node => node.id === edge.source || node.id === edge.target,
+            {selected: false, data: {indirectSelected: false}});
+          
+          const snode = rfInstance.getNode(edge.source);
+          const tnode = rfInstance.getNode(edge.target);
+      
+          if (!snode || !tnode || (snode.type !== NodeType.choice && tnode.type !== NodeType.choice)) return;
+          
+          let handle: string | null | undefined;
+          let affectedNode: Node | undefined;
+          
+          if (snode.type === NodeType.choice) {
+            handle = edge.sourceHandle;
+            affectedNode = snode;
+          }
+          if (tnode.type === NodeType.choice) {
+            handle = getConnectedEdges([snode], rfInstance.getEdges())
+              .find(edge => edge.source === tnode.id && edge.target === snode.id)?.sourceHandle;
+            affectedNode = tnode;
+          }
+          
+          if (!handle || !affectedNode) return;
+          
+          const choiceIndex = Choice.getIndexFromHandleName(handle);
+          const choice = (affectedNode.data.choice as Choice);
+          
+          if (choice.choices[choiceIndex].wrong) {
+            const newChoice = choice.cloneAndSetChoiceWrong(choiceIndex, false);
+            setNodeProperties(node => node.id === affectedNode.id, {data: {choice: newChoice}})
+          }
+        break;
+        case ("select"):
+          const timeout = change.selected ? 50 : 0;
+          setTimeout(() => {
+            setEdgeProperties(edge => edge.id === change.id, {animated: change.selected});
+            setNodeProperties(
+              node => node.id === rfInstance.getEdge(change.id)?.source || node.id === rfInstance.getEdge(change.id)?.target,
+              {data: {indirectSelected: change.selected}});
+          }, timeout);
+        break;
+        default:
+        break;
+      }
+    }
   }, [rfInstance, setNodeProperties, setEdgeProperties]);
 
   const onViewportChange = useCallback((newViewport: Viewport) => {
@@ -138,8 +159,7 @@ function StoryFlowChartEditor (props: {
 
     if (!handle || !checkNode) return;
 
-    const handleIndex = Number.parseInt(handle.split("-")[1]);
-    
+    const handleIndex = Choice.getIndexFromHandleName(handle);
     const newChoice = (checkNode.data.choice as Choice).cloneAndSetChoiceWrong(handleIndex, wrongChoice);
     setNodeProperties(node => node.id === checkNode.id, {data: {choice: newChoice}})
   }, [rfInstance, setNodeProperties]);
@@ -195,7 +215,7 @@ function StoryFlowChartEditor (props: {
     }
     newNode.selected = true;
     setNodes(nodes => [...nodes, newNode]);
-  }, [flowRef, nodes, setNodes, onClickEdit]);
+  }, [flowRef, nodes, onClickEdit]);
 
   const addExistingNode = useCallback((node: Node) => {
     let newNode: Node;
@@ -248,7 +268,7 @@ function StoryFlowChartEditor (props: {
 
   useEffect(() => handleSave(nodes, edges, viewport)
   , [handleSave, nodes, edges, viewport]);
-  
+
   const nodeTypes = useMemo(() => storyNodeTypes, []);
   const edgeTypes = useMemo(() => storyEdgeTypes, []);
 

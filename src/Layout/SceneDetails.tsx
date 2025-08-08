@@ -156,7 +156,7 @@ function SceneDetails(props: {
 					renderOption={renderOptions}
 					nothingFoundMessage={allOptions[StoryElementType.location].length === 0 ? noElementsText[StoryElementType.location] : noMatchingElementsText[StoryElementType.location]}
 					classNames={{pill: StoryElementTypeMentions[StoryElementType.location], option: StoryElementTypeMentions[StoryElementType.location]}}
-					comboboxProps={{withinPortal: false}}
+					comboboxProps={{withinPortal: false, position: "top"}}
 					hidePickedOptions
 					searchable
 					clearable/>

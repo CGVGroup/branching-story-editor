@@ -19,25 +19,10 @@ function SceneNode(props: NodeProps<SceneNodeType>) {
     changeStoryNodeName(rfInstance, props.id, name);
   }
 
-  const handleSubmitSceneTitle = (title: string) => {
-    rfInstance.setNodes(nodes => nodes.map(
-      node => node.id === props.id ?
-        {...node,
-          data: {
-            ...node.data,
-            scene: {
-              ...(node.data.scene as Scene),
-              details: {
-                ...(node.data.scene as Scene).details,
-                title: title
-              }
-            }
-          }
-        }
-      :
-        node
-    ));
-  }
+  const handleSubmitSceneTitle = (title: string) =>
+    rfInstance.updateNodeData(props.id, node => {return {scene: (node.data.scene as Scene).cloneAndSetDetails(
+      {...(node.data.scene as Scene).details, title: title}
+    )}}, {replace: false});
 
   return (
     <StoryNode selected={props.selected} indirectSelected={props.data.indirectSelected} className="scene">

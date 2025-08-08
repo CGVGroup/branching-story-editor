@@ -1,13 +1,12 @@
 import { useCallback, useContext, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router";
 import { debounce } from "throttle-debounce";
-import { ActionIcon, Anchor, AppShell, Button, Center, CloseButton, Divider, Grid, Group, Modal, Tabs, Text, TextInput, Title } from "@mantine/core";
+import { ActionIcon, Anchor, AppShell, Center, CloseButton, Grid, Tabs, Text, TextInput } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import { modals } from "@mantine/modals";
 import StoryFlowChartEditor from "../../Flow/StoryFlowChartEditor.tsx";
 import StoryElements from "../StoryElements.tsx";
 import Story from "../../StoryElements/Story.ts";
-import saveToDisk from "../../Misc/SaveToDisk.ts";
 import Scene from "../../StoryElements/Scene.ts";
 import SceneEditor from "./SceneEditor.tsx";
 import Choice from "../../StoryElements/Choice.ts";
@@ -20,6 +19,7 @@ import { ChosenModelContext } from "../../App.tsx";
 // @ts-ignore
 import {ReactComponent as AiPen} from "../../img/ai-pen.svg";
 import classes from "../GrowColumn.module.css";
+import GeneratingTextsDialog, { TextsLoadingInfo } from "../Components/GeneratingTextsDialog.tsx";
 
 const defaultTab = "structure";
 
@@ -36,8 +36,8 @@ function StoryEditor(props: {
 	const [sideTab, {toggle: toggleSideTab}] = useDisclosure(true);
 
 	const [loading, setLoading] = useState(false);
-	const [loadingPercentage, setLoadingPercentage] = useState(0);
-	const [chosenModel, _] = useContext(ChosenModelContext)!;
+	const [currentLoadingInfo, setCurrentLoadingInfo] = useState<TextsLoadingInfo>({current: 0, total: 0, currentScene: ""});
+	const [chosenModel, ] = useContext(ChosenModelContext)!;
 
 	const navigate = useNavigate();
 
@@ -103,9 +103,8 @@ function StoryEditor(props: {
 
 	const onConfirmGenerateAll = useCallback(async () => {
 		setLoading(true);
-		setLoadingPercentage(0);
 		for await (const {done, progress, newStory} of localStory.sendStoryToLLM(chosenModel)) {
-			setLoadingPercentage(progress);
+			setCurrentLoadingInfo(progress);
 			if (done) setLocalStory(newStory);
 		}
 		setLoading(false);
@@ -118,7 +117,7 @@ function StoryEditor(props: {
 	const onRequestAllTexts = useCallback(() => {
 		modals.openConfirmModal({
 			title: <Text size="lg">Generare i testi per tutta la storia?</Text>,
-			children: "Eventuali testi già presenti verranno sovrascritti.",
+			children: "Per ogni scena sarà possibile ritornare ai testi precedenti.",
 			labels: { confirm: "Continua", cancel: "Annulla" },
 			onConfirm: onConfirmGenerateAll,
 		})
@@ -164,6 +163,7 @@ function StoryEditor(props: {
 									variant="light"
 									title={"Genera tutti i testi"}
 									onClick={onRequestAllTexts}
+									loaderProps={{size: "xs"}}
 									loading={loading}>
 									<AiPen/>
 								</ActionIcon>
@@ -186,6 +186,7 @@ function StoryEditor(props: {
 					readOnly={false} />
 			</AppShell.Navbar>
 			<AppShell.Main>
+				<GeneratingTextsDialog loading={loading} {...currentLoadingInfo}/>
 				<Tabs
 					keepMounted={false}
 					value={currentTab}

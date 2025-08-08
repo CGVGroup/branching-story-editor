@@ -20,11 +20,11 @@ function ElementModal(props: {
     const taxonomies = useContext(TaxonomiesContext)!;
 
     const typeOptions = useMemo(() => taxonomyToTree(taxonomies[StoryElementTypeDictionary.eng.plural[props.elementType]])
-    , [props.elementType]);
+    , [props.elementType, taxonomies]);
 
-    const datingOptions = useMemo(() => taxonomyToTree(taxonomies.periods), []);
-    const materialOptions = useMemo(() => taxonomyToTree(taxonomies.materials), []);
-    const originOptions = useMemo(() => taxonomyToTree(taxonomies.areas), []);
+    const datingOptions = useMemo(() => taxonomyToTree(taxonomies.periods), [taxonomies]);
+    const materialOptions = useMemo(() => taxonomyToTree(taxonomies.materials), [taxonomies]);
+    const originOptions = useMemo(() => taxonomyToTree(taxonomies.areas), [taxonomies]);
 
     const title = useMemo(() => props.initialElement ? `Modifica ${props.initialElement.name}` : `Aggiungi un nuovo ${StoryElementTypeDictionary.ita.singular[props.elementType]}`
     , [props.initialElement, props.elementType]);
@@ -52,9 +52,9 @@ function ElementModal(props: {
     }, [props.elementType, props.initialElement])
 
     const isNameAvailable = useCallback((name: string, message?: string) => {
-        const firstMatch = props.allElements.find(element => element.name == name);
+        const firstMatch = props.allElements.find(element => element.name === name);
         if (!firstMatch) return null;
-        if (props.initialElement && firstMatch.id == props.initialElement.id) return null;
+        if (props.initialElement && firstMatch.id === props.initialElement.id) return null;
         return message;
     }, [props.allElements, props.initialElement]);
 

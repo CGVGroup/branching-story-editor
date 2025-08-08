@@ -81,16 +81,11 @@ export type InfoNodeType = Node<
 >;
 
 export function deleteStoryNode(rfInstance: ReactFlowInstance, id: string) {
-    rfInstance.setNodes(nodes => nodes.filter(node => node.id !== id));
+    rfInstance.deleteElements({nodes: [rfInstance.getNode(id)!]})
 };
 
 export function changeStoryNodeName(rfInstance: ReactFlowInstance, id: string, name: string) {
-    rfInstance.setNodes(nodes => nodes.map(
-        node => node.id === id ?
-            {...node, data: {...node.data, label: name}}
-        :
-            node
-    ));
+    rfInstance.updateNodeData(id, {label: name}, {replace: false})
 };
 
 export function createNewSceneNode(

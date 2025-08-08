@@ -12,6 +12,8 @@ type SearchFilters = {
     area: string[],
 }
 
+const maxResultsCount = 30;
+
 function DBBrowserModal(props: {
     show: boolean,
     handlers: UseDisclosureHandlers,
@@ -147,10 +149,11 @@ function DBBrowserModal(props: {
     useEffect(() => {
         const results = searchDB(search, type);
         if (Object.entries(filters).every(([, value]) => value.length === 0)) {
-            setResults(results);
+            setResults(results.slice(0, maxResultsCount));
             return;
         }
-        setResults(results.filter(element => {
+        setResults(results.filter((element, idx) => {
+            if (idx >= maxResultsCount) return false;
             for (const [key, value] of Object.entries(filters)) {
                 if (element[key] === undefined) continue;
                 if (Array.isArray(element[key])) {

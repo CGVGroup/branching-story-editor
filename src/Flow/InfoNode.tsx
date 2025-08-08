@@ -23,22 +23,8 @@ function InfoNode(props: NodeProps<InfoNodeType>) {
     changeStoryNodeName(rfInstance, props.id, name);
   }
 
-  const handleSubmitInfoTitle = (title: string) => {
-    rfInstance.setNodes(nodes => nodes.map(
-      node => node.id === props.id ?
-        {...node,
-          data: {
-            ...node.data,
-            info: {
-              ...(node.data.info as Info),
-              title: title,
-            }
-          }
-        }
-      :
-        node
-    ));
-  }
+  const handleSubmitInfoTitle = (title: string) =>
+    rfInstance.updateNodeData(props.id, node => {return {info: {...(node.data.info as Info), title: title}}}, {replace: false});
 
   return (
     <StoryNode selected={props.selected} indirectSelected={props.data.indirectSelected} className="info">

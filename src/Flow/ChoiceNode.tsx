@@ -20,22 +20,8 @@ function ChoiceNode(props: NodeProps<ChoiceNodeType>) {
     changeStoryNodeName(rfInstance, props.id, name);
   }
 
-  const handleSubmitChoiceTitle = (title: string) => {
-    rfInstance.setNodes(nodes => nodes.map(
-      node => node.id === props.id ?
-        {...node,
-          data: {
-            ...node.data,
-            choice: {
-              ...(node.data.choice as Choice),
-              title: title
-            }
-          }
-        }
-      :
-        node
-    ));
-  }
+  const handleSubmitChoiceTitle = (title: string) =>
+    rfInstance.updateNodeData(props.id, node => {return {choice: (node.data.choice as Choice).cloneAndSetTitle(title)}}, {replace: false});
 
   return (
     <StoryNode selected={props.selected} indirectSelected={props.data.indirectSelected} className="choice">

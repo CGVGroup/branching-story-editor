@@ -160,18 +160,6 @@
     }
   }
 
-  .story-edge-button {
-    width: 20px;
-    height: 20px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-size: 1em;
-    padding: 0px;
-    border-radius: 50%;
-    opacity: 50%;
-  }
-
   .story-node-summary {
     max-width: 10em;
     text-wrap: pretty;

@@ -90,6 +90,16 @@ class Choice {
             throw new Error("Failed to parse JSON file: " + e);
         }
     }
+
+    static getIndexFromHandleName(handleName: string) {
+        return Number.parseInt(handleName.split("-")[1]);
+    }
+
+    getChoiceFromHandleName(handleName: string) {
+        const index = Choice.getIndexFromHandleName(handleName);
+        if (index >= this.choices.length) throw new Error(`Handle "${handleName}" is out of bounds`);
+        return this.choices[index];
+    }
 }
 
 export default Choice;

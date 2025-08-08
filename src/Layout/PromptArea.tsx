@@ -151,41 +151,4 @@ function PromptArea(props: {
 	);
 }
 
-// Nel caso dovessero saltare fuori problemi con InputBase
-/*<Input.Wrapper
-	label="Prompt"
-	description={'Usa "@" per menzionare gli elementi della storia'}>
-	<Combobox.Target>
-		<RichTextarea						
-			ref={ref}
-			value={text}
-			placeholder='Prompt'
-			style={{width:"100%", height:"100%", left:"0px", background:"transparent", resize:"none"}}
-			onBlur={e => {
-				e.preventDefault();
-				if (!e.relatedTarget?.closest(".prompt-area-menu")) {
-					props.onBlur?.(text);
-					combobox.closeDropdown();
-				}
-			}}
-			onChange={e => {
-				setText(e.target.value);
-				props.setText?.(e.target.value);
-			}}
-			onSelectionChange={r => {
-				if (r.focused) {
-					setPos({top: r.top, left: r.left, caret: r.selectionStart});
-					if (MENTION_REGEX.test(text.slice(0, r.selectionStart))) {
-						combobox.openDropdown();
-					} else {
-						combobox.closeDropdown();
-					}
-				}
-			}}
-			disabled={props.readOnly}>
-			{renderer}
-		</RichTextarea>
-	</Combobox.Target>
-</Input.Wrapper>*/
-
 export default PromptArea;

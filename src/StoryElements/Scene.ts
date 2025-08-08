@@ -103,7 +103,7 @@ class Scene {
             title: this.details.title,
             time: this.details.time,
             weather: this.details.weather,
-            ids: [...new Set(this.history.current.prompt.match(matchAll))].map(name => story.getElementByName(name.split("@")[1])!.id),
+            ids: [...new Set(this.history.current.prompt.match(matchAll))].filter(name => name.length > 0).map(name => story.getElementByName(name.split("@")[1])!.id),
             backgroundIds: {
                 characters: this.details.backgroundIds[StoryElementType.character],
                 objects: this.details.backgroundIds[StoryElementType.object],

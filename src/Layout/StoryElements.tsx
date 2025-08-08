@@ -26,15 +26,15 @@ function StoryElements (props: {
   const onAddButtonClicked = useCallback(() => {
     setSelectedElement(undefined);
     newElementModalHandlers.open();
-  }, []);
+  }, [newElementModalHandlers]);
 
   const onOpenDBButtonClicked = useCallback(() => {
     dbModalHandlers.open();
-  }, []);
+  }, [dbModalHandlers]);
 
-  const onElementEditButtonClicked = useCallback((element: StoryElement) => {
+  const onElementEditButtonClicked = useCallback(() => {
     newElementModalHandlers.open();
-  }, []);
+  }, [newElementModalHandlers]);
 
   const onElementDeleteButtonClicked = useCallback((element: StoryElement) => {
     props.setStory?.(story => story.cloneAndDeleteElement(element.id));
@@ -82,7 +82,7 @@ function StoryElements (props: {
                       component="button"
                       variant="subtle"
                       color={storyElementTabsArray[type].color}
-                      onClick={() => onElementEditButtonClicked(element)}>
+                      onClick={onElementEditButtonClicked}>
                       <i className="bi bi-pencil" aria-label="edit" />
                     </Menu.Item>
                   )}

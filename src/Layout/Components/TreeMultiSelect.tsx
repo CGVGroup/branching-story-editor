@@ -66,9 +66,9 @@ function TreeMultiSelect(props: {
                             return (
                                 hasChildren ? (
                                     <Group gap={5} {...elementProps} onClick={() => tree.toggleExpanded(node.value)}>
+                                        {node.label}
                                         <i className="bi bi-chevron-down"
                                             style={{ display: "inline-block", transform: expanded ? 'rotate(180deg)' : 'rotate(0deg)' }}/>
-                                        {node.label}
                                     </Group>)
                                 :
                                     <Combobox.Option value={node.value} {...elementProps} active={multiValue.includes(node.value)}>

@@ -17,7 +17,7 @@ export default function ButtonEdge({
 	const [edgePath, labelX, labelY] = getBezierPath({sourceX, sourceY, sourcePosition, targetX, targetY, targetPosition});
 	
 	const onEdgeClick = () => {
-		rfInstance.setEdges(edges => edges.filter(edge => edge.id !== id));
+		rfInstance.deleteElements({edges: [rfInstance.getEdge(id)!]})
 	};
 	
 	return (
@@ -29,13 +29,21 @@ export default function ButtonEdge({
 						onClick={onEdgeClick}
 						radius="xl"
 						p={0}
-						className="story-edge-button nodrag nopan"
+						w={5}
+						h={5}
+						color="gray"
+						className="nodrag nopan"
 						style={{
 							position: "absolute",
+							display: "flex",
+							justifyContent: "center",
+							alignItems: "center",
+							fontSize: "1em",
 							pointerEvents: "all",
 							zIndex: "1000",
 							transformOrigin: "center",
-							transform: `translate(-50%, -50%) translate(${labelX}px,${labelY}px)`}}>
+							transform: `translate(-50%, -50%) translate(${labelX}px,${labelY}px)`,
+							opacity: "50%"}}>
 						<i className='bi bi-x'/>
 					</ActionIcon>}
 			</EdgeLabelRenderer>
