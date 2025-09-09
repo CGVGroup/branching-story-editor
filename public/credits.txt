@@ -1,6 +1,7 @@
 Politecnico di Torino, 2024-2025
 
 Flow Charts by ReactFlow: https://reactflow.dev/
+UI powered by Mantine: https://mantine.dev/
 
 Image credit:
     Desert: https://pixabay.com/photos/camels-sand-dunes-desert-sahara-4134934/

@@ -3,6 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@dnd-kit/core": "^6.3.1",
+    "@dnd-kit/modifiers": "^9.0.0",
+    "@dnd-kit/sortable": "^10.0.0",
     "@mantine/core": "^8.1.2",
     "@mantine/form": "^8.1.3",
     "@mantine/hooks": "^8.1.2",
@@ -13,7 +16,6 @@
     "@types/css-modules": "^1.0.5",
     "@types/throttle-debounce": "^5.0.2",
     "@xyflow/react": "^12.3.1",
-    "bootstrap": "^5.3.3",
     "bootstrap-icons": "^1.11.3",
     "buffer": "^6.0.3",
     "react": "^18.3.1",

@@ -1,6 +1,6 @@
-import { ActionIcon } from '@mantine/core';
 import { BaseEdge, EdgeLabelRenderer, getBezierPath, useReactFlow, type EdgeProps } from '@xyflow/react';
- 
+import { ActionIcon } from '@mantine/core';
+
 export default function ButtonEdge({
 	id,
 	selected,
@@ -14,11 +14,11 @@ export default function ButtonEdge({
 	markerEnd,
 }: EdgeProps) {
 	const rfInstance = useReactFlow();
+	
 	const [edgePath, labelX, labelY] = getBezierPath({sourceX, sourceY, sourcePosition, targetX, targetY, targetPosition});
 	
-	const onEdgeClick = () => {
-		rfInstance.deleteElements({edges: [rfInstance.getEdge(id)!]})
-	};
+	const onButtonClick = () =>
+		rfInstance.deleteElements({edges: [rfInstance.getEdge(id)!]});
 	
 	return (
 		<>
@@ -26,7 +26,7 @@ export default function ButtonEdge({
 			<EdgeLabelRenderer>
 				{selected && 
 					<ActionIcon
-						onClick={onEdgeClick}
+						onClick={onButtonClick}
 						radius="xl"
 						p={0}
 						w={5}

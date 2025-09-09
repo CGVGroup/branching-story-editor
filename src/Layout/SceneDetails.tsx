@@ -1,11 +1,14 @@
 import { useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { debounce } from 'throttle-debounce';
-import { Avatar, Divider, Fieldset, Group, MultiSelect, Select, SimpleGrid, Stack, Text, Textarea, TextInput } from "@mantine/core";
+import { Avatar, Divider, Fieldset, Group, MultiSelect, Select, SimpleGrid, Stack, Text, Textarea, TextInput, ComboboxItem } from "@mantine/core";
 import Story from "../StoryElements/Story.ts";
 import { SceneDetails as SceneDetailsType} from "../StoryElements/Scene.ts";
-import { noElementsText, noMatchingElementsText, shortNoElementsText, StoryElementColorArray, StoryElementType, StoryElementTypeArray, StoryElementTypeDictionary, StoryElementTypeMentions } from "../StoryElements/StoryElement.ts";
+import { noElementsText, noMatchingElementsText, shortNoElementsText, StoryElementType, StoryElementTypeArray, StoryElementTypeDictionary, StoryElementTypeMentions } from "../StoryElements/StoryElement.ts";
 import { SceneDetailsEnumsContext } from "../App.tsx";
 
+/**
+ * Displays and manages changes for all {@link SceneDetailsType Scene details} (e.g. time of day, weather, background elements...)
+ */
 function SceneDetails(props: {
 	story: Story,
 	details: SceneDetailsType,
@@ -26,8 +29,17 @@ function SceneDetails(props: {
 	const searchPlaceholders = useMemo(() =>
 		StoryElementTypeDictionary.ita.singular.map(type => `Digita per cercare un ${type}`)
 	, []);
-
-	const renderOptions = useCallback(({ option }) => {
+	
+	/**
+	 * Array of StoryElements, grouped by type, in a suitable format for Select/MultiSelect (see {@link ComboboxItem})
+	 */
+	const allElements = useMemo(() => 
+		StoryElementTypeArray.map(
+			type => props.story.getElementsByType(type)
+				.map(element => {return {value: element.id, label: element.name}}))
+	, [props.story]);
+	
+	const renderMultiSelectOption = useCallback(({ option }) => {
 		const element = props.story.getElement(option.value)!;
 		return ( 
 			<Group gap="sm">
@@ -43,12 +55,6 @@ function SceneDetails(props: {
 			</Group>
 		);
 	}, [props.story]);
-
-	const allOptions = useMemo(() => 
-		StoryElementTypeArray.map(
-			type => props.story.getElementsByType(type)
-				.map(element => {return {value: element.id, label: element.name}}))
-	, [props.story]);
 
 	const handleSave = useCallback(debounce(250, (
 		title: string,
@@ -125,10 +131,10 @@ function SceneDetails(props: {
 					label="Personaggi"
 					value={backgroundCharacters}
 					onChange={chars => setBackgroundCharacters(chars ?? [])}
-					data={allOptions[StoryElementType.character]}
+					data={allElements[StoryElementType.character]}
 					placeholder={backgroundCharacters.length ? searchPlaceholders[StoryElementType.character] : shortNoElementsText[StoryElementType.character]}
-					renderOption={renderOptions}
-					nothingFoundMessage={allOptions[StoryElementType.character].length === 0 ? noElementsText[StoryElementType.character] : noMatchingElementsText[StoryElementType.character]}
+					renderOption={renderMultiSelectOption}
+					nothingFoundMessage={allElements[StoryElementType.character].length === 0 ? noElementsText[StoryElementType.character] : noMatchingElementsText[StoryElementType.character]}
 					classNames={{pill: StoryElementTypeMentions[StoryElementType.character], option: StoryElementTypeMentions[StoryElementType.character]}}
 					comboboxProps={{withinPortal: false}}
 					hidePickedOptions
@@ -138,10 +144,10 @@ function SceneDetails(props: {
 					label="Oggetti"
 					value={backgroundObjects}
 					onChange={obj => setBackgroundObjects(obj ?? [])}
-					data={allOptions[StoryElementType.object]}
+					data={allElements[StoryElementType.object]}
 					placeholder={backgroundObjects.length ? searchPlaceholders[StoryElementType.object] : shortNoElementsText[StoryElementType.object]}
-					renderOption={renderOptions}
-					nothingFoundMessage={allOptions[StoryElementType.object].length === 0 ? noElementsText[StoryElementType.object] : noMatchingElementsText[StoryElementType.object]}
+					renderOption={renderMultiSelectOption}
+					nothingFoundMessage={allElements[StoryElementType.object].length === 0 ? noElementsText[StoryElementType.object] : noMatchingElementsText[StoryElementType.object]}
 					classNames={{pill: StoryElementTypeMentions[StoryElementType.object], option: StoryElementTypeMentions[StoryElementType.object]}}
 					comboboxProps={{withinPortal: false}}
 					hidePickedOptions
@@ -151,10 +157,10 @@ function SceneDetails(props: {
 					label="Luogo"
 					value={backgroundLocation ? [backgroundLocation] : []}
 					onChange={loc => setBackgroundLocation(loc[loc.length - 1] ?? "")}
-					data={allOptions[StoryElementType.location]}
+					data={allElements[StoryElementType.location]}
 					placeholder={backgroundLocation ? searchPlaceholders[StoryElementType.location] : shortNoElementsText[StoryElementType.location]}
-					renderOption={renderOptions}
-					nothingFoundMessage={allOptions[StoryElementType.location].length === 0 ? noElementsText[StoryElementType.location] : noMatchingElementsText[StoryElementType.location]}
+					renderOption={renderMultiSelectOption}
+					nothingFoundMessage={allElements[StoryElementType.location].length === 0 ? noElementsText[StoryElementType.location] : noMatchingElementsText[StoryElementType.location]}
 					classNames={{pill: StoryElementTypeMentions[StoryElementType.location], option: StoryElementTypeMentions[StoryElementType.location]}}
 					comboboxProps={{withinPortal: false, position: "top"}}
 					hidePickedOptions

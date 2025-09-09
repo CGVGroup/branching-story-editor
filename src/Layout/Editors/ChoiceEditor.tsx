@@ -1,117 +1,182 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { getConnectedEdges } from "@xyflow/react";
-import { ActionIcon, ActionIconGroup, Button, Group, Stack, TextInput } from "@mantine/core";
+import { getConnectedEdges, Node } from "@xyflow/react";
+import { ActionIcon, ActionIconGroup, Button, Flex, Group, Paper, Stack, TextInput } from "@mantine/core";
+import { isNotEmpty } from "@mantine/form";
+import { closestCenter, DndContext, DragEndEvent, PointerSensor, useSensor, useSensors } from "@dnd-kit/core";
+import { arrayMove, SortableContext, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
+import { CSS } from '@dnd-kit/utilities';
+import { restrictToParentElement, restrictToVerticalAxis } from '@dnd-kit/modifiers';
 import { debounce } from "throttle-debounce";
 import Story from "../../StoryElements/Story.tsx";
-import Choice from "../../StoryElements/Choice.ts";
+import Choice, { ChoiceDetails } from "../../StoryElements/Choice.ts";
 import { NodeType, storyNodeColorArray } from "../../Flow/StoryNode.tsx";
+import DynamicTextField from "../Components/DynamicTextField.tsx";
 
 function ChoiceEditor(props: {
-    story: Story,
-    nodeId: string,
-    choice: Choice,
-    setChoice: (choice: Choice) => void,
-    onChoiceMoved: (oldIdx: number, newIdx: number) => void,
-    onChoiceDeleted: (idx: number) => void,
-    onClickEditNode: (id: string) => void,
-    readOnly?: boolean
+	story: Story,
+	nodeId: string,
+	choice: Choice,
+	setChoice: (choice: Choice) => void,
+	onChoiceMoved: (changes: number[]) => void,
+	onChoiceDeleted: (idx: number) => void,
+	onClickEditNode: (id: string) => void,
+	readOnly?: boolean
 }) {
-    const [localChoice, setLocalChoice] = useState(Choice.from(props.choice));
+	const [localChoice, setLocalChoice] = useState(Choice.from(props.choice));
+	const sensors = useSensors(useSensor(PointerSensor, {activationConstraint: {distance: 5}}));
 
-    const addNewChoice = useCallback(() => {
-        setLocalChoice(choice => choice.cloneAndAddChoice());
-    }, []);
+	const addNewChoice = useCallback((index: number) => {
+		setLocalChoice(choice => choice.cloneAndAddChoice({text: `Scelta ${index + 1}`, wrong: false}));
+	}, []);
 
-    const deleteChoice = useCallback((index: number) => {
-        setLocalChoice(choice => choice.cloneAndDeleteAtIndex(index));
-        props.onChoiceDeleted(index);
-    }, [props.onChoiceDeleted]);
+	const deleteChoice = useCallback((index: number) => {
+		setLocalChoice(choice => choice.cloneAndDeleteAtIndex(index));
+		props.onChoiceDeleted(index);
+	}, [props.onChoiceDeleted]);
 
-    const setChoiceText = useCallback((idx: number, text: string) => {
-        setLocalChoice(choice => choice.cloneAndSetChoiceText(idx, text)); 
-    }, []);
+	const setChoiceText = useCallback((idx: number, text: string) => {
+		setLocalChoice(choice => choice.cloneAndSetChoiceText(idx, text)); 
+	}, []);
 
-    const setTitle = useCallback((title: string) => {
-        setLocalChoice(choice => choice.cloneAndSetTitle(title));
-    }, []);
+	const setTitle = useCallback((title: string) => {
+		setLocalChoice(choice => choice.cloneAndSetTitle(title));
+	}, []);
+	
+	const handleDragEnd = useCallback((event: DragEndEvent) => {
+		const { active, over } = event;
+		if (!over || active.id === over.id) return;
+		const oldIndex = localChoice.choices.findIndex(choice => choice.text === active.id);
+		const newIndex = localChoice.choices.findIndex(choice => choice.text === over.id);
+		setLocalChoice(choice => choice.cloneAndSetChoices(arrayMove(choice.choices, oldIndex, newIndex)))
+		
+		const numberedArray = [...Array(Math.max(oldIndex, newIndex) + 1).keys()];
+		const changes = arrayMove(numberedArray, oldIndex, newIndex);
+		props.onChoiceMoved(changes);
+	}, [props.onChoiceMoved]);
+	
+	const nextNodes = useMemo(() => {
+		const thisNode = props.story.getNode(props.nodeId)!;
+		const outgoingEdges = getConnectedEdges([thisNode], props.story.flow.edges).filter(edge => edge.source === thisNode.id);
+		return localChoice.choices.map((_, idx) => {
+			const nodeId = outgoingEdges.find(edge => edge.sourceHandle === `source-${idx}`)?.target;
+			return nodeId ? props.story.getNode(nodeId)! : null
+		});
+	}, [localChoice, props.story]);
 
-    const moveChoiceDown = useCallback((index: number) => {
-        setLocalChoice(choice => choice.cloneAndMoveChoice(index, index + 1));
-        props.onChoiceMoved(index, index + 1);
-    }, [props.onChoiceMoved]);
-    
-    const moveChoiceUp = useCallback((index: number) => {
-        setLocalChoice(choice => choice.cloneAndMoveChoice(index, index - 1));
-        props.onChoiceMoved(index, index - 1);
-    }, [props.onChoiceMoved]);
+	const handleSave = useCallback(debounce(250, (localChoice: Choice) => {
+		props.setChoice(localChoice);
+	}), []);
 
-    const handleSave = useCallback(debounce(250, (localChoice: Choice) => {
-        props.setChoice(localChoice);
-    }), []);
+	useEffect(() => handleSave(localChoice), [handleSave, localChoice]);
 
-    const nextNodes = useMemo(() => {
-        const thisNode = props.story.getNode(props.nodeId)!;
-        const outgoingEdges = getConnectedEdges([thisNode], props.story.flow.edges).filter(edge => edge.source === thisNode.id);
-        return localChoice.choices.map((_, idx) => {
-            const nodeId = outgoingEdges.find(edge => edge.sourceHandle === `source-${idx}`)?.target;
-            return nodeId ? props.story.getNode(nodeId)! : null
-        });
-    }, [localChoice, props.story])
+	return (
+		<Stack gap="md" px="xs">
+			<TextInput
+				defaultValue={localChoice.title}
+				onChange={e => setTitle(e.currentTarget.value)}
+				size="lg"
+				placeholder="Nessun interrogativo"
+				label="Interrogativo"/>
+			<Stack gap="sm">
+				<DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd} modifiers={[restrictToVerticalAxis, restrictToParentElement]}>
+					<SortableContext items={localChoice.choices.map(choice => choice.text)} strategy={verticalListSortingStrategy}>
+						{localChoice.choices.map((choice, index, choices) => 
+							<DraggableChoice
+								key={choice.text}
+								choice={choice}
+								choiceIndex={index}
+								choices={choices}
+								setChoiceText={setChoiceText}
+								deleteChoice={deleteChoice}
+								onClickEditNode={props.onClickEditNode}
+								nextNodes={nextNodes}/>
+						)}
+					</SortableContext>
+				</DndContext>
+			</Stack>
+			{!props.readOnly &&
+				<Button
+					size="xl"
+					color={storyNodeColorArray[NodeType.choice]}
+					variant="subtle"
+					onClick={() => addNewChoice(localChoice.choices.length)}
+					title="Aggiungi Scelta">
+					<i className="bi bi-plus-square-dotted" style={{display: "block", fontSize:"xxx-large"}} />
+				</Button>
+			}
+		</Stack>
+	);
+}
 
-    useEffect(() => handleSave(localChoice), [handleSave, localChoice]);
+function DraggableChoice(props: {
+	choice: ChoiceDetails,
+	choiceIndex: number,
+	choices: ChoiceDetails[],
+	setChoiceText: (index: number, text: string) => void,
+	deleteChoice: (index: number) => void,
+	onClickEditNode: (id: string) => void,
+	nextNodes: (Node | null)[],
+	readOnly?: boolean
+}) {
+	const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({id: props.choice.text});
 
-    return (
-        <Stack gap={2}>
-            <TextInput
-                defaultValue={localChoice.title}
-                onChange={e => setTitle(e.currentTarget.value)}
-                size="lg"
-                placeholder="Nessun interrogativo"
-                label="Interrogativo"/>
-            {localChoice.choices.map((choice, choiceIndex, choices) => 
-                <Group key={choiceIndex} className={choice.wrong ? "wrong-choice" : ""}>
-                    <TextInput
-                        value={choice.text}
-                        size="md"
-                        onChange={e => setChoiceText(choiceIndex, e.target.value)}
-                        disabled={props.readOnly}
-                        label={`Scelta ${choiceIndex + 1}`}
-                        style={{flexGrow: 1}}/>
-                    {!props.readOnly &&
-                        <ActionIconGroup>
-                            <ActionIcon
-                                color="red"
-                                onClick={() => deleteChoice(choiceIndex)}
-                                title="Elimina"
-                                size="lg">
-                                <i className="bi bi-trash" aria-label="delete" /> 
-                            </ActionIcon>
-                            <ActionIcon
-                                onClick={() => nextNodes[choiceIndex] !== null && props.onClickEditNode(nextNodes[choiceIndex].id)}
-                                color={nextNodes[choiceIndex] !== null && storyNodeColorArray[nextNodes[choiceIndex].type!]}
-                                variant="light"
-                                title={nextNodes[choiceIndex] !== null ? `Apri ${nextNodes[choiceIndex].data.label}` : "Nessun nodo collegato"}
-                                disabled={nextNodes[choiceIndex] === null}
-                                size="lg">
-                                <i className="bi bi-box-arrow-up-right" aria-label="open" /> 
-                            </ActionIcon>
-                            <ActionIcon onClick={() => moveChoiceUp(choiceIndex)} disabled={choiceIndex === 0} title="Sposta su" size="lg">
-                                <i className="bi bi-chevron-up" aria-label="move up" /> 
-                            </ActionIcon>
-                            <ActionIcon onClick={() => moveChoiceDown(choiceIndex)} disabled={choiceIndex === choices.length - 1} title="Sposta giù" size="lg">
-                                <i className="bi bi-chevron-down" aria-label="move down" /> 
-                            </ActionIcon>
-                        </ActionIconGroup>
-                    }
-                </Group>
-            )}
-            {!props.readOnly &&
-                <Button size="xl" color={storyNodeColorArray[NodeType.choice]} variant="subtle" onClick={addNewChoice} title="Aggiungi Scelta">
-                    <i className="bi bi-plus-square-dotted" style={{display: "block", fontSize:"xxx-large"}} />
-                </Button>
-            }
-        </Stack>
-    );
+	return (
+		<Paper
+			ref={setNodeRef}
+			shadow={isDragging ? "lg" : "xs"}
+			className={props.choice.wrong ? "wrong-choice" : ""}
+			p="sm"
+			style={{
+				transform: CSS.Transform.toString(transform),
+				transition,
+				cursor: isDragging ? "grabbing" : "inherit"
+			}}
+			{...attributes}>
+			<Group>
+				<Flex
+					align="center"
+					justify="center"
+					style={{
+						cursor: "grab",
+						fontSize: "1.5em"
+					}}
+					{...listeners}>
+					<i className="bi bi-grip-vertical" />
+				</Flex>
+				<DynamicTextField
+					initialValue={props.choice.text}
+					onSubmit={text => props.setChoiceText(props.choiceIndex, text)}
+					validate={value => isNotEmpty("Il titolo della scelta non può essere vuoto")(value) || (props.choices.some((choice, idx) => choice.text === value && idx !== props.choiceIndex) ? "Esiste già una scelta con questo titolo" : null)}
+					baseProps={{
+						size: "md",
+						disabled: props.readOnly,
+						label: `Scelta ${props.choiceIndex + 1}`,
+						style: {flexGrow: 1}
+					}}
+				/>
+				{!props.readOnly &&
+					<ActionIconGroup>
+						<ActionIcon
+							color="red"
+							onClick={() => props.deleteChoice(props.choiceIndex)}
+							title="Elimina"
+							size="lg">
+							<i className="bi bi-trash" aria-label="delete" /> 
+						</ActionIcon>
+						<ActionIcon
+							onClick={() => props.nextNodes[props.choiceIndex] !== null && props.onClickEditNode(props.nextNodes[props.choiceIndex]!.id)}
+							color={props.nextNodes[props.choiceIndex] !== null && storyNodeColorArray[props.nextNodes[props.choiceIndex]!.type!]}
+							variant="light"
+							title={props.nextNodes[props.choiceIndex] !== null ? `Apri ${props.nextNodes[props.choiceIndex]!.data.label}` : "Nessun nodo collegato"}
+							disabled={props.nextNodes[props.choiceIndex] === null}
+							size="lg">
+							<i className="bi bi-box-arrow-up-right" aria-label="open" /> 
+						</ActionIcon>
+					</ActionIconGroup>
+				}
+			</Group>
+		</Paper>
+	)
 }
 
 export default ChoiceEditor;

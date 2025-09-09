@@ -1,62 +1,38 @@
 {
-    "characters": [
-        {
-            "id": "P001",
+    "characters": {
+        "P001": {
             "name": "Amenhotep III",
+            "catalogueNumber": "numero_catalogo_ME",
             "type": "Faraone",
             "dating": [
                 "XVIII Dinastia"
             ],
             "description": "Nono faraone della XVIII dinastia egizia, noto per il periodo di prosperità e sviluppo artistico",
-            "assets": []
+            "cover": "/path/alla/cover.jpeg",
+            "models": [
+                "/path/al/modello.gltf",
+                "/path/al/tileson.json"
+            ]
         },
-        {
-            "id": "P002",
+        "P002": {
             "name": "Imhotep",
+            "catalogueNumber": "numero_catalogo_ME",
             "type": "Visir",
             "dating": [
                 "III Dinastia"
             ],
             "description": "Visir del faraone Djoser, architetto, medico e scriba, progettista della piramide a gradoni di Saqqara",
-            "assets": []
-        },
-        {
-            "id": "P003",
-            "name": "Hapuseneb",
-            "type": "Sommo sacerdote",
-            "dating": ["XVIII dinastia", "Nuovo Regno"],
-            "description": "Sommo sacerdote di Amon sotto Hatshepsut, influente figura religiosa e politica.",
-            "assets": []
-        },
-        {
-            "id": "P004",
-            "name": "Panhesy",
-            "type": "Sommo sacerdote",
-            "dating": ["XX dinastia", "Nuovo Regno"],
-            "description": "Sommo sacerdote di Amon al tempo di Ramses XI, coinvolto in conflitti con Viceré di Nubia.",
-            "assets": []
-        },
-        {
-            "id": "P005",
-            "name": "Nehesi",
-            "type": "Alto funzionario",
-            "dating": ["XVII dinastia", "Secondo Periodo Intermedio"],
-            "description": "Alto funzionario e principe, servì sotto il faraone del Basso Egitto durante l'epoca hyksos.",
-            "assets": []
-        },
-        {
-            "id": "P006",
-            "name": "Ramses III",
-            "type": "Faraone",
-            "dating": ["XX dinastia", "Nuovo Regno"],
-            "description": "Ultimo grande faraone del Nuovo Regno, noto per respingere i Popoli del Mare.",
-            "assets": []
+            "cover": "/path/alla/cover.jpeg",
+            "models": [
+                "/path/al/modello.gltf",
+                "/path/al/tileson.json"
+            ]
         }
-    ],
-    "objects": [
-        {
-            "id": "M001",
+    },
+    "objects": {
+        "M001": {
             "name": "Sarcofago di Meritamon",
+            "catalogueNumber": "numero_catalogo_ME",
             "type": "Sarcofago",
             "materials": [
                 "Ebano",
@@ -68,11 +44,15 @@
                 "XIX Dinastia"
             ],
             "description": "Sarcofago riccamente decorato appartenente a Meritamon, figlia di Ramses II",
-            "assets": []
+            "cover": "/path/alla/cover.jpeg",
+            "models": [
+                "/path/al/modello.gltf",
+                "/path/al/tileson.json"
+            ]
         },
-        {
-            "id": "M002",
+        "M002": {
             "name": "Tavolozza dello Scriba Amenemhat",
+            "catalogueNumber": "numero_catalogo_ME",
             "type": "Paletta da Scriba",
             "materials": [
                 "Ebano",
@@ -83,13 +63,17 @@
                 "XII Dinastia"
             ],
             "description": "Tavolozza da scriba con incisioni ieratiche e cavità per pigmenti",
-            "assets": []
+            "cover": "/path/alla/cover.jpeg",
+            "models": [
+                "/path/al/modello.gltf",
+                "/path/al/tileson.json"
+            ]
         }
-    ],
-    "locations": [
-        {
-            "id": "L001",
+    },
+    "locations": {
+        "L001": {
             "name": "Tempio di Hathor a Dendera",
+            "catalogueNumber": "numero_catalogo_ME",
             "type": "Tempio",
             "origin": "Dendera",
             "dating": [
@@ -98,65 +82,26 @@
                 "Epoca Romana"
             ],
             "description": "Complesso templare dedicato alla dea Hathor, costruito e ampliato durante diverse epoche",
-            "assets": []
+            "cover": "/path/alla/cover.jpeg",
+            "models": [
+                "/path/al/modello.gltf",
+                "/path/al/tileson.json"
+            ]
         },
-        {
-            "id": "L002",
+        "L002": {
             "name": "Mastaba di Kagemni",
+            "catalogueNumber": "numero_catalogo_ME",
             "type": "Mastaba",
             "origin": "Saqqara",
             "dating": [
                 "VI Dinastia"
             ],
             "description": "Tomba del visir Kagemni, che servì sotto i faraoni Teti e Pepi I, famosa per i suoi rilievi e pitture funerarie",
-            "assets": []
-        },
-        {
-            "id": "L003",
-            "name": "Tempio di Amon",
-            "type": "Tempio",
-            "origin": "Tebe",
-            "dating": [
-                "Nuovo Regno",
-                "XVIII Dinastia"
-            ],
-            "description": "Complesso templare monumentale dedicato al dio Amon, fulcro religioso e politico dell'antico Egitto",
-            "assets": []
-        },
-        {
-            "id": "L004",
-            "name": "Deir el-Medina",
-            "type": "Villaggio",
-            "origin": "Tebe Ovest",
-            "dating": [
-                "Nuovo Regno",
-                "XVIII-XX Dinastia"
-            ],
-            "description": "Villaggio abitato dagli artigiani delle tombe reali, celebre per l'elevata alfabetizzazione e la ricca documentazione epigrafica",
-            "assets": []
-        },
-        {
-            "id": "L005",
-            "name": "Porto di Deir el-Medina",
-            "type": "Porto",
-            "origin": "Tebe Ovest",
-            "dating": [
-                "Nuovo Regno"
-            ],
-            "description": "Piccolo porto fluviale utilizzato per il trasporto di materiali e viveri al villaggio di Deir el-Medina",
-            "assets": []
-        },
-        {
-            "id": "L006",
-            "name": "Necropoli di Deir el-Medina",
-            "type": "Necropoli",
-            "origin": "Tebe Ovest",
-            "dating": [
-                "Nuovo Regno",
-                "XIX Dinastia"
-            ],
-            "description": "Area funeraria riservata agli abitanti di Deir el-Medina, con tombe decorate da scene personali e religiose",
-            "assets": []
+            "cover": "/path/alla/cover.jpeg",
+            "models": [
+                "/path/al/modello.gltf",
+                "/path/al/tileson.json"
+            ]
         }
-    ]
+    }
 }

@@ -1,6 +1,7 @@
 import { useCallback, useContext, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router";
 import { debounce } from "throttle-debounce";
+import { Node } from "@xyflow/react";
 import { ActionIcon, Anchor, AppShell, Center, CloseButton, Grid, Tabs, Text, TextInput } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import { modals } from "@mantine/modals";
@@ -15,7 +16,7 @@ import { Info } from "../../Flow/InfoNode.tsx";
 import InfoEditor from "./InfoEditor.tsx";
 import StoryTexts from "../StoryTexts.tsx";
 import { NodeType, storyNodeClassNames, storyNodeColorArray } from "../../Flow/StoryNode.tsx";
-import { ChosenModelContext } from "../../App.tsx";
+import { ChosenModelContext, ChosenPromptContext } from "../../App.tsx";
 // @ts-ignore
 import {ReactComponent as AiPen} from "../../img/ai-pen.svg";
 import classes from "../GrowColumn.module.css";
@@ -23,6 +24,9 @@ import GeneratingTextsDialog, { TextsLoadingInfo } from "../Components/Generatin
 
 const defaultTab = "structure";
 
+/**
+ * Main container of the App. Manages Header, Aside, Tabs and main content for all editors.
+ */
 function StoryEditor(props: {
 	stories: Map<string, Story>,
 	setStory: (id: string, newStory: Story) => void,
@@ -38,11 +42,11 @@ function StoryEditor(props: {
 	const [loading, setLoading] = useState(false);
 	const [currentLoadingInfo, setCurrentLoadingInfo] = useState<TextsLoadingInfo>({current: 0, total: 0, currentScene: ""});
 	const [chosenModel, ] = useContext(ChosenModelContext)!;
+	const [chosenPrompt, ] = useContext(ChosenPromptContext)!;
 
 	const navigate = useNavigate();
 
 	const handleTitleChange = useCallback((title: string) => {
-		document.title = title;
 		setLocalStory(story => story.cloneAndSetTitle(title));
 	}, []);
 
@@ -50,17 +54,26 @@ function StoryEditor(props: {
 		setLocalStory(story => story.cloneAndSetScene(id, newScene));
 	}, []);
 
-	const onChoiceMoved = useCallback((id: string, oldIdx: number, newIdx: number) => {
+	/**
+	 * Reassigns source handles for edges so that they keep their association with their choice even when choices are rearranged.
+	 * @param id {@link Node.id id} of the node
+	 * @param changes an array of numbers representing the index of each choice before the change took place
+	 * @example
+	 * const initialOrder = [0, 1, 2, 3];
+	 * // 3 gets moved to the head, shifting all other handles
+	 * const changes = [3, 0, 1, 2];
+	 */
+	const onChoiceMoved = useCallback((id: string, changes: number[]) => {
 		setLocalStory(story => {
 			const node = story.getNode(id);
 			if (!node) return story;
-			const oldHandle = `source-${oldIdx}`;
-			const newHandle = `source-${newIdx}`;
 			
 			return story.cloneAndSetFlow({...story.flow, edges: story.flow.edges.map(edge => {
 				if (edge.source !== node.id) return edge;
-				if (edge.sourceHandle === oldHandle) return {...edge, sourceHandle: newHandle}
-				if (edge.sourceHandle === newHandle) return {...edge, sourceHandle: oldHandle}
+				for (let i = 0 ; i < changes.length; i++) {
+					if (i == changes[i]) continue;
+					if (edge.sourceHandle == `source-${changes[i]}`) return {...edge, sourceHandle: `source-${i}`}
+				}
 				return edge;
 			})});
 		});
@@ -103,16 +116,12 @@ function StoryEditor(props: {
 
 	const onConfirmGenerateAll = useCallback(async () => {
 		setLoading(true);
-		for await (const {done, progress, newStory} of localStory.sendStoryToLLM(chosenModel)) {
+		for await (const {done, progress, newStory} of localStory.sendStoryToLLM(chosenModel, chosenPrompt)) {
 			setCurrentLoadingInfo(progress);
 			if (done) setLocalStory(newStory);
 		}
 		setLoading(false);
 	}, [localStory, chosenModel]);
-
-	const handleSave = useCallback(debounce(250, (id: string, localStory: Story) => {
-		props.setStory(id, localStory);
-	}), []);
 
 	const onRequestAllTexts = useCallback(() => {
 		modals.openConfirmModal({
@@ -122,6 +131,10 @@ function StoryEditor(props: {
 			onConfirm: onConfirmGenerateAll,
 		})
 	}, [onConfirmGenerateAll]);
+	
+	const handleSave = useCallback(debounce(250, (id: string, localStory: Story) => {
+		props.setStory(id, localStory);
+	}), []);
 
 	// Keeps page title updated with story title
 	useEffect(() => {document.title = localStory.title}, [localStory.title]);
@@ -240,10 +253,10 @@ function StoryEditor(props: {
 						<StoryTexts
 							story={localStory}
 							setStory={story => setLocalStory(story)}
-							onClickOpenScene={onClickEditNode}
+							onSceneClickOpenScene={onClickEditNode}
 							onChoiceMoved={onChoiceMoved}
 							onChoiceDeleted={onChoiceDeleted}
-							onClickEditNode={onClickEditNode}/>
+							onChoiceClickEditNode={onClickEditNode}/>
 					</Tabs.Panel>
 					{openNodes.map(nodeId => {
 						const node = localStory.getNode(nodeId);
@@ -263,7 +276,7 @@ function StoryEditor(props: {
 										nodeId={nodeId}
 										choice={node.data.choice as Choice}
 										setChoice={newChoice => onChoiceEdited(nodeId, newChoice)}
-										onChoiceMoved={(oldIdx, newIdx) => onChoiceMoved(nodeId, oldIdx, newIdx)}
+										onChoiceMoved={changes => onChoiceMoved(nodeId, changes)}
 										onChoiceDeleted={idx => onChoiceDeleted(nodeId, idx)}
 										onClickEditNode={onClickEditNode}/>}
 								{node.type === NodeType.info &&

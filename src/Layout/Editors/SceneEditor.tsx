@@ -6,7 +6,7 @@ import Story from "../../StoryElements/Story.ts";
 import Scene, { SceneDetails as SceneDetailsType } from "../../StoryElements/Scene.ts";
 import SceneDetails from "../SceneDetails.tsx";
 import PromptArea from "../PromptArea.tsx";
-import { ChosenModelContext } from "../../App.tsx";
+import { ChosenModelContext, ChosenPromptContext } from "../../App.tsx";
 // @ts-ignore
 import {ReactComponent as AiPen} from "../../img/ai-pen.svg";
 import classes from "../GrowColumn.module.css"
@@ -22,11 +22,9 @@ function SceneEditor(props: {
 	const [localScene, setLocalScene] = useState(Scene.from(props.scene));
 	const [loading, setLoading] = useState(false);
 	const [currentLoadingInfo, setCurrentLoadingInfo] = useState<TextsLoadingInfo>({current: 0, total: 0, currentScene: ""});
+	
 	const [chosenModel] = useContext(ChosenModelContext)!;
-
-	const handleSave = useCallback(debounce(250, (scene: Scene) => {
-		props.setScene(scene);
-	}), []);
+	const [chosenPrompt] = useContext(ChosenPromptContext)!;
 
 	const handleEditDetails = useCallback((newDetails: SceneDetailsType) => {
 		setLocalScene(scene => scene.cloneAndSetDetails(newDetails));
@@ -42,7 +40,7 @@ function SceneEditor(props: {
 
 	const onSendToLLM = useCallback(async () => {
 		setLoading(true);
-		const sceneText = await props.story.sendSceneToLLM(props.nodeId, chosenModel)
+		const sceneText = await props.story.sendSceneToLLM(props.nodeId, chosenModel, chosenPrompt)
 		if (sceneText) {
 			setLocalScene(scene => scene.cloneAndPushFullText(sceneText));
 		}
@@ -72,12 +70,16 @@ function SceneEditor(props: {
 
 	const onRequestGenerateFollowing = useCallback(async () => {
 		setLoading(true);
-		for await(const {done, progress, newStory} of props.story.sendStoryToLLM(chosenModel, props.nodeId)) {
+		for await(const {done, progress, newStory} of props.story.sendStoryToLLM(chosenModel, chosenPrompt, props.nodeId)) {
 			setCurrentLoadingInfo(progress);
 			if (done) props.setStory(newStory);
 		}
 		setLoading(false);
 	}, [props.story, props.setStory, chosenModel]);
+	
+	const handleSave = useCallback(debounce(250, (scene: Scene) => {
+		props.setScene(scene);
+	}), []);
 	
 	useEffect(() => handleSave(localScene), [handleSave, localScene]);
 

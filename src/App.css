@@ -1,229 +1,229 @@
 .App {
-  --character-color: var(--mantine-color-orange-6);
-  --character-color-light: var(--mantine-color-orange-0);
-  --character-color-dark: var(--mantine-color-orange-7);
-  --object-color: var(--mantine-color-blue-6);
-  --object-color-light: var(--mantine-color-blue-0);
-  --object-color-dark: var(--mantine-color-blue-7);
-  --location-color: var(--mantine-color-green-6);
-  --location-color-light: var(--mantine-color-green-0);
-  --location-color-dark: var(--mantine-color-green-7);
-  --no-mention-color: var(--mantine-color-dark-6);
-  --no-mention-color-light: var(--mantine-color-dark-0);
-  --no-mention-color-dark: var(--mantine-color-dark-7);
+	--character-color: var(--mantine-color-orange-6);
+	--character-color-light: var(--mantine-color-orange-0);
+	--character-color-dark: var(--mantine-color-orange-7);
+	--object-color: var(--mantine-color-blue-6);
+	--object-color-light: var(--mantine-color-blue-0);
+	--object-color-dark: var(--mantine-color-blue-7);
+	--location-color: var(--mantine-color-green-6);
+	--location-color-light: var(--mantine-color-green-0);
+	--location-color-dark: var(--mantine-color-green-7);
+	--no-mention-color: var(--mantine-color-dark-6);
+	--no-mention-color-light: var(--mantine-color-dark-0);
+	--no-mention-color-dark: var(--mantine-color-dark-7);
 
-  --scene-color: var(--mantine-color-yellow-0);
-  --choice-color: var(--mantine-color-violet-0);
-  --info-color: var(--mantine-color-teal-0);
+	--scene-color: var(--mantine-color-yellow-0);
+	--choice-color: var(--mantine-color-violet-0);
+	--info-color: var(--mantine-color-teal-0);
 
-  --story-node-color: var(--mantine-color-gray-1);
+	--story-node-color: var(--mantine-color-gray-1);
 
-  --node-highlight-color: #ff0072;
-  --node-indirect-highlight-color: #ff509f;
+	--node-highlight-color: #ff0072;
+	--node-indirect-highlight-color: #ff509f;
 
-  text-align: center;
-  height: 100vh;
-  padding: 0px 16px;
+	text-align: center;
+	height: 100vh;
+	padding: 0px 16px;
 
-  /*Custom Classes*/
-  
-  .scene {
-    background-color: var(--scene-color);
-  }
+	/*Custom Classes*/
+	
+	.scene {
+		background-color: var(--scene-color);
+	}
 
-  .choice {
-    background-color: var(--choice-color);
-  }
+	.choice {
+		background-color: var(--choice-color);
+	}
 
-  .info {
-    background-color: var(--info-color);
-  }
+	.info {
+		background-color: var(--info-color);
+	}
 
-  .character-mention {
-    background: var(--character-color-light);
-    color: var(--character-color-dark);
-    border-color: var(--character-color);
-    &[data-combobox-selected] {
-      background: var(--character-color);
-      color: var(--mantine-color-white);
-    }
-  }
-  .mantine-Popover-dropdown {
-    .character-mention:hover {
-      background: var(--character-color-dark);
-      color: var(--mantine-color-white);
-    }
-  }
+	.character-mention {
+		background: var(--character-color-light);
+		color: var(--character-color-dark);
+		border-color: var(--character-color);
+		&[data-combobox-selected] {
+			background: var(--character-color);
+			color: var(--mantine-color-white);
+		}
+	}
+	.mantine-Popover-dropdown {
+		.character-mention:hover {
+			background: var(--character-color-dark);
+			color: var(--mantine-color-white);
+		}
+	}
 
-  .object-mention {
-    background: var(--object-color-light);
-    color: var(--object-color-dark);
-    border-color: var(--object-color);
-    &[data-combobox-selected] {
-      background: var(--object-color);
-      color: var(--mantine-color-white);
-    }
-  }
-  .mantine-Popover-dropdown {
-    .object-mention:hover {
-      background: var(--object-color-dark);
-      color: var(--mantine-color-white);
-    }
-  }
+	.object-mention {
+		background: var(--object-color-light);
+		color: var(--object-color-dark);
+		border-color: var(--object-color);
+		&[data-combobox-selected] {
+			background: var(--object-color);
+			color: var(--mantine-color-white);
+		}
+	}
+	.mantine-Popover-dropdown {
+		.object-mention:hover {
+			background: var(--object-color-dark);
+			color: var(--mantine-color-white);
+		}
+	}
 
-  .location-mention {
-    background: var(--location-color-light);
-    color: var(--location-color-dark);
-    border-color: var(--location-color);
-    &[data-combobox-selected] {
-      background: var(--location-color);
-      color: var(--mantine-color-white);
-    }
-  }
-  .mantine-Popover-dropdown {
-    .location-mention:hover {
-      background: var(--location-color-dark);
-      color: var(--mantine-color-white);
-    }
-  }
+	.location-mention {
+		background: var(--location-color-light);
+		color: var(--location-color-dark);
+		border-color: var(--location-color);
+		&[data-combobox-selected] {
+			background: var(--location-color);
+			color: var(--mantine-color-white);
+		}
+	}
+	.mantine-Popover-dropdown {
+		.location-mention:hover {
+			background: var(--location-color-dark);
+			color: var(--mantine-color-white);
+		}
+	}
 
-  .no-mention {
-    background: var(--no-mention-color-light);
-    color: var(--no-mention-color);
-  }
+	.no-mention {
+		background: var(--no-mention-color-light);
+		color: var(--no-mention-color);
+	}
 
-  /*Custom Elements*/
+	/*Custom Elements*/
 
-  .story-title {
-    font-size: xx-large;
-    font-weight: 500;
-    text-align: center;
-  }
+	.story-title {
+		font-size: xx-large;
+		font-weight: 500;
+		text-align: center;
+	}
 
-  .story-node {
-    padding: 10px 20px;
-    border-radius: 5px;
-    color: #222;                  /* theme.nodeColor */
-    border: 1px solid #222;       /* theme.nodeBorder */
-    width: 10em;
+	.story-node {
+		padding: 10px 20px;
+		border-radius: 5px;
+		color: #222;                  /* theme.nodeColor */
+		border: 1px solid #222;       /* theme.nodeBorder */
+		width: 10em;
 
-    &.selected {
-      border-color: var(--node-highlight-color);
-    }
+		&.selected {
+			border-color: var(--node-highlight-color);
+		}
 
-    &.indirect-selected {
-      border-color: var(--node-indirect-highlight-color);
-    }
-    
-    .name {
-      text-align: center;
-      font-weight: 500;
-    }
+		&.indirect-selected {
+			border-color: var(--node-indirect-highlight-color);
+		}
+		
+		.name {
+			text-align: center;
+			font-weight: 500;
+		}
 
-    .title {
-      text-align: center;
-      font-style: italic;
-      font-size: x-small;
-    }
+		.title {
+			text-align: center;
+			font-style: italic;
+			font-size: x-small;
+		}
 
-    .react-flow__handle {
-      &.source {
-        border: 1px solid #000;
-        padding: 3px;
-        background: #fff;
-      }
+		.react-flow__handle {
+			&.source {
+				border: 1px solid #000;
+				padding: 3px;
+				background: #fff;
+			}
 
-      &.right-choice {
-        border-radius: 0%;
-        height: 1.5em;
-        background: #bfffbf;
-      }
+			&.right-choice {
+				border-radius: 0%;
+				height: 1.5em;
+				background: #bfffbf;
+			}
 
-      &.wrong-choice {
-        border-radius: 0%;
-        height: 1.5em;
-        background: #ffbfbf;
-      }
-    }
+			&.wrong-choice {
+				border-radius: 0%;
+				height: 1.5em;
+				background: #ffbfbf;
+			}
+		}
 
-    .handle-text {
-      display: flex;
-      position: relative;
-      font-size: xx-small;
-      text-align: end;
-      text-overflow: clip;
-      padding-inline-end: 0.75em;
-    }
+		.handle-text {
+			display: flex;
+			position: relative;
+			font-size: xx-small;
+			text-align: end;
+			text-overflow: clip;
+			padding-inline-end: 0.75em;
+		}
 
-    &:hover {
-      box-shadow: var(--box-shadow-sm);
-    }
-  }
+		&:hover {
+			box-shadow: var(--box-shadow-sm);
+		}
+	}
 
-  .story-node-summary {
-    max-width: 10em;
-    text-wrap: pretty;
-    text-align: start;
-    overflow-y: auto;
-    font-size: small;
-  }
+	.story-node-summary {
+		max-width: 10em;
+		text-wrap: pretty;
+		text-align: start;
+		overflow-y: auto;
+		font-size: small;
+	}
 
-  .wrong-choice {
-    background-color: #ffe0e0;
-  }
+	.wrong-choice {
+		background-color: #ffe0e0;
+	}
 
-  .dynamic-text-field {
-    padding: 0;
-    text-align: center;
-    text-wrap: pretty;
-    text-overflow: ellipsis;
-    flex-wrap: nowrap;
-    &.focus {
-      background-color: white;
-    }
-    &:not(.focus) {
-      background-color: #00000008;
-      border-color: #00000020;
-    }
-  }
+	.dynamic-text-field {
+		padding: 0;
+		text-align: center;
+		text-wrap: pretty;
+		text-overflow: ellipsis;
+		flex-wrap: nowrap;
+		&.focus {
+			background-color: white;
+		}
+		&:not(.focus) {
+			background-color: #00000008;
+			border-color: #00000020;
+		}
+	}
 
-  .custom-tabs {
-    .close-button {
-      visibility: hidden;
-    }
+	.custom-tabs {
+		.close-button {
+			visibility: hidden;
+		}
 
-    li:hover .close-button, .active .close-button{
-      visibility: visible;
-    }
-  }
+		li:hover .close-button, .active .close-button{
+			visibility: visible;
+		}
+	}
 
-  .close-button {
-    margin-left: 0.5em;
-    pointer-events: all;
-    cursor: pointer;
+	.close-button {
+		margin-left: 0.5em;
+		pointer-events: all;
+		cursor: pointer;
 
-    &:hover {
-      visibility: visible;
-      background: #00000010;
-    }
+		&:hover {
+			visibility: visible;
+			background: #00000010;
+		}
 
-    &:active {
-      visibility: visible;
-      background: #00000020;
-    }
-  }
+		&:active {
+			visibility: visible;
+			background: #00000020;
+		}
+	}
 
-  .prompt-area-menu {
-    position: fixed;
-    top: 0;
-    left: 0;
-    z-index: 1500;
-    font-size: small;
-  }
+	.prompt-area-menu {
+		position: fixed;
+		top: 0;
+		left: 0;
+		z-index: 1500;
+		font-size: small;
+	}
 
-  .prompt-area-menu-target {
-    position: absolute;
-    width: 15em;
-    pointer-events: none;
-  }
+	.prompt-area-menu-target {
+		position: absolute;
+		width: 15em;
+		pointer-events: none;
+	}
 }

@@ -1,11 +1,19 @@
 import { useCallback, useEffect } from "react";
 import { TextInput, TextInputProps } from "@mantine/core";
-import { useField } from "@mantine/form"
+import { useField,UseFieldReturnType } from "@mantine/form"
 import { UseDisclosureHandlers } from "@mantine/hooks";
 
+/**
+ * Wrapper for Mantine's {@link UseFieldReturnType Field} and {@link TextInput} with optional locking and validation.
+ * @param initialValue initial uncontrolled value
+ * @param onSubmit optional callback invoked on `submit`
+ * @param validate optional callback invoked on `validate`
+ * @param locked optional locked state
+ * @param lockedHandler optional locked {@link UseDisclosureHandlers useDisclosure handlers}
+ * @param baseProps props to forward to internal {@link TextInput}
+ */
 function DynamicTextField(props: {
 	initialValue?: string,
-	focusOnDoubleClick?: boolean,
 	onSubmit?: (value: string) => void,
 	validate?: (value: unknown) => React.ReactNode,
 	locked?: boolean,

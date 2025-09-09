@@ -1,14 +1,17 @@
 import { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import {ActionIcon, AppShell, Fieldset, FileButton, Flex, Group, NavLink, Paper, ScrollArea, Select, SimpleGrid, Stack, Text, Textarea, TextInput, Title} from "@mantine/core";
+import {ActionIcon, AppShell, Fieldset, FileButton, Flex, Grid, Group, NavLink, Paper, ScrollArea, Select, SimpleGrid, Stack, Text, Textarea, TextInput, Title} from "@mantine/core";
 import {useDisclosure} from "@mantine/hooks";
 import { modals } from '@mantine/modals'; 
 import Story from "../StoryElements/Story.ts";
 import StoryFlowChartViewer from "../Flow/StoryFlowChartViewer.tsx";
 import StoryElements from "./StoryElements.tsx";
-import { ChosenModelContext, ModelListContext } from "../App.tsx";
+import { ChosenModelContext, ChosenPromptContext, ModelListContext, PromptListContext } from "../App.tsx";
 import classes from "./GrowColumn.module.css"
 
+/**
+ * Displays saved stories, along with their details, and allows creating or uploading new ones.
+ */
 function StoriesDashboard(props: {
 	stories: Map<string, Story>,
 	setStory: (id: string, newStory: Story) => void,
@@ -19,12 +22,15 @@ function StoriesDashboard(props: {
 }) {	
 	const navigate = useNavigate();
 	
+	const modelNamesContext = useContext(ModelListContext);
+	const promptNamesContext = useContext(PromptListContext);
 	const [chosenModel, setChosenModel] = useContext(ChosenModelContext)!;
+	const [chosenPrompt, setChosenPrompt] = useContext(ChosenPromptContext)!;
+
 	const [selectedId, setSelectedId] = useState<string | null>(props.lastOpenStory);
 	const [fileUploading, fileUploadingHandler] = useDisclosure(false);
 
 	const fileUpload = useRef<HTMLInputElement>(null);
-	const modelNamesContext = useContext(ModelListContext);
 
 	const addStory = useCallback((story: Story) => {
 		const newId = props.addStory(story);
@@ -61,8 +67,6 @@ function StoriesDashboard(props: {
 		addStory(story.cloneAndSetTitle(`${story.title} (Copia)`));
 	}, [addStory])
 
-	const selectedStory = useMemo(() => props.stories.get(selectedId!), [props.stories, selectedId]);
-
 	const openDeleteModal = useCallback((story: Story, id: string) => {
 		modals.openConfirmModal({
 			title: <Text size="lg">Eliminare <b>{story.title}</b>?</Text>,
@@ -71,6 +75,8 @@ function StoriesDashboard(props: {
 			onConfirm: () => props.deleteStory(id),
 		})
 	}, [props.deleteStory]);
+
+	const selectedStory = useMemo(() => props.stories.get(selectedId!), [props.stories, selectedId]);
 
 	// Handler for aborting file upload dialog
 	useEffect(() => {
@@ -90,13 +96,20 @@ function StoriesDashboard(props: {
 			styles={{ main: {display: "flex"} }}>
 			<AppShell.Header p="xs">
 				<Title order={1} ta="center" h="100%">Story Editor</Title>
-				<Select
-					label="LLM"
-					allowDeselect={false}
-					defaultValue={chosenModel}
-					style={{position: "absolute", right: "0", top: "0", width: "10%"}}
-					onChange={choice => setChosenModel(choice!)}
-					data={modelNamesContext!}/>
+				<SimpleGrid pos="absolute" right="0" top="0" w="20%" cols={2}>
+					<Select
+						label="LLM"
+						allowDeselect={false}
+						defaultValue={chosenModel}
+						onChange={choice => setChosenModel(choice!)}
+						data={modelNamesContext!}/>
+					<Select
+						label="Prompt"
+						allowDeselect={false}
+						defaultValue={chosenPrompt}
+						onChange={choice => setChosenPrompt(choice!)}
+						data={promptNamesContext!}/>
+				</SimpleGrid>
 			</AppShell.Header>
 			<AppShell.Navbar p="md">
 				<AppShell.Section pb="xs">

@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { RichTextarea, RichTextareaHandle } from "rich-textarea"
+import { RichTextarea, RichTextareaHandle, createRegexRenderer } from "rich-textarea"
 import { Combobox, Flex, InputBase, Text, useCombobox } from "@mantine/core";
 import Story from "../StoryElements/Story.ts";
-import { StoryElementType, StoryElementTypeMentions } from "../StoryElements/StoryElement.ts";
+import { StoryElementType, StoryElementTypeMentions, StoryElement } from "../StoryElements/StoryElement.ts";
 import PromptAreaMenu from "./Components/PromptAreaMenu.tsx";
 import classes from "./GrowColumn.module.css"
 
@@ -15,6 +15,11 @@ type Position = {
 const MENTION_REGEX = /\B@([\w]*)$/;
 const maxElementsShown = 6;
 
+/**
+ * Wrapper for <{@link RichTextarea}/> and Mantine's {@link Combobox}.
+ * 
+ * RichTextarea is not used as a standalone component, but as the `component` prop for <{@link InputBase}/>, in order to inherit its style.
+ */
 function PromptArea(props: {
 	story: Story,
 	initialText?: string,
@@ -41,6 +46,12 @@ function PromptArea(props: {
 	}, [pos, text]);
 	
 	const [highlightAll, highlightCharacters, highlightObjects, highlightLocations] = useMemo(() => props.story.getMatchRegExps(), [props.story]);
+	
+	/**
+	 * Splits a text using {@link highlightAll} and (optionally) spaces as boundaries
+	 * @param text text to split
+	 * @param spaces whether to split on spaces
+	 */
 	const textSplitter = useCallback((text: string, spaces: boolean) => {
 		const split = allElements.length > 0 ? text.split(highlightAll) : [text];
 		let retArr: string[];
@@ -57,6 +68,10 @@ function PromptArea(props: {
 		return retArr.filter(s => s !== "");
 	}, [allElements, highlightAll]);
 
+	/**
+	 * Given a mention, returns its corresponding {@link StoryElementType} (or null).
+	 * @param mention string starting with an `@` symbol (e.g. obtained by {@link textSplitter})
+	 */
 	const mentionMatcher = useCallback((mention: string) => {
 		if (mention.match(highlightCharacters)) return StoryElementType.character;
 		if (mention.match(highlightObjects)) return StoryElementType.object;
@@ -64,6 +79,10 @@ function PromptArea(props: {
 		return null;
 	}, [highlightCharacters, highlightObjects, highlightLocations]);
 
+	/**
+	 * Adds the name corresponding to element with the given {@link StoryElement.id id} at the {@link pos.caret caret position}.
+	 * @param id id of the StoryElement to add
+	 */
 	const complete = useCallback((id: string | undefined) => {
 		if (!ref.current || !pos || !id) return;
 		const previousWord = [...text.matchAll(highlightAll)].find(m => m.index === match?.index)?.[0];
@@ -76,6 +95,11 @@ function PromptArea(props: {
 			"end");
 	}, [ref, pos, text, search, match, highlightAll, allElements]);
 
+	/**
+	 * Function to pass to <{@link RichTextarea}/> that defines how to render rich text.
+	 * 
+	 * *Note: This function and some of the previous ones could be simplified by using the {@link createRegexRenderer} helper function. However, it was causing major issues and could not be used in the end.*
+	 */
 	const renderer = useCallback((text: string) => {
 		return textSplitter(text, true)
 			.map((word, idx) => {
@@ -89,6 +113,7 @@ function PromptArea(props: {
 		);
 	}, [textSplitter, mentionMatcher]);
 
+	// Keep text updated upon change of props.initialText
 	useEffect(() => setText(props.initialText ?? ""), [props.initialText]);
 
 	return (
