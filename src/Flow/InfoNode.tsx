@@ -3,9 +3,9 @@ import { ActionIcon, Flex, Menu, Stack } from "@mantine/core";
 import { isNotEmpty } from "@mantine/form";
 import { useDisclosure } from "@mantine/hooks";
 import DynamicTextField from "../Layout/Components/DynamicTextField.tsx";
-import { changeStoryNodeName, deleteStoryNode, InfoNodeType, NodeType, StoryNode, storyNodeColorArray } from "./StoryNode.tsx";
+import { changeStoryNodeName, checkNodeNameUnique, deleteStoryNode, InfoNodeType, NodeType, StoryNode, storyNodeColorArray } from "./StoryNode.tsx";
 
-export interface Info {
+export type Info = {
 	title: string;
 	text: string;
 }
@@ -42,7 +42,7 @@ function InfoNode(props: NodeProps<InfoNodeType>) {
 						initialValue={props.data.label}
 						validate={value =>
 							isNotEmpty("Il nome dell'approfondimento non può essere vuoto")(value) ||
-							(rfInstance.getNodes().some(node => node.data.label === value) ? "Esiste già un nodo con questo nome" : null)}
+							(checkNodeNameUnique(rfInstance, props.id, value as string) ? "Esiste già un nodo con questo nome" : null)}
 						onSubmit={handleSubmitInfoName}
 						locked={locked}
 						lockedHandler={lockedHandler}

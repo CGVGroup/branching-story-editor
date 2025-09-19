@@ -113,13 +113,12 @@
                     "children": []
                 },
                 {
+                    "name": "Sommo Sacerdote",
+                    "children": []
+                },
+                {
                     "name": "Sacerdote",
-                    "children": [
-                        {
-                            "name": "Sommo Sacerdote",
-                            "children": []
-                        }
-                    ]
+                    "children": []
                 }
             ]
         },
@@ -143,13 +142,12 @@
                     "children": []
                 },
                 {
+                    "name": "Capo degli Operai",
+                    "children": []
+                },
+                {
                     "name": "Operaio",
-                    "children": [
-                        {
-                            "name": "Capo degli Operai",
-                            "children": []
-                        }
-                    ]
+                    "children": []
                 }
             ]
         },

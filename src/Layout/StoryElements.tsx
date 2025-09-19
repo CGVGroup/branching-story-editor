@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo, useState } from "react";
-import { Avatar, Badge, Box, Button, Center, Group, Menu, NavLink, Stack, Tabs } from "@mantine/core";
+import { Avatar, Badge, Box, Button, Center, Group, Menu, NavLink, ScrollArea, Stack, Tabs } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import { StoryElementType, StoryElement, shortNoElementsText, StoryElementColorArray } from "../StoryElements/StoryElement.ts";
 import ElementModal from "./Components/AddElementModal.tsx";
@@ -17,7 +17,7 @@ const storyElementTabsArray = [
 ]
 
 /**
- * 
+ * Displays the list of all Elements, ordered by type, and holds the modals for browsing the DB (<{@link DBBrowserModal}/>) and adding a new Element (<{@link ElementModal}/>)
  */
 function StoryElements (props: {
 	story: Story,
@@ -87,7 +87,8 @@ function StoryElements (props: {
 			<Tabs
 				value={key.toString()}
 				onChange={k => setKey(Number.parseInt(k ?? "0"))}
-				classNames={{root: classes.growcol, panel: classes.growcol}}>
+				classNames={{root: classes.growcol, panel: classes.growcol}}
+				styles={{root: {height: "100%"}, panel: {overflow: "hidden"}}}>
 				<Tabs.List grow>
 					{storyElementTabsArray.map((tab, idx) =>
 						<Tabs.Tab key={idx} value={tab.type.toString()} px={0} color={tab.color} variant="light">
@@ -101,7 +102,7 @@ function StoryElements (props: {
 				</Tabs.List>
 				{storyElementTabsArray.map((tab, idx) =>
 				<Tabs.Panel key={idx} value={tab.type.toString()}>
-					<Stack pt="xs" gap="xs" className={classes.growcol}>
+					<Stack pt="xs" gap="xs" styles={{root: {overflow: "hidden"}}}>
 						{!props.readOnly && 
 							<Center>
 								<Group gap="xs">
@@ -121,7 +122,7 @@ function StoryElements (props: {
 								</Group>
 							</Center>
 						}
-						<Box>
+						<ScrollArea>
 							{allElements[tab.type].length === 0 ?
 								<NavLink disabled label={<Center>{shortNoElementsText[tab.type]}</Center>}/>
 							:
@@ -135,7 +136,7 @@ function StoryElements (props: {
 										readOnly={props.readOnly}/>
 								))
 							}
-						</Box>
+						</ScrollArea>
 					</Stack>
 				</Tabs.Panel>
 				)}
@@ -167,7 +168,7 @@ function StoryElementComponent(props: {
 					color={storyElementTabsArray[props.element.elementType].color}
 					variant="light"
 					label={props.element.name}
-					description={props.element.type}
+					description={props.element.resident ? props.element.type : `${props.element.type} - N° ${props.element.catalogueNumber}`}
 					leftSection={<Avatar></Avatar>}
 					onClick={props.onClick}
 					style={{fontStyle: props.element.resident ? "italic" : undefined}}/>

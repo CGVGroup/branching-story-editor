@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { RichTextarea, RichTextareaHandle, createRegexRenderer } from "rich-textarea"
 import { Combobox, Flex, InputBase, Text, useCombobox } from "@mantine/core";
-import Story from "../StoryElements/Story.ts";
-import { StoryElementType, StoryElementTypeMentions, StoryElement } from "../StoryElements/StoryElement.ts";
-import PromptAreaMenu from "./Components/PromptAreaMenu.tsx";
-import classes from "./GrowColumn.module.css"
+import Story from "../../StoryElements/Story.ts";
+import { StoryElementType, StoryElementTypeMentions, StoryElement } from "../../StoryElements/StoryElement.ts";
+import PromptAreaMenu from "./PromptAreaMenu.tsx";
+import classes from "../GrowColumn.module.css"
 
 type Position = {
 	top: number;
@@ -27,7 +27,7 @@ function PromptArea(props: {
 	onBlur?: (text: string) => void,
 	readOnly?: boolean
 }) {
-	const ref = useRef<RichTextareaHandle>(null);
+	const richTextAreaRef = useRef<RichTextareaHandle>(null);
 
 	const [text, setText] = useState(props.initialText ?? "");
 	const [pos, setPos] = useState<Position | null>(null);
@@ -84,16 +84,16 @@ function PromptArea(props: {
 	 * @param id id of the StoryElement to add
 	 */
 	const complete = useCallback((id: string | undefined) => {
-		if (!ref.current || !pos || !id) return;
+		if (!richTextAreaRef.current || !pos || !id) return;
 		const previousWord = [...text.matchAll(highlightAll)].find(m => m.index === match?.index)?.[0];
 		const wordStart = pos.caret - search.length - 1;
 		const wordEnd = previousWord ? wordStart + previousWord.length : pos.caret; 
-		ref.current.setRangeText(
+		richTextAreaRef.current.setRangeText(
 			`@${allElements.find(element => element.id === id)!.name} `,
 			wordStart,
 			wordEnd,
 			"end");
-	}, [ref, pos, text, search, match, highlightAll, allElements]);
+	}, [richTextAreaRef, pos, text, search, match, highlightAll, allElements]);
 
 	/**
 	 * Function to pass to <{@link RichTextarea}/> that defines how to render rich text.
@@ -123,10 +123,10 @@ function PromptArea(props: {
 				store={combobox}
 				position="top"
 				classNames={{dropdown: "prompt-area-menu"}}>
-				<Combobox.Target>
+				<Combobox.Target withKeyboardNavigation={match !== null}>
 					<InputBase
 						component={RichTextarea}
-						ref={ref}
+						ref={richTextAreaRef}
 						value={text}
 						label="Prompt"
 						description='Usa "@" per menzionare gli elementi della storia'
@@ -163,13 +163,13 @@ function PromptArea(props: {
 						className="prompt-area-menu-target"
 						style={{top: `${pos?.top}px`, left: `${pos?.left}px`}}/>
 				</Combobox.DropdownTarget>
-				<Combobox.Dropdown>					
+				<Combobox.Dropdown>
 					<PromptAreaMenu
 						allElements={allElements}
 						search={search}
 						maxElementsShown={maxElementsShown}
 						onClick={complete}
-						promptAreaRef={ref}/>
+						promptAreaRef={richTextAreaRef}/>
 				</Combobox.Dropdown>
 			</Combobox>
 		</Flex>

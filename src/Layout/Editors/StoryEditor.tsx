@@ -17,6 +17,7 @@ import InfoEditor from "./InfoEditor.tsx";
 import StoryTexts from "../StoryTexts.tsx";
 import { NodeType, storyNodeClassNames, storyNodeColorArray } from "../../Flow/StoryNode.tsx";
 import { ChosenModelContext, ChosenPromptContext } from "../../App.tsx";
+import saveToDisk from "../../Misc/SaveToDisk.ts";
 // @ts-ignore
 import {ReactComponent as AiPen} from "../../img/ai-pen.svg";
 import classes from "../GrowColumn.module.css";
@@ -160,8 +161,8 @@ function StoryEditor(props: {
 								<ActionIcon
 									size="xl"
 									variant="light"
-									//onClick={() => saveToDisk(localStory.toJSON(), `${localStory.title}.story`, "application/json")} title="Scarica">
-									onClick={() => console.log(localStory.smartSerialize())} title="Scarica">
+									onClick={() => saveToDisk(localStory.toJSON(), `${localStory.title}.story`, "application/json")} title="Scarica"
+									/*onClick={() => console.log(localStory.smartSerialize())} title="Scarica"*/>
 									<i className="bi bi-download" aria-label="download" />
 								</ActionIcon>
 								<ActionIcon
@@ -234,8 +235,8 @@ function StoryEditor(props: {
 												onClickTabClose(nodeId)
 											}}
 											title="Chiudi"/>}
-									color={storyNodeColorArray[node.type!]}
-									className={storyNodeClassNames[node.type!]}
+									color={storyNodeColorArray[node.type as NodeType]}
+									className={storyNodeClassNames[node.type as NodeType]}
 									style={{textDecoration: "none"}}
 									styles={{tabSection: {margin: 0}}}>
 									{node.data.label as string}

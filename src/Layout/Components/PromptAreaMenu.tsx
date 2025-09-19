@@ -15,7 +15,7 @@ import { storyElementTabsArray } from "../StoryElements.tsx";
  * @param search search query
  * @param maxElementsShown boundary between mixed results and tabbed results
  * @param onClick callback for each result
- * @param promptAreaRef {@link React.Ref Ref} to the bound {@link RichTextarea}
+ * @param promptAreaRef {@link React.Ref<T> Ref} to the bound {@link RichTextarea}
  */
 function PromptAreaMenu(props: {
 	allElements: StoryElement[],
@@ -70,7 +70,11 @@ function PromptAreaMenu(props: {
 		);
 	}
 	return (
-		<Tabs defaultValue={StoryElementType.character.toString()} onChange={() => props.promptAreaRef?.current?.focus()}>
+		<Tabs
+			defaultValue={StoryElementType.character.toString()}
+			onChange={() => props.promptAreaRef?.current?.focus()}
+			activateTabWithKeyboard={false}
+			keepMounted={false}>
 			<Tabs.List grow>
 				{storyElementTabsArray.map(tab => 
 					<Tabs.Tab

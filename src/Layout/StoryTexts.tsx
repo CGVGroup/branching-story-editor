@@ -5,7 +5,7 @@ import Story from "../StoryElements/Story.ts";
 import Choice from "../StoryElements/Choice.ts";
 import ChoiceEditor from "./Editors/ChoiceEditor.tsx";
 import { ChoiceNodeProps, InfoNodeProps, NodeType, SceneNodeProps } from "../Flow/StoryNode.tsx";
-import PromptArea from "./PromptArea.tsx";
+import PromptArea from "./Components/PromptArea.tsx";
 import { ChosenModelContext, ChosenPromptContext } from "../App.tsx";
 import InfoEditor from "./Editors/InfoEditor.tsx";
 import { Info } from "../Flow/InfoNode.tsx";
@@ -154,7 +154,7 @@ function StoryTexts(props: {
 							return (
 								<Accordion.Item value={id} key={idx} className="info">
 									<Accordion.Control icon={<i className="bi bi-info-circle"/>}>
-										{data.label}
+										{`${data.label}${data.info?.title ? " - " : ""}${data.info?.title}`} 
 									</Accordion.Control>
 									<Accordion.Panel>
 										<InfoEditor

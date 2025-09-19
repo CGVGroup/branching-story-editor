@@ -61,10 +61,10 @@ function ChoiceEditor(props: {
 			const nodeId = outgoingEdges.find(edge => edge.sourceHandle === `source-${idx}`)?.target;
 			return nodeId ? props.story.getNode(nodeId)! : null
 		});
-	}, [localChoice, props.story]);
+	}, [localChoice, props.story, props.nodeId]);
 
-	const handleSave = useCallback(debounce(250, (localChoice: Choice) => {
-		props.setChoice(localChoice);
+	const handleSave = useCallback(debounce(250, (choice: Choice) => {
+		props.setChoice(choice);
 	}), []);
 
 	useEffect(() => handleSave(localChoice), [handleSave, localChoice]);
@@ -86,8 +86,8 @@ function ChoiceEditor(props: {
 								choice={choice}
 								choiceIndex={index}
 								choices={choices}
-								setChoiceText={setChoiceText}
-								deleteChoice={deleteChoice}
+								setChoiceText={text => setChoiceText(index, text)}
+								deleteChoice={() => deleteChoice(index)}
 								onClickEditNode={props.onClickEditNode}
 								nextNodes={nextNodes}/>
 						)}
@@ -112,8 +112,8 @@ function DraggableChoice(props: {
 	choice: ChoiceDetails,
 	choiceIndex: number,
 	choices: ChoiceDetails[],
-	setChoiceText: (index: number, text: string) => void,
-	deleteChoice: (index: number) => void,
+	setChoiceText: (text: string) => void,
+	deleteChoice: () => void,
 	onClickEditNode: (id: string) => void,
 	nextNodes: (Node | null)[],
 	readOnly?: boolean
@@ -137,7 +137,7 @@ function DraggableChoice(props: {
 					align="center"
 					justify="center"
 					style={{
-						cursor: "grab",
+						cursor: isDragging ? "grabbing" : "grab",
 						fontSize: "1.5em"
 					}}
 					{...listeners}>
@@ -145,8 +145,10 @@ function DraggableChoice(props: {
 				</Flex>
 				<DynamicTextField
 					initialValue={props.choice.text}
-					onSubmit={text => props.setChoiceText(props.choiceIndex, text)}
-					validate={value => isNotEmpty("Il titolo della scelta non può essere vuoto")(value) || (props.choices.some((choice, idx) => choice.text === value && idx !== props.choiceIndex) ? "Esiste già una scelta con questo titolo" : null)}
+					onSubmit={props.setChoiceText}
+					validate={value =>
+						isNotEmpty("Il testo della scelta non può essere vuoto")(value) ||
+						(props.choices.some((choice, idx) => choice.text === value && idx !== props.choiceIndex) ? "Esiste già una scelta con questo testo" : null)}
 					baseProps={{
 						size: "md",
 						disabled: props.readOnly,
@@ -158,14 +160,14 @@ function DraggableChoice(props: {
 					<ActionIconGroup>
 						<ActionIcon
 							color="red"
-							onClick={() => props.deleteChoice(props.choiceIndex)}
+							onClick={props.deleteChoice}
 							title="Elimina"
 							size="lg">
 							<i className="bi bi-trash" aria-label="delete" /> 
 						</ActionIcon>
 						<ActionIcon
 							onClick={() => props.nextNodes[props.choiceIndex] !== null && props.onClickEditNode(props.nextNodes[props.choiceIndex]!.id)}
-							color={props.nextNodes[props.choiceIndex] !== null && storyNodeColorArray[props.nextNodes[props.choiceIndex]!.type!]}
+							color={props.nextNodes[props.choiceIndex] !== null ? storyNodeColorArray[props.nextNodes[props.choiceIndex]!.type as NodeType] : undefined}
 							variant="light"
 							title={props.nextNodes[props.choiceIndex] !== null ? `Apri ${props.nextNodes[props.choiceIndex]!.data.label}` : "Nessun nodo collegato"}
 							disabled={props.nextNodes[props.choiceIndex] === null}

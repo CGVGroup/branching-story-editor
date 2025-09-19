@@ -60,7 +60,7 @@ function App() {
 		if (!db) return;
 		const savedStories = localStorage.getItem("stories");
 		if (savedStories) {
-			const parsedStories = JSON.parse(savedStories);
+			const parsedStories = JSON.parse(savedStories) as [id: string, serializedStory: string][];
 			if (parsedStories?.length) {
 				setStories(new Map(parsedStories.map(([id, story]) => [id, Story.fromJSON(story)])));
 			}

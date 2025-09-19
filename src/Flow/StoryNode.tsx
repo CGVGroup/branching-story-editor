@@ -36,7 +36,7 @@ export const storyNodeColorArray = {sceneNode: "yellow", choiceNode: "violet", i
 /**
  * Utility type for function properties that are common to all Custom Nodes and that need to be passed from above.
  * 
- * `onClickEdit` opens a new tab in {@link StoryEditor}, so the callback needs to be passed during the factory method ({@link createNewSceneNode} for SceneNodes).
+ * `onClickEdit` opens a new tab in {@link StoryEditor}, so the callback needs to be passed during the factory method ({@link createNewStoryNode}).
  * 
  * For example, the callback for {@link SceneNode}'s `handleDelete` need not be passed, as all data can be accessed from inside the component.
  */
@@ -75,24 +75,15 @@ export type SceneNodeType = Node<SceneNodeProps, "SceneNode">;
 export type ChoiceNodeType = Node<ChoiceNodeProps, "ChoiceNode">;
 export type InfoNodeType = Node<InfoNodeProps, "InfoNode">;
 
-/**
- * Utility type for fields common to all StoryNodes.
- */
-export interface StoryNodeObject {
-	id: string;
-	position: XYPosition;
-	type: NodeType;
-};
-
-export interface SceneNodeObject extends StoryNodeObject {
+interface SceneNodeObject extends Node {
 	data: SceneNodeProps;
 	type: NodeType.scene;
 };
-export interface ChoiceNodeObject extends StoryNodeObject {
+interface ChoiceNodeObject extends Node {
 	data: ChoiceNodeProps;
 	type: NodeType.choice;
 };
-export interface InfoNodeObject extends StoryNodeObject {
+interface InfoNodeObject extends Node {
 	data: InfoNodeProps;
 	type: NodeType.info;
 };
@@ -103,7 +94,7 @@ export interface InfoNodeObject extends StoryNodeObject {
  * @param id id of the Node to delete
  */
 export function deleteStoryNode(rfInstance: ReactFlowInstance, id: string) {
-	rfInstance.deleteElements({nodes: [rfInstance.getNode(id)!]})
+	rfInstance.deleteElements({nodes: [rfInstance.getNode(id)!]});
 };
 
 /**
@@ -113,8 +104,18 @@ export function deleteStoryNode(rfInstance: ReactFlowInstance, id: string) {
  * @param name new name
  */
 export function changeStoryNodeName(rfInstance: ReactFlowInstance, id: string, name: string) {
-	rfInstance.updateNodeData(id, {label: name}, {replace: false})
+	rfInstance.updateNodeData(id, {label: name}, {replace: false});
 };
+
+/**
+ * Checks if the name of a Node is unique in the given flow.
+ * @param rfInstance {@link ReactFlowInstance}
+ * @param id id of the Node to check
+ * @param name name to check
+ */
+export function checkNodeNameUnique(rfInstance: ReactFlowInstance, id: string, name: string) {
+	return rfInstance.getNodes().some(node => node.data.label === name && node.id !== id);
+}
 
 /**
  * Factory method to create an empty Node.

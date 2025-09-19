@@ -262,7 +262,7 @@ class Story {
 					break;
 				}
 				return {
-					type: storyNodeClassNames[node.type!],
+					type: storyNodeClassNames[node.type as NodeType],
 					name: node.data.label as string,
 					contents: contents!
 				}
@@ -294,7 +294,7 @@ class Story {
 		const node = this.getNode(id);
 		if (!node || node.type === NodeType.choice) return null;
 		
-		let payload: Object = {
+		let payload: object = {
 			title: this.title,
 			characters: this.getElementsByType(StoryElementType.character),
 			objects: this.getElementsByType(StoryElementType.object),
@@ -317,9 +317,9 @@ class Story {
 		
 		const incomers = getIncomers(node, this.flow.nodes, this.flow.edges)
 		if (incomers.length === 1 && incomers[0].type === NodeType.scene) {
-			payload["previous_scene"] = (incomers[0].data.scene as Scene).history.current.fullText;
+			payload = {...payload, previous_scene: (incomers[0].data.scene as Scene).history.current.fullText};
 		} else {
-			payload["previous_scene"] = ""
+			payload = {...payload, previous_scene: ""};
 		}
 
 		return sendToLLM(payload, model, prompt).then(res => {

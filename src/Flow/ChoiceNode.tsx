@@ -2,7 +2,7 @@ import { Handle, NodeProps, NodeToolbar, Position, useReactFlow } from "@xyflow/
 import { ActionIcon, Center, Divider, Flex, Menu, Stack } from "@mantine/core";
 import { isNotEmpty } from "@mantine/form";
 import { useDisclosure } from "@mantine/hooks";
-import { changeStoryNodeName, ChoiceNodeType, deleteStoryNode, NodeType, StoryNode, storyNodeColorArray } from "./StoryNode.tsx";
+import { changeStoryNodeName, checkNodeNameUnique, ChoiceNodeType, deleteStoryNode, NodeType, StoryNode, storyNodeColorArray } from "./StoryNode.tsx";
 import LabeledHandle from "./LabeledHandle.tsx";
 import DynamicTextField from "../Layout/Components/DynamicTextField.tsx";
 import Choice from "../StoryElements/Choice.ts";
@@ -41,7 +41,7 @@ function ChoiceNode(props: NodeProps<ChoiceNodeType>) {
 								initialValue={props.data.label}
 								validate={value =>
 									isNotEmpty("Il nome della scelta non può essere vuoto")(value) ||
-									(rfInstance.getNodes().some(node => node.data.label === value) ? "Esiste già un nodo con questo nome" : null)}
+									(checkNodeNameUnique(rfInstance, props.id, value as string) ? "Esiste già un nodo con questo nome" : null)}
 								onSubmit={handleSubmitChoiceName}
 								locked={locked}
 								lockedHandler={lockedHandler}
@@ -51,9 +51,10 @@ function ChoiceNode(props: NodeProps<ChoiceNodeType>) {
 								onSubmit={handleSubmitChoiceTitle}
 								locked={locked}
 								lockedHandler={lockedHandler}
-								baseProps={{className: "title", placeholder: "Nessun Titolo"}}/>
+								baseProps={{className: "title", placeholder: "Nessun Interrogativo"}}/>
 						</Stack>
 					</Center>
+				<Divider my={2} color="transparent"/>
 				{props.data.choice.choices.length > 0 && 
 					props.data.choice.choices.map((choice, idx) =>
 						<div key={idx}>

@@ -1,17 +1,14 @@
 import { RefObject, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { UseDisclosureHandlers } from "@mantine/hooks";
-import { Affix, Avatar, Button, Checkbox, CloseButton, Combobox, Divider, Fieldset, Grid, Group, Modal, SegmentedControl, Stack, Text, TextInput, Tree, useTree } from "@mantine/core";
-import { StoryElement, StoryElementColorArray, StoryElementType, StoryElementTypeArray, StoryElementTypeDictionary, StoryElementTypeMentions } from "../../StoryElements/StoryElement.ts";
-import { getElementFromDB, searchDB, taxonomyToTree } from "../../Misc/DB.ts";
+import { Affix, Avatar, Button, Checkbox, CloseButton, Combobox, Divider, Fieldset, Grid, Group, Modal, RenderTreeNodePayload, SegmentedControl, Stack, Text, TextInput, Tree, useTree } from "@mantine/core";
+import { ObjectElement, StoryElement, StoryElementColorArray, StoryElementType, StoryElementTypeArray, StoryElementTypeDictionary, StoryElementTypeMentions } from "../../StoryElements/StoryElement.ts";
+import { getElementFromDB, searchDB, Taxonomies, taxonomyToTree } from "../../Misc/DB.ts";
 import { TaxonomiesContext } from "../../App.tsx";
 import { DB } from "../../Misc/DB.ts";
 
 type SearchFilters = {
-	type: string[],
-	dating: string[],
-	material: string[],
-	area: string[],
-}
+  [K in keyof Pick<StoryElement & ObjectElement, "type" | "dating" | "materials" | "origin">]: string[];
+};
 
 const maxResultsCount = 30;
 
@@ -31,29 +28,29 @@ function DBBrowserModal(props: {
 	
 	const [search, setSearch] = useState<string>("");
 	const [type, setType] = useState<StoryElementType>(props.elementType);
-	const [filters, setFilters] = useState<SearchFilters>({type: [], dating: [], material: [], area: []});
-	const [updateFilters, setUpdateFilters] = useState<Record<keyof SearchFilters, boolean>>({type: false, dating: false, material: false, area: false})
+	const [filters, setFilters] = useState<SearchFilters>({type: [], dating: [], materials: [], origin: []});
+	const [updateFilters, setUpdateFilters] = useState<Record<keyof SearchFilters, boolean>>({type: false, dating: false, materials: false, origin: false})
 	const [results, setResults] = useState<StoryElement[]>(searchDB(type, search));
 	const [selected, setSelected] = useState<string[]>([]);
 
 	const typeTree = useTree();
 	const datingTree = useTree();
 	const materialTree = useTree();
-	const areaTree = useTree();
+	const originTree = useTree();
 
-	const trees = useMemo(() => [typeTree, datingTree, materialTree, areaTree], []);
+	const trees = useMemo(() => [typeTree, datingTree, materialTree, originTree], []);
 
-	const typeOptions = useMemo(() => taxonomyToTree(taxonomies[StoryElementTypeDictionary.eng.plural[type]]), [type]);
+	const typeOptions = useMemo(() => taxonomyToTree(taxonomies[StoryElementTypeDictionary.eng.plural[type] as keyof Taxonomies]), [type]);
 	const datingOptions = useMemo(() => taxonomyToTree(taxonomies.periods), []);
 	const materialOptions = useMemo(() => taxonomyToTree(taxonomies.materials), []);
-	const areaOptions = useMemo(() => taxonomyToTree(taxonomies.areas), []);
+	const originOptions = useMemo(() => taxonomyToTree(taxonomies.areas), []);
 	
 	const handleModalClose = useCallback(() => {
 		setType(props.elementType);
 		setSearch("");
 		setSelected([]);
-		setFilters({type: [], dating: [], material: [], area: []});
-		setUpdateFilters({type: false, dating: false, material: false, area: false});
+		setFilters({type: [], dating: [], materials: [], origin: []});
+		setUpdateFilters({type: false, dating: false, materials: false, origin: false});
 		trees.forEach(tree => {
 			tree.setCheckedState([]);
 			tree.setSelectedState([]);
@@ -85,12 +82,13 @@ function DBBrowserModal(props: {
 		}
 		setResults(results.filter((element, idx) => {
 			if (idx >= maxResultsCount) return false;
-			for (const [key, value] of Object.entries(filters)) {
-				if (element[key] === undefined) continue;
-				if (Array.isArray(element[key])) {
-					return element[key].some(f => value.includes(f));
+			for (const [key, filter] of Object.entries(filters) as [keyof SearchFilters, string[]][]) {
+				if (!Object.keys(element).includes(key)) continue;
+				const value = (element as StoryElement & ObjectElement)[key];
+				if (Array.isArray(value!)) {
+					return value.some(val => filter.includes(val));
 				}
-				return value.includes(element[key]);
+				return filter.includes(value);
 			}
 		}));
 	}, [search, type, filters, props.selectedElements]);
@@ -102,10 +100,10 @@ function DBBrowserModal(props: {
 	useEffect(() => {
 		if (updateFilters.type) setFilters(filters => {return {...filters, type: typeTree.getCheckedNodes().map(status => status.value)}});
 		if (updateFilters.dating) setFilters(filters => {return {...filters, dating: datingTree.getCheckedNodes().map(status => status.value)}});
-		if (updateFilters.material) setFilters(filters => {return {...filters, material: materialTree.getCheckedNodes().map(status => status.value)}});
-		if (updateFilters.area) setFilters(filters => {return {...filters, area: areaTree.getCheckedNodes().map(status => status.value)}});
+		if (updateFilters.materials) setFilters(filters => {return {...filters, materials: materialTree.getCheckedNodes().map(status => status.value)}});
+		if (updateFilters.origin) setFilters(filters => {return {...filters, origin: originTree.getCheckedNodes().map(status => status.value)}});
 		
-		if (Object.values(updateFilters).some(needsUpdate => needsUpdate)) setUpdateFilters({type: false, dating: false, material: false, area: false});
+		if (Object.values(updateFilters).some(needsUpdate => needsUpdate)) setUpdateFilters({type: false, dating: false, materials: false, origin: false});
 	}, [updateFilters]);
 
 	return (
@@ -166,7 +164,7 @@ function DBBrowserModal(props: {
 									</Fieldset>}
 								{type !== StoryElementType.character &&
 									<Fieldset legend="Area Geografica">
-										<Tree tree={areaTree} data={areaOptions} renderNode={nodeProps => renderTreeNode(nodeProps, type, () => setUpdateFilters(flags => {return {...flags, area: true}}))}/>
+										<Tree tree={originTree} data={originOptions} renderNode={nodeProps => renderTreeNode(nodeProps, type, () => setUpdateFilters(flags => {return {...flags, area: true}}))}/>
 									</Fieldset>}
 							</Stack>
 						</Grid.Col>
@@ -218,7 +216,7 @@ function DBBrowserModal(props: {
  * @param onClickOverride optional override to `nodeProps.elementProps.onClick`
  */
 function renderTreeNode(
-	{node, expanded, hasChildren, elementProps, tree},
+	{node, expanded, hasChildren, elementProps, tree}: RenderTreeNodePayload,
 	type: StoryElementType,
 	onClickOverride?: () => void
 ) {

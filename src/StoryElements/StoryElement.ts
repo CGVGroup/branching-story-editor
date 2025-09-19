@@ -65,6 +65,7 @@ export interface ObjectElement extends StoryElement {
 }
 
 export interface LocationElement extends StoryElement {
+	origin: string;
 	elementType: StoryElementType.location;
 }
 
@@ -95,6 +96,7 @@ export function createNewElement(type: StoryElementType) {
 		
 		case (StoryElementType.location):
 			newElement.name = "Nuovo Luogo";
+			(newElement as LocationElement).origin = "";
 			return newElement as LocationElement;
 	}
 }

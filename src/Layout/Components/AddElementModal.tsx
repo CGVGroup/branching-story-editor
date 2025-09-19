@@ -4,7 +4,7 @@ import { Button, Divider, Group, Modal, Stack, Text, TextInput } from "@mantine/
 import { isNotEmpty, useForm } from "@mantine/form";
 import { UseDisclosureHandlers } from "@mantine/hooks";
 import { TaxonomiesContext } from "../../App.tsx";
-import { taxonomyToTree } from "../../Misc/DB.ts";
+import { Taxonomies, taxonomyToTree } from "../../Misc/DB.ts";
 import TreeSelect from "./TreeSelect.tsx";
 
 /**
@@ -21,7 +21,7 @@ function ElementModal(props: {
 }) {
 	const taxonomies = useContext(TaxonomiesContext)!;
 
-	const typeOptions = useMemo(() => taxonomyToTree(taxonomies[StoryElementTypeDictionary.eng.plural[props.elementType]])
+	const typeOptions = useMemo(() => taxonomyToTree(taxonomies[StoryElementTypeDictionary.eng.plural[props.elementType] as keyof Taxonomies])
 	, [props.elementType, taxonomies]);
 
 	const datingOptions = useMemo(() => taxonomyToTree(taxonomies.periods), [taxonomies]);
@@ -60,7 +60,7 @@ function ElementModal(props: {
 		return message;
 	}, [props.allElements, props.initialElement]);
 
-	const onSubmit = useCallback(values => {
+	const onSubmit = useCallback((values: any) => {
 		const newElement = props.initialElement ? {...props.initialElement, ...values} : {...createNewElement(props.elementType), ...values};
 		props.onSubmit(newElement);
 		props.handlers.close();

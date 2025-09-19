@@ -5,7 +5,7 @@ import { modals } from "@mantine/modals";
 import Story from "../../StoryElements/Story.ts";
 import Scene, { SceneDetails as SceneDetailsType } from "../../StoryElements/Scene.ts";
 import SceneDetails from "../SceneDetails.tsx";
-import PromptArea from "../PromptArea.tsx";
+import PromptArea from "../Components/PromptArea.tsx";
 import { ChosenModelContext, ChosenPromptContext } from "../../App.tsx";
 // @ts-ignore
 import {ReactComponent as AiPen} from "../../img/ai-pen.svg";

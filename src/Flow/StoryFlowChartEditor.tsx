@@ -78,7 +78,7 @@ function StoryFlowChartEditor (props: {
 			`${storyNodeTypeDictionary[type]} ${maxLabel}`,
 			position
 		);
-		(newNode as Node).selected = true;
+		newNode.selected = true;
 		setNodes(nodes => [...nodes, newNode]);
 	}, [flowRef, nodes, onClickEdit]);
 

@@ -1,9 +1,9 @@
 import { useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { debounce } from 'throttle-debounce';
-import { Avatar, Divider, Fieldset, Group, MultiSelect, Select, SimpleGrid, Stack, Text, Textarea, TextInput, ComboboxItem } from "@mantine/core";
+import { Avatar, Divider, Fieldset, Group, MultiSelect, Select, SimpleGrid, Stack, Text, Textarea, TextInput, ComboboxItem, ComboboxLikeRenderOptionInput } from "@mantine/core";
 import Story from "../StoryElements/Story.ts";
 import { SceneDetails as SceneDetailsType} from "../StoryElements/Scene.ts";
-import { noElementsText, noMatchingElementsText, shortNoElementsText, StoryElementType, StoryElementTypeArray, StoryElementTypeDictionary, StoryElementTypeMentions } from "../StoryElements/StoryElement.ts";
+import { noElementsText, noMatchingElementsText, shortNoElementsText, StoryElementType, StoryElementTypeArray, StoryElementTypeDictionary, StoryElementTypeMentions, ObjectElement, LocationElement } from "../StoryElements/StoryElement.ts";
 import { SceneDetailsEnumsContext } from "../App.tsx";
 
 /**
@@ -39,17 +39,22 @@ function SceneDetails(props: {
 				.map(element => {return {value: element.id, label: element.name}}))
 	, [props.story]);
 	
-	const renderMultiSelectOption = useCallback(({ option }) => {
+	const renderMultiSelectOption = useCallback(({ option }: ComboboxLikeRenderOptionInput<ComboboxItem>) => {
 		const element = props.story.getElement(option.value)!;
 		return ( 
 			<Group gap="sm">
 				<Avatar size={36} radius="xl" />
-				<div>
+				<div style={{textAlign: "left"}}>
 					<Text size="sm" fs={element.resident ? "italic" : undefined}>{element.name}</Text>
 					<Text size="xs" opacity={0.5}>
 						{element.type}
-						{element.type && element.description && " - "}
-						{element.description}
+						{element.elementType === StoryElementType.object && 
+							(element as ObjectElement).materials && ` - ${(element as ObjectElement).materials.join(", ")}` +
+							(element as ObjectElement).origin && ` - ${(element as ObjectElement).origin}`
+						}
+						{element.elementType === StoryElementType.location && 
+							(element as LocationElement).origin && ` - ${(element as LocationElement).origin}`
+						}
 					</Text>
 				</div>
 			</Group>
@@ -118,7 +123,7 @@ function SceneDetails(props: {
 						data={sceneDetailsChoices.tone}
 						clearable/>
 					<Select
-						label="Valore:"
+						label="Valore"
 						placeholder="Nessun Valore"
 						value={value}
 						onChange={value => setValue(value ?? "")}
@@ -153,19 +158,19 @@ function SceneDetails(props: {
 					hidePickedOptions
 					searchable
 					clearable/>
-				<MultiSelect
+				<Select
 					label="Luogo"
-					value={backgroundLocation ? [backgroundLocation] : []}
-					onChange={loc => setBackgroundLocation(loc[loc.length - 1] ?? "")}
+					value={backgroundLocation}
+					onChange={loc => setBackgroundLocation(loc ?? "")}
 					data={allElements[StoryElementType.location]}
 					placeholder={backgroundLocation ? searchPlaceholders[StoryElementType.location] : shortNoElementsText[StoryElementType.location]}
 					renderOption={renderMultiSelectOption}
 					nothingFoundMessage={allElements[StoryElementType.location].length === 0 ? noElementsText[StoryElementType.location] : noMatchingElementsText[StoryElementType.location]}
-					classNames={{pill: StoryElementTypeMentions[StoryElementType.location], option: StoryElementTypeMentions[StoryElementType.location]}}
+					classNames={{option: StoryElementTypeMentions[StoryElementType.location]}}
 					comboboxProps={{withinPortal: false, position: "top"}}
-					hidePickedOptions
 					searchable
-					clearable/>
+					clearable
+					autoSelectOnBlur/>
 			</Stack>
 		</Fieldset>
 	);

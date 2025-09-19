@@ -2,7 +2,7 @@
     "characters": {
         "P001": {
             "name": "Amenhotep III",
-            "catalogueNumber": "numero_catalogo_ME",
+            "catalogueNumber": "123",
             "type": "Faraone",
             "dating": [
                 "XVIII Dinastia"
@@ -16,7 +16,7 @@
         },
         "P002": {
             "name": "Imhotep",
-            "catalogueNumber": "numero_catalogo_ME",
+            "catalogueNumber": "456",
             "type": "Visir",
             "dating": [
                 "III Dinastia"
@@ -32,7 +32,7 @@
     "objects": {
         "M001": {
             "name": "Sarcofago di Meritamon",
-            "catalogueNumber": "numero_catalogo_ME",
+            "catalogueNumber": "789",
             "type": "Sarcofago",
             "materials": [
                 "Ebano",
@@ -52,7 +52,7 @@
         },
         "M002": {
             "name": "Tavolozza dello Scriba Amenemhat",
-            "catalogueNumber": "numero_catalogo_ME",
+            "catalogueNumber": "321",
             "type": "Paletta da Scriba",
             "materials": [
                 "Ebano",
@@ -73,7 +73,7 @@
     "locations": {
         "L001": {
             "name": "Tempio di Hathor a Dendera",
-            "catalogueNumber": "numero_catalogo_ME",
+            "catalogueNumber": "654",
             "type": "Tempio",
             "origin": "Dendera",
             "dating": [
@@ -90,7 +90,7 @@
         },
         "L002": {
             "name": "Mastaba di Kagemni",
-            "catalogueNumber": "numero_catalogo_ME",
+            "catalogueNumber": "987",
             "type": "Mastaba",
             "origin": "Saqqara",
             "dating": [

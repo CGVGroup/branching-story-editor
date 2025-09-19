@@ -78,7 +78,7 @@ export async function getAll() {
 	
 	DB = [{}, {}, {}];
 	for (const type of StoryElementTypeArray) {
-		const elementsOfType = parsedDB[StoryElementTypeDictionary.eng.plural[type]];
+		const elementsOfType = parsedDB[StoryElementTypeDictionary.eng.plural[type] as keyof DBSchema];
 		for (const id of Object.keys(elementsOfType)) {
 			const {models, ...fieldsToKeep} = elementsOfType[id];
 			DB[type][id] = {
@@ -86,7 +86,7 @@ export async function getAll() {
 				id: id,
 				resident: false,
 				elementType: type
-			};
+			} as CharacterElement | ObjectElement | LocationElement;
 		}
 	}
 	return DB;

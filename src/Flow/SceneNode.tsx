@@ -1,9 +1,9 @@
 import { Handle, NodeProps, NodeToolbar, Position, useReactFlow } from "@xyflow/react";
-import { ActionIcon, Button, Flex, Group, Menu, Stack, Textarea } from "@mantine/core";
+import { ActionIcon, Flex, Group, Menu, Stack, Textarea } from "@mantine/core";
 import { isNotEmpty } from "@mantine/form";
 import { useDisclosure } from "@mantine/hooks";
 import DynamicTextField from "../Layout/Components/DynamicTextField.tsx";
-import { changeStoryNodeName, deleteStoryNode, NodeType, SceneNodeType, StoryNode, storyNodeColorArray } from "./StoryNode.tsx";
+import { changeStoryNodeName, checkNodeNameUnique, deleteStoryNode, NodeType, SceneNodeType, StoryNode, storyNodeColorArray } from "./StoryNode.tsx";
 import Scene from "../StoryElements/Scene.ts";
 
 function SceneNode(props: NodeProps<SceneNodeType>) {
@@ -42,7 +42,7 @@ function SceneNode(props: NodeProps<SceneNodeType>) {
 						initialValue={props.data.label}
 						validate={value =>
 							isNotEmpty("Il nome della scena non può essere vuoto")(value) ||
-							(rfInstance.getNodes().some(node => node.data.label === value) ? "Esiste già un nodo con questo nome" : null)}
+							(checkNodeNameUnique(rfInstance, props.id, value as string) ? "Esiste già un nodo con questo nome" : null)}
 						onSubmit={handleSubmitSceneName}
 						locked={locked}
 						lockedHandler={lockedHandler}
