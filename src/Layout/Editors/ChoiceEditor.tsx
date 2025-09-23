@@ -1,12 +1,11 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { getConnectedEdges, Node } from "@xyflow/react";
-import { ActionIcon, ActionIconGroup, Button, Flex, Group, Paper, Stack, TextInput } from "@mantine/core";
+import { ActionIcon, ActionIconGroup, Button, Flex, Group, Paper, Stack } from "@mantine/core";
 import { isNotEmpty } from "@mantine/form";
 import { closestCenter, DndContext, DragEndEvent, PointerSensor, useSensor, useSensors } from "@dnd-kit/core";
 import { arrayMove, SortableContext, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { CSS } from '@dnd-kit/utilities';
 import { restrictToParentElement, restrictToVerticalAxis } from '@dnd-kit/modifiers';
-import { debounce } from "throttle-debounce";
 import Story from "../../StoryElements/Story.tsx";
 import Choice, { ChoiceDetails } from "../../StoryElements/Choice.ts";
 import { NodeType, storyNodeColorArray } from "../../Flow/StoryNode.tsx";
@@ -63,20 +62,18 @@ function ChoiceEditor(props: {
 		});
 	}, [localChoice, props.story, props.nodeId]);
 
-	const handleSave = useCallback(debounce(250, (choice: Choice) => {
-		props.setChoice(choice);
-	}), []);
-
-	useEffect(() => handleSave(localChoice), [handleSave, localChoice]);
+	useEffect(() => {props.setChoice(localChoice)}, [localChoice]);
 
 	return (
 		<Stack gap="md" px="xs">
-			<TextInput
-				defaultValue={localChoice.title}
-				onChange={e => setTitle(e.currentTarget.value)}
-				size="lg"
-				placeholder="Nessun interrogativo"
-				label="Interrogativo"/>
+			<DynamicTextField
+				initialValue={localChoice.title}
+				onSubmit={setTitle}
+				baseProps={{
+					size: "lg",
+					placeholder: "Nessun interrogativo",
+					label: "Interrogativo"
+				}}/>
 			<Stack gap="sm">
 				<DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd} modifiers={[restrictToVerticalAxis, restrictToParentElement]}>
 					<SortableContext items={localChoice.choices.map(choice => choice.text)} strategy={verticalListSortingStrategy}>
