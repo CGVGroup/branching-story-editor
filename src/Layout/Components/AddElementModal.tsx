@@ -86,6 +86,7 @@ function ElementModal(props: {
 			onExitTransitionEnd={() => {props.onExited(); form.reset()}}
 			title={<Text size="lg">{title}</Text>}
 			keepMounted={false}
+			closeOnClickOutside={false}
 			zIndex={500}>
 			<form onSubmit={form.onSubmit(values => onSubmit(values))}>
 				<Stack gap="xs">

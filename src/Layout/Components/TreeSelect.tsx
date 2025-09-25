@@ -1,6 +1,6 @@
 import { Combobox, InputBase, Input, Tree, Group, useCombobox, TreeNodeData, InputBaseProps, FloatingPosition, PillsInput, Pill } from "@mantine/core";
 import { UseFormReturnType } from "@mantine/form";
-import { useUncontrolled } from "@mantine/hooks";
+import { UseDisclosureHandlers, useUncontrolled } from "@mantine/hooks";
 import { useCallback, useMemo } from "react";
 
 /**
@@ -21,6 +21,7 @@ function TreeSelect(props: {
 	inputComponentProps: InputBaseProps,
 	placeholder?: string,
 	position?: FloatingPosition,
+	openHandlers? :UseDisclosureHandlers
 }) {
 	const combobox = useCombobox({
 		onDropdownClose: () => combobox.resetSelectedOption(),
@@ -30,44 +31,42 @@ function TreeSelect(props: {
 	const formInputProps = useMemo(() => props.form.getInputProps(props.formKey)
 	, [props.form, props.formKey]);
 
-	const [_value, handleChange] = useUncontrolled({
+	const [_value, handleChange] = useUncontrolled<string | string[]>({
 		defaultValue: formInputProps.defaultValue,
 		onChange: formInputProps.onChange
 	});
 
-	const handleValueSelect = useCallback((val: string) =>
-		handleChange(_value.includes(val) ? _value.filter(v => v !== val) : [..._value, val])
+	const handleSingleValueSelect = useCallback((val: string) => {
+		handleChange(val);
+		combobox.closeDropdown();
+	}, [combobox]);
+
+	const handleMultiValueSelect = useCallback((val: string) =>
+		handleChange(_value.includes(val) ? (_value as string[]).filter(v => v !== val) : [..._value, val])
 	, [_value]);
 
 	const handleValueRemove = useCallback((val: string) =>
-		handleChange(_value.filter(v => v !== val))
+		handleChange((_value as string[]).filter(v => v !== val))
 	, [_value]);
 
 	return(
 		<Combobox
 			store={combobox}
-			onOptionSubmit={props.isMulti ?
-				handleValueSelect
-			:
-				val => {
-					handleChange(val);
-					combobox.closeDropdown();
-				}
-			}
+			onOptionSubmit={props.isMulti ? handleMultiValueSelect : handleSingleValueSelect}
 			position={props.position}>
 			<Combobox.Target>
 				{props.isMulti ?
 					<PillsInput
 						pointer
-						rightSection={<Combobox.Chevron/>}
-						rightSectionPointerEvents="none"
+						rightSection={_value.length ? <Combobox.ClearButton onClear={() => handleChange([])}/> : <Combobox.Chevron/>}
+						rightSectionPointerEvents={_value.length ? undefined : "none"}
 						onClick={() => combobox.toggleDropdown()}
 						{...props.inputComponentProps}
 						{...formInputProps}>
 						<Pill.Group>
 							{_value.length > 0 ? 
-								_value.map(value =>
-									<Pill key={value} withRemoveButton onRemove={() => {handleValueRemove(value)}}>
+								(_value as string[]).map(value =>
+									<Pill key={value} withRemoveButton onRemove={() => handleValueRemove(value)}>
 										{value}
 									</Pill>)
 							:
@@ -80,8 +79,8 @@ function TreeSelect(props: {
 						component="button"
 						type="button"
 						pointer
-						rightSection={<Combobox.Chevron/>}
-						rightSectionPointerEvents="none"
+						rightSection={_value.length ? <Combobox.ClearButton onClear={() => handleChange("")}/> : <Combobox.Chevron/>}
+						rightSectionPointerEvents={_value.length ? undefined : "none"}
 						onClick={() => combobox.toggleDropdown()}
 						{...props.inputComponentProps}
 						{...formInputProps}>
@@ -102,15 +101,16 @@ function TreeSelect(props: {
 											style={{ display: "inline-block", transform: expanded ? 'rotate(180deg)' : 'rotate(0deg)' }}/>
 									</Group>)
 								:
-									props.isMulti ?
-										<Combobox.Option value={node.value} {...elementProps} active={_value.includes(node.value)}>
-											<Group gap={5}>
-												{_value.includes(node.value) && <i className="bi bi-check"/>}
-												{node.label}
-											</Group>
-										</Combobox.Option>
-									:
-										<Combobox.Option value={node.value} {...elementProps}>{node.label}</Combobox.Option>
+									<Combobox.Option
+										value={node.value}
+										active={props.isMulti ? _value.includes(node.value) : _value === node.value}
+										{...elementProps}>
+										<Group gap={5}>
+											{(props.isMulti ? _value.includes(node.value) : _value === node.value) &&
+												<i className="bi bi-check"/>}
+											{node.label}
+										</Group>
+									</Combobox.Option>
 							);
 						}}/>
 				</Combobox.Options>

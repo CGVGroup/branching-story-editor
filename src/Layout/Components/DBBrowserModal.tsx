@@ -1,6 +1,6 @@
 import { RefObject, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { UseDisclosureHandlers } from "@mantine/hooks";
-import { Affix, Avatar, Button, Checkbox, CloseButton, Combobox, Divider, Fieldset, Grid, Group, Modal, RenderTreeNodePayload, SegmentedControl, Stack, Text, TextInput, Tree, useTree } from "@mantine/core";
+import { Affix, Avatar, Button, Checkbox, CloseButton, Combobox, Divider, Fieldset, Grid, Group, Modal, RenderTreeNodePayload, ScrollArea, SegmentedControl, Stack, Text, TextInput, Tree, useTree } from "@mantine/core";
 import { ObjectElement, StoryElement, StoryElementColorArray, StoryElementType, StoryElementTypeArray, StoryElementTypeDictionary, StoryElementTypeMentions } from "../../StoryElements/StoryElement.ts";
 import { getElementFromDB, searchDB, Taxonomies, taxonomyToTree } from "../../Misc/DB.ts";
 import { TaxonomiesContext } from "../../App.tsx";
@@ -107,13 +107,15 @@ function DBBrowserModal(props: {
 	}, [updateFilters]);
 
 	return (
-		<Modal.Root opened={props.show}
+		<Modal.Root
+			opened={props.show}
 			onClose={props.handlers.close}
 			size="xl"
-			onExitTransitionEnd={handleModalClose}>
+			onExitTransitionEnd={handleModalClose}
+			closeOnClickOutside={false}>
 			<Modal.Overlay />
-			<Modal.Content p="sm" pt={0} ref={ref}>
-				<Combobox onOptionSubmit={handleValueSelect} classNames={{option: StoryElementTypeMentions[type]}}>
+			<Combobox onOptionSubmit={handleValueSelect} classNames={{option: StoryElementTypeMentions[type]}}>
+				<Modal.Content p="sm" pt={0} ref={ref}>
 					<Modal.Header p={0} pt={"sm"}>
 						<Stack gap="xs" w="100%">
 							<Group>
@@ -184,27 +186,27 @@ function DBBrowserModal(props: {
 							</Combobox.Options>
 						</Grid.Col>
 					</Grid>
-				</Combobox>
-				<Affix withinPortal={false} style={{position: "sticky", pointerEvents: "none"}}>
-					<Group justify="flex-end">
-						<Button
-							color="gray"
-							variant="light"
-							onClick={props.handlers.close}
-							style={{pointerEvents: "auto"}}>
-							Annulla
-						</Button>
-						<Button
-							color={StoryElementColorArray[type]}
-							type="submit"
-							disabled={selected.length === 0}
-							onClick={onSubmit}
-							style={{pointerEvents: "auto"}}>
-							Aggiungi
-						</Button>
-					</Group>
-				</Affix>
-			</Modal.Content>
+					<Affix withinPortal={false} style={{position: "sticky", pointerEvents: "none"}}>
+						<Group justify="flex-end" color="transparent">
+							<Button
+								color="gray"
+								variant="light"
+								onClick={props.handlers.close}
+								style={{pointerEvents: "auto"}}>
+								Annulla
+							</Button>
+							<Button
+								color={StoryElementColorArray[type]}
+								type="submit"
+								disabled={selected.length === 0}
+								onClick={onSubmit}
+								style={{pointerEvents: "auto"}}>
+								Aggiungi
+							</Button>
+						</Group>
+					</Affix>
+				</Modal.Content>
+			</Combobox>
 		</Modal.Root>
 	);
 }
