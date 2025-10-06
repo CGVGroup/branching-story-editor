@@ -175,7 +175,7 @@ function StoryEditor(props: {
 								<ActionIcon
 									size="xl"
 									variant="light"
-									title={"Genera tutti i testi"}
+									title="Genera tutti i testi"
 									onClick={onRequestAllTexts}
 									loaderProps={{size: "xs"}}
 									loading={loading}>

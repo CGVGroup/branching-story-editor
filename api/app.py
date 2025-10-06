@@ -102,7 +102,7 @@ def send_to_LLM(data_param: dict, config_name: str, prompt_name: str) -> str:
 # Flask Routes
 
 @app.route('/generate/<config>/<prompt>', methods = ["POST"])
-def send(config, prompt):
+def send(config: str, prompt: str):
     try:
         response = send_to_LLM(request.get_json(), config, prompt)
         return jsonify(response)

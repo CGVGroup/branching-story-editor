@@ -86,42 +86,27 @@ function App() {
 	
 	// Fetch elements from DB
 	useEffect(() => {
-		getAll().then(dbObject => {
-			setDb(dbObject);
-			//setLoaded(loaded => {return {...loaded, db: true}});
-		});
+		getAll().then(dbObject => setDb(dbObject));
 	}, []);
 
 	// Fetch model names from backend
 	useEffect(() => {
-		getModels().then(modelList => {
-			setModels(modelList);
-			//setLoaded(loaded => {return {...loaded, models: true}});
-		});
+		getModels().then(modelList => setModels(modelList));
 	}, []);
 
 	// Fetch prompt names from backend
 	useEffect(() => {
-		getPrompts().then(promptList => {
-			setPrompts(promptList);
-			//setLoaded(loaded => {return {...loaded, prompts: true}});
-		});
+		getPrompts().then(promptList => setPrompts(promptList));
 	}, []);
 	
 	// Fetch scene details enums from backend
 	useEffect(() => {
-		getEnums().then(enums => {
-			setEnums(enums as SceneDetailsEnums);
-			//setLoaded(loaded => {return {...loaded, enums: true}});
-		});
+		getEnums().then(enums => setEnums(enums as SceneDetailsEnums));
 	}, []);
 
 	// Fetch taxonomies from backend
 	useEffect(() => {
-		getTaxonomies().then(taxonomies => {
-			setTaxonomies(taxonomies as Taxonomies);
-			//setLoaded(loaded => {return {...loaded, taxonomies: true}});
-		});
+		getTaxonomies().then(taxonomies => setTaxonomies(taxonomies as Taxonomies));
 	}, []);
 
 	useEffect(() => {
@@ -132,7 +117,7 @@ function App() {
 			models !== null &&
 			prompts !== null)
 			setLoading(false);
-	}, [stories, db, taxonomies, enums, models, prompts])
+	}, [stories, db, taxonomies, enums, models, prompts]);
 
 	return (
 		<MantineProvider>

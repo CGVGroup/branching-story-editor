@@ -22,5 +22,5 @@ export async function sendToLLM(payload: object, model: string, prompt: string):
 		};
 		xhr.onerror = () => reject(new Error("Errore nella richiesta all'LLM"));
 		xhr.send(JSON.stringify(payload));
-	})
+	});
 }

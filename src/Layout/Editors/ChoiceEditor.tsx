@@ -25,7 +25,7 @@ function ChoiceEditor(props: {
 	const sensors = useSensors(useSensor(PointerSensor, {activationConstraint: {distance: 5}}));
 
 	const addNewChoice = useCallback((index: number) => {
-		setLocalChoice(choice => choice.cloneAndAddChoice({text: `Scelta ${index + 1}`, wrong: false}));
+		setLocalChoice(choice => choice.cloneAndAddChoice({text: `Opzione ${index + 1}`, wrong: false}));
 	}, []);
 
 	const deleteChoice = useCallback((index: number) => {
@@ -97,7 +97,7 @@ function ChoiceEditor(props: {
 					color={storyNodeColorArray[NodeType.choice]}
 					variant="subtle"
 					onClick={() => addNewChoice(localChoice.choices.length)}
-					title="Aggiungi Scelta">
+					title="Aggiungi Opzione">
 					<i className="bi bi-plus-square-dotted" style={{display: "block", fontSize:"xxx-large"}} />
 				</Button>
 			}
@@ -144,12 +144,12 @@ function DraggableChoice(props: {
 					initialValue={props.choice.text}
 					onSubmit={props.setChoiceText}
 					validate={value =>
-						isNotEmpty("Il testo della scelta non può essere vuoto")(value) ||
+						isNotEmpty("Il testo dell'opzione non può essere vuoto")(value) ||
 						(props.choices.some((choice, idx) => choice.text === value && idx !== props.choiceIndex) ? "Esiste già una scelta con questo testo" : null)}
 					baseProps={{
 						size: "md",
 						disabled: props.readOnly,
-						label: `Scelta ${props.choiceIndex + 1}`,
+						label: `Opzione ${props.choiceIndex + 1}`,
 						style: {flexGrow: 1}
 					}}
 				/>
