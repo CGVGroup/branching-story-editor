@@ -1,13 +1,14 @@
 import { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import {ActionIcon, AppShell, Fieldset, FileButton, Flex, Grid, Group, NavLink, Paper, ScrollArea, Select, SimpleGrid, Stack, Text, Textarea, TextInput, Title} from "@mantine/core";
+import {ActionIcon, AppShell, Fieldset, FileButton, Flex, Group, Input, NavLink, Paper, ScrollArea, Select, SimpleGrid, Stack, Text, Textarea, TextInput, Title} from "@mantine/core";
 import {useDisclosure} from "@mantine/hooks";
 import { modals } from '@mantine/modals'; 
 import Story from "../StoryElements/Story.ts";
 import StoryFlowChartViewer from "../Flow/StoryFlowChartViewer.tsx";
 import StoryElements from "./StoryElements.tsx";
-import { ChosenModelContext, ChosenPromptContext, ModelListContext, PromptListContext } from "../App.tsx";
+import { ChosenModelContext, ChosenPromptContext, ModelListContext, PromptListContext, UsernameContext } from "../App.tsx";
 import classes from "./GrowColumn.module.css"
+import saveToDisk from "../Misc/SaveToDisk.ts";
 
 /**
  * Displays saved stories, along with their details, and allows creating or uploading new ones.
@@ -26,6 +27,7 @@ function StoriesDashboard(props: {
 	const promptNamesContext = useContext(PromptListContext);
 	const [chosenModel, setChosenModel] = useContext(ChosenModelContext)!;
 	const [chosenPrompt, setChosenPrompt] = useContext(ChosenPromptContext)!;
+	const [username, setUsername] = useContext(UsernameContext)!;
 
 	const [selectedId, setSelectedId] = useState<string | null>(props.lastOpenStory);
 	const [fileUploading, fileUploadingHandler] = useDisclosure(false);
@@ -65,7 +67,16 @@ function StoriesDashboard(props: {
 
 	const onClickCopy = useCallback((story: Story) => {
 		addStory(story.cloneAndSetTitle(`${story.title} (Copia)`));
-	}, [addStory])
+	}, [addStory]);
+
+	const onClickDownload = useCallback((story: Story) => {
+		saveToDisk(story.toJSON(), `${story.title}.story`, "application/json");
+	}, []);
+
+	const onClickLogout = useCallback(() => {
+		setUsername("");
+		navigate("/");
+	}, []);
 
 	const openDeleteModal = useCallback((story: Story, id: string) => {
 		modals.openConfirmModal({
@@ -96,7 +107,7 @@ function StoriesDashboard(props: {
 			styles={{ main: {display: "flex"} }}>
 			<AppShell.Header p="xs">
 				<Title order={1} ta="center" h="100%">Story Editor</Title>
-				<SimpleGrid pos="absolute" right="0" top="0" w="20%" cols={2}>
+				<SimpleGrid pos="absolute" right="0" top="0" w="33%" cols={3}>
 					<Select
 						label="LLM"
 						allowDeselect={false}
@@ -109,6 +120,14 @@ function StoriesDashboard(props: {
 						defaultValue={chosenPrompt}
 						onChange={choice => setChosenPrompt(choice!)}
 						data={promptNamesContext!}/>
+						<Input.Wrapper label="Login effettuato">
+							<Group justify="center" wrap="nowrap">
+								<Text style={{overflow: "hidden", textOverflow:"ellipsis"}}>{username}</Text>
+								<ActionIcon color="red" variant="light" onClick={onClickLogout} title="Esci">
+									<i className="bi bi-box-arrow-right" />
+								</ActionIcon>
+							</Group>
+						</Input.Wrapper>
 				</SimpleGrid>
 			</AppShell.Header>
 			<AppShell.Navbar p="md">
@@ -166,6 +185,9 @@ function StoriesDashboard(props: {
 								<ActionIcon size="lg" variant="light" onClick={() => onClickCopy(selectedStory)} title="Duplica">
 									<i className="bi bi-copy" aria-label="duplicate"/> 
 								</ActionIcon>
+								<ActionIcon size="lg" variant="light" onClick={() => onClickDownload(selectedStory)} title="Scarica">
+									<i className="bi bi-download" aria-label="download" />
+								</ActionIcon>
 								<ActionIcon size="lg" variant="filled" onClick={() => onClickEdit(selectedId)} title="Modifica">
 									<i className="bi bi-pencil-square" aria-label="edit"/>
 								</ActionIcon>
@@ -221,7 +243,6 @@ function StoriesDashboard(props: {
 							justifyContent:"center"}}>
 							<Text size="xl" pb={100}>Crea o seleziona una Storia</Text>
 						</div>
-						
 					</Flex>
 				}
 			</AppShell.Main>

@@ -2,6 +2,7 @@ import { createContext } from "react";
 import { TreeNodeData } from "@mantine/core";
 import { CharacterElement, ObjectElement, LocationElement, StoryElementType, StoryElement, StoryElementTypeDictionary, StoryElementTypeArray } from "../StoryElements/StoryElement.ts";
 import { SceneDetails } from "../StoryElements/Scene.ts"
+import Story, { SerializedStory } from "../StoryElements/Story.ts";
 
 /**
  * Utility type to keep track of the differences between {@link DBSchema backend} and {@link DBType frontend} DBs.
@@ -64,6 +65,7 @@ export const MODELS_URL = "/models";
 export const PROMPTS_URL = "/prompts";
 export const ENUMS_URL = "/enums";
 export const TAXONOMIES_URL = "/taxonomies";
+export const STORIES_URL = "/stories";
 
 /**
  * If not yet initialized, fetches the DB from the backend, initializes the {@link DB DB object} and returns it.
@@ -146,6 +148,63 @@ export async function getTaxonomies(): Promise<Taxonomies> {
 	}
 	const taxonomies = await response.json() as Taxonomies;
 	return taxonomies;
+}
+
+export async function getStories(username: string): Promise<Map<string, Story>> {
+	const response = await fetch(`${STORIES_URL}/${username}`);
+	if (!response.ok) {
+		throw Error(`Could not fetch stories for ${username}: ${response.status}`);
+	}
+	const parsedStories = await response.json() as [string, object][];
+	return new Map(parsedStories.map(([id, story]) => [id, Story.deserialize(story as SerializedStory)]));
+}
+
+export async function saveStory(username: string, id: string, story: object, serializedStory: object): Promise<string> {
+	return new Promise((resolve, reject) => {
+		const xhr = new XMLHttpRequest();
+		xhr.open("POST", "/save", true);
+		xhr.setRequestHeader("Content-Type", "application/json");
+		xhr.onreadystatechange = () => {
+			if (xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200) {
+				resolve("La storia è stata salvata.");
+			}
+			if (xhr.status !== 200) {
+				console.error(xhr.responseText)
+				reject(new Error(`Errore nel salvataggio: ${xhr.status} - ${xhr.statusText}`))
+			}
+		};
+		xhr.onerror = () => reject(new Error("Errore nel salvataggio"));
+		const payload = {
+			username: username,
+			id: id,
+			story: story,
+			serialized_story: serializedStory
+		};
+		xhr.send(JSON.stringify(payload));
+	});
+}
+
+export async function deleteStory(username: string, id: string) {
+	return new Promise((resolve, reject) => {
+		const xhr = new XMLHttpRequest();
+		xhr.open("POST", "/delete", true);
+		xhr.setRequestHeader("Content-Type", "application/json");
+		xhr.onreadystatechange = () => {
+			if (xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200) {
+				resolve("La storia è stata cancellata.");
+			}
+			if (xhr.status !== 200) {
+				console.error(xhr.responseText)
+				reject(new Error(`Errore nella cancellazione: ${xhr.status} - ${xhr.statusText}`))
+			}
+		};
+		xhr.onerror = () => reject(new Error("Errore nella cancellazione"));
+		const payload = {
+			username: username,
+			id: id,
+		};
+		xhr.send(JSON.stringify(payload));
+	})
 }
 
 /**

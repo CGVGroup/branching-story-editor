@@ -1,6 +1,5 @@
 import { useCallback, useContext, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router";
-import { debounce } from "throttle-debounce";
 import { Node } from "@xyflow/react";
 import { ActionIcon, Anchor, AppShell, Center, CloseButton, Grid, Tabs, Text, TextInput } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
@@ -17,7 +16,6 @@ import InfoEditor from "./InfoEditor.tsx";
 import StoryTexts from "../StoryTexts.tsx";
 import { NodeType, storyNodeClassNames, storyNodeColorArray } from "../../Flow/StoryNode.tsx";
 import { ChosenModelContext, ChosenPromptContext } from "../../App.tsx";
-import saveToDisk from "../../Misc/SaveToDisk.ts";
 // @ts-ignore
 import {ReactComponent as AiPen} from "../../img/ai-pen.svg";
 import classes from "../GrowColumn.module.css";
@@ -37,6 +35,7 @@ function StoryEditor(props: {
 	const [localStory, setLocalStory] = useState(props.stories.get(id!)?.clone() ?? new Story());
 	const [openNodes, setOpenNodes] = useState<string[]>([]);
 	const [currentTab, setCurrentTab] = useState<string>(defaultTab);
+	const [dirty, setDirty] = useState(false);
 
 	const [sideTab, {toggle: toggleSideTab}] = useDisclosure(true);
 
@@ -133,14 +132,32 @@ function StoryEditor(props: {
 		})
 	}, [onConfirmGenerateAll]);
 	
-	const handleSave = useCallback(debounce(250, (id: string, localStory: Story) => {
+	const handleSave = useCallback((id: string, localStory: Story) => {
 		props.setStory(id, localStory);
-	}), []);
+		setDirty(false);
+	}, []);
+
+	const onClickHome = useCallback(() => {
+		if (!dirty || window.confirm("Sono presenti modifiche non salvate.\nUscire da questa storia?")) {
+			navigate("/stories");
+		}
+	}, [dirty]);
 
 	// Keeps page title updated with story title
-	useEffect(() => {document.title = localStory.title}, [localStory.title]);
+	useEffect(() => {document.title = `${localStory.title}${dirty ? " *" : ""}`}, [localStory.title, dirty]);
 
-	useEffect(() => handleSave(id!, localStory), [handleSave, id, localStory]);
+	// Sets dirty upon change to localStory
+	useEffect(() => {if (!dirty) setDirty(true)}, [localStory])
+
+	// Triggers pop-up if dirty is set
+	useEffect(() => {
+		const onBeforeUnload = (e: BeforeUnloadEvent) => {
+			if (dirty) e.preventDefault(); // Triggers the pop-up
+		}
+		window.addEventListener('beforeunload', onBeforeUnload);
+		return () => window.removeEventListener('beforeunload', onBeforeUnload);
+	}, [dirty]);
+			
 
 	return (
 		<AppShell
@@ -155,15 +172,16 @@ function StoryEditor(props: {
 								<ActionIcon
 									size="xl"
 									variant="light"
-									onClick={() => navigate("/stories")} title="Torna a tutte le storie">
+									title="Torna a tutte le storie"
+									onClick={onClickHome}>
 									<i className="bi bi-house" aria-label="home" />
 								</ActionIcon>
 								<ActionIcon
 									size="xl"
 									variant="light"
-									onClick={() => saveToDisk(localStory.toJSON(), `${localStory.title}.story`, "application/json")} title="Scarica"
-									/*onClick={() => console.log(localStory.smartSerialize())} title="Scarica"*/>
-									<i className="bi bi-download" aria-label="download" />
+									title="Salva"
+									onClick={() => handleSave(id!, localStory)}>
+										<i className={dirty ? "bi bi-floppy-fill" : "bi bi-floppy"} aria-label="save" />
 								</ActionIcon>
 								<ActionIcon
 									size="xl"

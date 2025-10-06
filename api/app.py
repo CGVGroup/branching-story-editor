@@ -23,6 +23,8 @@ TAXONOMIES_PATH = "./taxonomies.json"
 DB_PATH = "./db.json"
 DB = None
 
+SAVED_STORIES_PATH = "./saved_stories.json"
+
 def initial_check() -> None:
     assert os.path.isdir(CONFIG_PATH), f"{CONFIG_PATH} is not a directory"
     assert os.path.isdir(PROMPT_PATH), f"{PROMPT_PATH} is not a directory"
@@ -33,6 +35,7 @@ def initial_check() -> None:
     assert os.path.isfile(SCENE_ENUMS_PATH), f"{SCENE_ENUMS_PATH} is not a file"
     assert os.path.isfile(TAXONOMIES_PATH), f"{TAXONOMIES_PATH} is not a file"
     assert os.path.isfile(DB_PATH), f"{DB_PATH} is not a file"
+    assert os.path.isfile(SAVED_STORIES_PATH), f"{SAVED_STORIES_PATH} is not a file"
 
 def read_config(config_name: str) -> dict:
     """If it exists, loads the Model configuration file with the given name, else loads default."""
@@ -64,6 +67,16 @@ def get_from_folder(folder_path: str) -> list[str]:
     folder = Path(folder_path)
     file_names = [file.stem for file in folder.iterdir() if file.is_file() and file.name.endswith(".yaml")]
     return file_names
+
+def get_stories(username: str | None = None, serialized = False):
+    if username == None:
+        with (open(SAVED_STORIES_PATH, "r") as fp):
+            all_stories = json.load(fp)
+        return jsonify([[{username: {"id": id, "story": username[id]['serialized_story' if serialized else 'story']}}] for username in all_stories for id in username])
+    else:
+        with (open(SAVED_STORIES_PATH, "r") as fp):
+            user_stories = json.load(fp).get(username, {})
+        return jsonify([[id, user_stories[id]['serialized_story' if serialized else 'story']] for id in user_stories])
 
 def send_to_LLM(data_param: dict, config_name: str, prompt_name: str) -> str:
     """Reads config and prompt files, fills the `data` dictionary accordingly,
@@ -140,6 +153,65 @@ def get_taxonomies():
     with (open(TAXONOMIES_PATH) as fp):
         taxonomies = json.load(fp)
     return taxonomies
+
+@app.route('/stories', methods = ['GET'])
+def get_all_stories():
+    return get_stories()
+
+@app.route('/stories/<username>', methods = ['GET'])
+def get_users_stories(username: str):
+    return get_stories(username=username)
+
+@app.route('/serialized-stories', methods = ['GET'])
+def get_all_serialized_stories():
+    return get_stories(serialized=True)
+
+@app.route('/serialized-stories/<username>', methods = ['GET'])
+def get_users_serialized_stories(username: str):
+    return get_stories(username=username, serialized=True)
+
+@app.route('/save', methods = ['POST'])
+def save_story():
+    payload = request.get_json()
+    username = payload.get("username", None)
+    id = payload.get("id", None)
+    story = payload.get("story", None)
+    serialized_story = payload.get("serialized_story", None)
+    if not username or not id or not story or not serialized_story:
+        return "Payload Error", 400
+    
+    with (open(SAVED_STORIES_PATH, "r") as fp):
+        saved_stories = json.load(fp)
+
+    if username not in saved_stories:
+        saved_stories[username] = {}
+    if id not in saved_stories[username]:
+        saved_stories[username][id] = {}
+    
+    saved_stories[username][id]["story"] = story
+    saved_stories[username][id]["serialized_story"] = serialized_story
+    
+    with (open(SAVED_STORIES_PATH, "w") as fp):
+        json.dump(saved_stories, fp)
+    return "Saved"
+
+@app.route('/delete', methods = ['POST'])
+def delete_story():
+    payload = request.get_json()
+    username = payload.get("username", None)
+    id = payload.get("id", None)
+    if not username or not id:
+        return "Payload Error", 400
+    
+    with (open(SAVED_STORIES_PATH, "r") as fp):
+        saved_stories = json.load(fp)
+    
+    if username in saved_stories and id in saved_stories[username]:
+        saved_stories[username].pop(id)
+    
+    with (open(SAVED_STORIES_PATH, "w") as fp):
+        json.dump(saved_stories, fp)
+    return "Deleted"
 
 if __name__ == '__main__':
     initial_check()
