@@ -69,7 +69,8 @@ export interface LocationElement extends StoryElement {
 	elementType: StoryElementType.location;
 }
 
-export type SmartSerializedStoryElement = {elementType: string} & Omit<CharacterElement | ObjectElement | LocationElement, "elementType" | "resident">;
+export type SmartSerializedStoryElement = {elementType: string} &
+	Omit<CharacterElement | ObjectElement | LocationElement, "elementType" | "resident" | "cover" | "catalogueNumber">;
 
 export function createNewElement(type: StoryElementType) {
 	const newElement: StoryElement = {
@@ -107,6 +108,6 @@ export function createNewElement(type: StoryElementType) {
  * - {@link StoryElement.elementType `elementType`} is replaced with its corresponding string
  */
 export function smartSerializeStoryElement(element: StoryElement): SmartSerializedStoryElement {
-	const {resident, elementType, ...filtered} = element;
+	const {resident, elementType, cover, catalogueNumber, ...filtered} = element;
 	return {elementType: StoryElementTypeDictionary.eng.singular[element.elementType], ...filtered};
 }

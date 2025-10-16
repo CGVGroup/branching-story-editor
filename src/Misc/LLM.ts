@@ -15,12 +15,11 @@ export async function sendToLLM(payload: object, model: string, prompt: string):
 			if (xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200) {
 				resolve(xhr.responseText);
 			}
-			if (xhr.status !== 200) {
-				console.error(xhr.responseText)
-				reject(new Error(`Risposta dall'LLM: ${xhr.status} - ${xhr.statusText}`))
+			if (xhr.readyState === XMLHttpRequest.DONE && xhr.status !== 200) {
+				reject(`Risposta dal server: ${xhr.statusText} - ${xhr.responseText}`)
 			}
 		};
-		xhr.onerror = () => reject(new Error("Errore nella richiesta all'LLM"));
+		xhr.onerror = () => reject("Errore di comunicazione con il server");
 		xhr.send(JSON.stringify(payload));
 	});
 }

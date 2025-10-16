@@ -1,4 +1,4 @@
-import React, { useCallback, useContext, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { debounce } from 'throttle-debounce';
 import { ActionIcon, Box, Fieldset, Grid, LoadingOverlay, Menu, SimpleGrid, Stack, Text, Textarea } from "@mantine/core";
 import { modals } from "@mantine/modals";
@@ -6,26 +6,20 @@ import Story from "../../StoryElements/Story.ts";
 import Scene, { SceneDetails as SceneDetailsType } from "../../StoryElements/Scene.ts";
 import SceneDetails from "../SceneDetails.tsx";
 import PromptArea from "../Components/PromptArea.tsx";
-import { ChosenModelContext, ChosenPromptContext } from "../../App.tsx";
 // @ts-ignore
 import {ReactComponent as AiPen} from "../../img/ai-pen.svg";
 import classes from "../GrowColumn.module.css"
-import GeneratingTextsDialog, { TextsLoadingInfo } from "../Components/GeneratingTextsDialog.tsx";
 
 function SceneEditor(props: {
 	story: Story,
 	setStory: React.Dispatch<React.SetStateAction<Story>>,
-	nodeId: string,
 	scene: Scene,
 	setScene: (newScene: Scene) => void,
+	sendToLLM: (alsoFollowing?: boolean) => Promise<void>,
 }) {
 	const [localScene, setLocalScene] = useState(Scene.from(props.scene));
 	const [loading, setLoading] = useState(false);
-	const [currentLoadingInfo, setCurrentLoadingInfo] = useState<TextsLoadingInfo>({current: 0, total: 0, currentScene: ""});
 	
-	const [chosenModel] = useContext(ChosenModelContext)!;
-	const [chosenPrompt] = useContext(ChosenPromptContext)!;
-
 	const handleEditDetails = useCallback((newDetails: SceneDetailsType) => {
 		setLocalScene(scene => scene.cloneAndSetDetails(newDetails));
 	}, []);
@@ -38,15 +32,6 @@ function SceneEditor(props: {
 		setLocalScene(scene => scene.cloneAndPushFullText(newText));
 	}, []);
 
-	const onSendToLLM = useCallback(async () => {
-		setLoading(true);
-		const sceneText = await props.story.sendSceneToLLM(props.nodeId, chosenModel, chosenPrompt)
-		if (sceneText) {
-			setLocalScene(scene => scene.cloneAndPushFullText(sceneText));
-		}
-		setLoading(false);
-	}, []);
-
 	const onUndoButton = useCallback(() => {
 		setLocalScene(scene => scene.cloneAndUndo());
 	}, []);
@@ -55,37 +40,35 @@ function SceneEditor(props: {
 		setLocalScene(scene => scene.cloneAndRedo());
 	}, []);
 
-	const onRequestNewText = useCallback(() => {
+	const onSendToLLM = useCallback(async (alsoFollowing?: boolean) => {
+		setLoading(true);
+		await props.sendToLLM(alsoFollowing);
+		setLoading(false);
+	}, [props.sendToLLM]);
+	
+	const onRequestNewText = useCallback((alsoFollowing?: boolean) => {
 		modals.openConfirmModal({
-			title: <Text size="lg">Richiedere un altro testo?</Text>,
-			children: (
-				<span>
-					È possibile ritornare alle proposte precedenti e successive con i tasti <i className="bi bi-arrow-90deg-left"/> e <i className="bi bi-arrow-90deg-right"/>.
-				</span>
-			),
+			title: <Text size="lg">{alsoFollowing ? "Richiedere nuovi testi per questa scena e le successive?" : "Richiedere un altro testo?"}</Text>,
+			children:
+				<Text>
+					È sempre possibile ritornare alle proposte precedenti e successive con i tasti <i className="bi bi-arrow-90deg-left"/> e <i className="bi bi-arrow-90deg-right"/>.
+				</Text>,
 			labels: { confirm: "Sì", cancel: "No" },
-			onConfirm: onSendToLLM
+			onConfirm: async () => onSendToLLM(alsoFollowing)
 		})
 	}, [onSendToLLM]);
-
-	const onRequestGenerateFollowing = useCallback(async () => {
-		setLoading(true);
-		for await(const {done, progress, newStory} of props.story.sendStoryToLLM(chosenModel, chosenPrompt, props.nodeId)) {
-			setCurrentLoadingInfo(progress);
-			if (done) props.setStory(newStory);
-		}
-		setLoading(false);
-	}, [props.story, props.setStory, chosenModel]);
 	
 	const handleSave = useCallback(debounce(250, (scene: Scene) => {
 		props.setScene(scene);
 	}), []);
 	
 	useEffect(() => handleSave(localScene), [handleSave, localScene]);
+	
+	// Keep localScene updated upon change of props.scene
+	useEffect(() => setLocalScene(props.scene), [props.scene]);
 
 	return (
 		<>
-			<GeneratingTextsDialog loading={loading} {...currentLoadingInfo}/>
 			<SimpleGrid cols={2} style={{flexGrow: 1}}>
 				<Fieldset legend="Testo" className={classes.growcol}>
 					<Stack h="100%" gap="xs">
@@ -99,7 +82,7 @@ function SceneEditor(props: {
 							<Grid.Col span={2} className={classes.growcol} style={{justifyContent: "center", alignContent: "center"}}>
 								<Stack gap={0}>
 									<ActionIcon.Group>
-										<ActionIcon onClick={onRequestNewText} loading={loading} title="Invia all'IA">
+										<ActionIcon onClick={() => onRequestNewText()} loading={loading} title="Invia all'IA">
 											<AiPen/>
 										</ActionIcon>
 										<Menu>
@@ -110,7 +93,7 @@ function SceneEditor(props: {
 											</Menu.Target> 
 											<Menu.Dropdown>
 												<Menu.Item
-													onClick={onRequestGenerateFollowing}
+													onClick={() => onRequestNewText(true)}
 													leftSection={<i className="bi bi-layer-forward" style={{display:"inline-block", transform:"rotate(90deg)"}}/>}>
 													Aggiorna anche Scene Successive
 												</Menu.Item>

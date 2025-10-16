@@ -102,14 +102,16 @@ function ElementModal(props: {
 						formKey="type"
 						placeholder="Nessun tipo"
 						inputComponentProps={{label: "Tipo"}}
-						data={typeOptions}/>
+						data={typeOptions}
+						canSelectCategories/>
 					<TreeSelect
 						isMulti
 						form={form}
 						formKey="dating"
 						placeholder="Nessuna datazione"
 						inputComponentProps={{label: "Datazioni"}}
-						data={datingOptions}/>
+						data={datingOptions}
+						canSelectCategories/>
 					<TextInput
 						label="Descrizione"
 						placeholder="Nessuna descrizione"
@@ -124,14 +126,16 @@ function ElementModal(props: {
 								formKey="materials"
 								placeholder="Nessun materiale"
 								inputComponentProps={{label: "Materiali"}}
-								data={materialOptions}/>
+								data={materialOptions}
+								canSelectCategories/>
 							<TreeSelect
 								form={form}
 								formKey="origin"
 								placeholder="Origine"
 								position="top"
 								inputComponentProps={{label: "Origine"}}
-								data={originOptions}/>
+								data={originOptions}
+								canSelectCategories/>
 						</>
 					}
 				</Stack>

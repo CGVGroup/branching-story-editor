@@ -5,9 +5,6 @@ import json
 from pathlib import Path
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-import logging
-logging.basicConfig(level=logging.DEBUG)
-
 from langchain.chat_models import init_chat_model
 from langchain.prompts import ChatPromptTemplate, SystemMessagePromptTemplate, HumanMessagePromptTemplate
 
@@ -72,7 +69,7 @@ def get_stories(username: str | None = None, serialized = False):
     if username == None:
         with (open(SAVED_STORIES_PATH, "r") as fp):
             all_stories = json.load(fp)
-        return jsonify([[{username: {"id": id, "story": username[id]['serialized_story' if serialized else 'story']}}] for username in all_stories for id in username])
+        return jsonify({username: [[story_id, all_stories[username][story_id]['serialized_story' if serialized else 'story']] for story_id in all_stories[username]] for username in all_stories})
     else:
         with (open(SAVED_STORIES_PATH, "r") as fp):
             user_stories = json.load(fp).get(username, {})

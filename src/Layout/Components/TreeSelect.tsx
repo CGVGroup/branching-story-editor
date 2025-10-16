@@ -1,6 +1,6 @@
-import { Combobox, InputBase, Input, Tree, Group, useCombobox, TreeNodeData, InputBaseProps, FloatingPosition, PillsInput, Pill } from "@mantine/core";
+import { Combobox, InputBase, Input, Tree, Group, useCombobox, TreeNodeData, InputBaseProps, FloatingPosition, PillsInput, Pill, Checkbox, Radio } from "@mantine/core";
 import { UseFormReturnType } from "@mantine/form";
-import { UseDisclosureHandlers, useUncontrolled } from "@mantine/hooks";
+import { useUncontrolled } from "@mantine/hooks";
 import { useCallback, useMemo } from "react";
 
 /**
@@ -10,8 +10,9 @@ import { useCallback, useMemo } from "react";
  * @param formKey parent Form {@link UseFormReturnType.key key}
  * @param data {@link TreeNodeData tree data}
  * @param inputComponentProps props to be passed to internal Combobox Input component
- * @param placeholder 
+ * @param placeholder placeholder that appears when no option is selected
  * @param position dropdown {@link FloatingPosition position}
+ * @param canSelectCategories whether non-leaf nodes are selectable, displays additional selectable radios/checkboxes
  */
 function TreeSelect(props: {
 	isMulti?: boolean,
@@ -21,7 +22,7 @@ function TreeSelect(props: {
 	inputComponentProps: InputBaseProps,
 	placeholder?: string,
 	position?: FloatingPosition,
-	openHandlers? :UseDisclosureHandlers
+	canSelectCategories?: boolean
 }) {
 	const combobox = useCombobox({
 		onDropdownClose: () => combobox.resetSelectedOption(),
@@ -93,24 +94,34 @@ function TreeSelect(props: {
 					<Tree
 						data={props.data}
 						renderNode={({node, expanded, hasChildren, elementProps, tree}) => {
+							const isSelected = props.isMulti ? _value.includes(node.value) : _value === node.value;
 							return (
-								hasChildren ? (
-									<Group gap={5} {...elementProps} onClick={() => tree.toggleExpanded(node.value)}>
-										{node.label}
-										<i className="bi bi-chevron-down"
-											style={{ display: "inline-block", transform: expanded ? 'rotate(180deg)' : 'rotate(0deg)' }}/>
-									</Group>)
-								:
-									<Combobox.Option
-										value={node.value}
-										active={props.isMulti ? _value.includes(node.value) : _value === node.value}
-										{...elementProps}>
-										<Group gap={5}>
-											{(props.isMulti ? _value.includes(node.value) : _value === node.value) &&
-												<i className="bi bi-check"/>}
+								<Group>
+									{props.canSelectCategories &&
+										(props.isMulti ?
+											<Checkbox.Indicator checked={isSelected} onClick={() => handleMultiValueSelect(node.value)} style={{cursor: "pointer"}}/>
+										:
+											<Radio.Indicator checked={isSelected} onClick={() => handleSingleValueSelect(node.value)} style={{cursor: "pointer"}}/>
+										)
+									}
+									{hasChildren ? (
+										<Group gap={5} {...elementProps} onClick={() => tree.toggleExpanded(node.value)}>
 											{node.label}
-										</Group>
-									</Combobox.Option>
+											<i className="bi bi-chevron-down"
+												style={{ display: "inline-block", transform: expanded ? 'rotate(180deg)' : 'rotate(0deg)' }}/>
+										</Group>)
+									:
+										<Combobox.Option
+											value={node.value}
+											active={isSelected}
+											{...elementProps}>
+											<Group gap={5}>
+												{!props.canSelectCategories && isSelected &&
+													<i className="bi bi-check"/>}
+												{node.label}
+											</Group>
+										</Combobox.Option>}
+								</Group>
 							);
 						}}/>
 				</Combobox.Options>

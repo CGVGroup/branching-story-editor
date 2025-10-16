@@ -3,6 +3,10 @@ import { ActionIcon, Flex, Group, TextInput } from "@mantine/core"
 import { UsernameContext } from "../../App.tsx";
 import { useNavigate } from "react-router-dom";
 
+/**
+ * A simple login component.
+ * @param navigateTo where to navigate after entering the username
+ */
 function Login(props: {
     navigateTo: string;
 }) {
@@ -13,6 +17,7 @@ function Login(props: {
     const [localName, setLocalName] = useState("");
 
     const handleContinue = useCallback((name: string) => {
+        if (!name) return;
         setUsername(name);
         navigate(props.navigateTo);
     }, [setUsername]);

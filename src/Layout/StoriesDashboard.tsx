@@ -6,7 +6,7 @@ import { modals } from '@mantine/modals';
 import Story from "../StoryElements/Story.ts";
 import StoryFlowChartViewer from "../Flow/StoryFlowChartViewer.tsx";
 import StoryElements from "./StoryElements.tsx";
-import { ChosenModelContext, ChosenPromptContext, ModelListContext, PromptListContext, UsernameContext } from "../App.tsx";
+import { ModelListContext, PromptListContext, UsernameContext } from "../App.tsx";
 import classes from "./GrowColumn.module.css"
 import saveToDisk from "../Misc/SaveToDisk.ts";
 
@@ -25,8 +25,6 @@ function StoriesDashboard(props: {
 	
 	const modelNamesContext = useContext(ModelListContext);
 	const promptNamesContext = useContext(PromptListContext);
-	const [chosenModel, setChosenModel] = useContext(ChosenModelContext)!;
-	const [chosenPrompt, setChosenPrompt] = useContext(ChosenPromptContext)!;
 	const [username, setUsername] = useContext(UsernameContext)!;
 
 	const [selectedId, setSelectedId] = useState<string | null>(props.lastOpenStory);
@@ -107,28 +105,14 @@ function StoriesDashboard(props: {
 			styles={{ main: {display: "flex"} }}>
 			<AppShell.Header p="xs">
 				<Title order={1} ta="center" h="100%">Story Editor</Title>
-				<SimpleGrid pos="absolute" right="0" top="0" w="33%" cols={3}>
-					<Select
-						label="LLM"
-						allowDeselect={false}
-						defaultValue={chosenModel}
-						onChange={choice => setChosenModel(choice!)}
-						data={modelNamesContext!}/>
-					<Select
-						label="Prompt"
-						allowDeselect={false}
-						defaultValue={chosenPrompt}
-						onChange={choice => setChosenPrompt(choice!)}
-						data={promptNamesContext!}/>
-						<Input.Wrapper label="Login effettuato">
-							<Group justify="center" wrap="nowrap">
-								<Text style={{overflow: "hidden", textOverflow:"ellipsis"}}>{username}</Text>
-								<ActionIcon color="red" variant="light" onClick={onClickLogout} title="Esci">
-									<i className="bi bi-box-arrow-right" />
-								</ActionIcon>
-							</Group>
-						</Input.Wrapper>
-				</SimpleGrid>
+				<Input.Wrapper label="Login effettuato" pos="absolute" right="0" top="0">
+					<Group justify="center" wrap="nowrap">
+						<Text style={{overflow: "hidden", textOverflow:"ellipsis"}}>{username}</Text>
+						<ActionIcon color="red" variant="light" onClick={onClickLogout} title="Esci">
+							<i className="bi bi-box-arrow-right" />
+						</ActionIcon>
+					</Group>
+				</Input.Wrapper>
 			</AppShell.Header>
 			<AppShell.Navbar p="md">
 				<AppShell.Section pb="xs">

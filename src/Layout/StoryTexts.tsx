@@ -6,7 +6,6 @@ import Choice from "../StoryElements/Choice.ts";
 import ChoiceEditor from "./Editors/ChoiceEditor.tsx";
 import { ChoiceNodeProps, InfoNodeProps, NodeType, SceneNodeProps } from "../Flow/StoryNode.tsx";
 import PromptArea from "./Components/PromptArea.tsx";
-import { ChosenModelContext, ChosenPromptContext } from "../App.tsx";
 import InfoEditor from "./Editors/InfoEditor.tsx";
 import { Info } from "../Flow/InfoNode.tsx";
 import classes from "./GrowColumn.module.css"
@@ -21,12 +20,10 @@ function StoryTexts(props: {
 	onChoiceMoved: (id: string, changes: number[]) => void,
 	onChoiceDeleted: (id: string, idx: number) => void,
 	onChoiceClickEditNode: (id: string) => void,
+	sendToLLM: (id: string) => Promise<void>
 }) {
 	const [localStory, setLocalStory] = useState<Story>(props.story.clone());
 	const [loadings, setLoadings] = useState<boolean[]>(new Array(localStory.flow.nodes.length).fill(false));
-
-	const [chosenModel, ] = useContext(ChosenModelContext)!;
-	const [chosenPrompt, ] = useContext(ChosenPromptContext)!;
 	
 	const onFullTextEdited = useCallback((id: string, newText: string) => {
 		setLocalStory(story => {
@@ -51,10 +48,9 @@ function StoryTexts(props: {
 	const onSendButtonClicked = useCallback(async (id: string) => {
 		const index = localStory.getNodes().findIndex(node => node.id === id);
 		setLoadings(loadings => loadings.map((loading, idx) => idx === index ? true : loading));
-		const sceneText = await props.story.sendSceneToLLM(id, chosenModel, chosenPrompt);
-		if (sceneText) onFullTextEdited(id, sceneText);
+		await props.sendToLLM(id);
 		setLoadings(loadings => loadings.map((loading, idx) => idx === index ? false : loading));
-	}, [localStory, chosenModel, onFullTextEdited, props.story]);
+	}, [localStory, onFullTextEdited, props.story]);
 
 	const sortedNodes = useMemo(() => [...localStory.flow.nodes].sort((n1, n2) => n1.position.x - n2.position.x)
 	, [localStory]);
@@ -83,7 +79,7 @@ function StoryTexts(props: {
 										{`${data.label}${data.scene?.details.title ? " - " : ""}${data.scene?.details.title}`} 
 									</Accordion.Control>
 									<Accordion.Panel>
-										<Grid>
+										<Grid styles={{inner:{maxHeight: "20em"}}}>
 											<Grid.Col span={4}>
 												<PromptArea
 													story={localStory}
@@ -119,7 +115,7 @@ function StoryTexts(props: {
 													className={classes.growcol}
 													styles={{
 														wrapper: {flexGrow: 1},
-														input: {height: "100%"}
+														input: {height: "20em"}
 													}}>
 												</Textarea>
 											</Grid.Col>

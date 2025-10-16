@@ -132,7 +132,7 @@ function PromptArea(props: {
 						description='Usa "@" per menzionare gli elementi della storia'
 						placeholder="Prompt"
 						multiline
-						styles={{input: {width: "100%", resize: "vertical"}}}
+						styles={{input: {width: "100%", resize: "vertical", minHeight: "7.5em"}}}
 						onBlur={e => {
 							e.preventDefault();
 							if (!e.relatedTarget?.closest(".prompt-area-menu")) {

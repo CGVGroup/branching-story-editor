@@ -1,9 +1,9 @@
-import { useCallback, useContext, useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router";
 import { Node } from "@xyflow/react";
-import { ActionIcon, Anchor, AppShell, Center, CloseButton, Grid, Tabs, Text, TextInput } from "@mantine/core";
+import { ActionIcon, Anchor, AppShell, Center, CloseButton, Grid, Group, Tabs, Text, TextInput } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
-import { modals } from "@mantine/modals";
+import { modals, openConfirmModal } from "@mantine/modals";
 import StoryFlowChartEditor from "../../Flow/StoryFlowChartEditor.tsx";
 import StoryElements from "../StoryElements.tsx";
 import Story from "../../StoryElements/Story.ts";
@@ -15,11 +15,11 @@ import { Info } from "../../Flow/InfoNode.tsx";
 import InfoEditor from "./InfoEditor.tsx";
 import StoryTexts from "../StoryTexts.tsx";
 import { NodeType, storyNodeClassNames, storyNodeColorArray } from "../../Flow/StoryNode.tsx";
-import { ChosenModelContext, ChosenPromptContext } from "../../App.tsx";
 // @ts-ignore
 import {ReactComponent as AiPen} from "../../img/ai-pen.svg";
 import classes from "../GrowColumn.module.css";
 import GeneratingTextsDialog, { TextsLoadingInfo } from "../Components/GeneratingTextsDialog.tsx";
+import StorySettings from "../StorySettings.tsx";
 
 const defaultTab = "structure";
 
@@ -38,11 +38,10 @@ function StoryEditor(props: {
 	const [dirty, setDirty] = useState(false);
 
 	const [sideTab, {toggle: toggleSideTab}] = useDisclosure(true);
+	const [aside, {open: openAside, close: closeAside, toggle: toggleAside}] = useDisclosure(false);
 
 	const [loading, setLoading] = useState(false);
 	const [currentLoadingInfo, setCurrentLoadingInfo] = useState<TextsLoadingInfo>({current: 0, total: 0, currentScene: ""});
-	const [chosenModel, ] = useContext(ChosenModelContext)!;
-	const [chosenPrompt, ] = useContext(ChosenPromptContext)!;
 
 	const navigate = useNavigate();
 
@@ -114,23 +113,71 @@ function StoryEditor(props: {
 		setCurrentTab(id);
 	}, [localStory]);
 
-	const onConfirmGenerateAll = useCallback(async () => {
+	const checkStorySettings = useCallback((story: Story) => {
+		if (story.settings.model && story.settings.prompt && story.settings.mainCharacter) {
+			return true
+		}
+		modals.openConfirmModal({
+			title: <Text size="lg">Impostazioni di generazione non valide</Text>,
+			children: <Text>Assegna ogni campo nelle impostazioni della Storia (<i className="bi bi-gear"/>)</Text>,
+			cancelProps: {style: {display: "none"}},
+			confirmProps: {variant: "light", color: "red"},
+			labels: { confirm: "Ok", cancel: ""},
+			onConfirm: () => openAside()
+		});
+		return false;
+	}, []);
+
+	const generateMultipleScenes = useCallback(async (startId?: string) => {
 		setLoading(true);
-		for await (const {done, progress, newStory} of localStory.sendStoryToLLM(chosenModel, chosenPrompt)) {
+		for await (const {done, progress, newStory, error} of localStory.sendStoryToLLM(startId)) {
 			setCurrentLoadingInfo(progress);
-			if (done) setLocalStory(newStory);
+			if (done) {
+				if (!error) 
+					setLocalStory(newStory);
+				else {
+					modals.openConfirmModal({
+						title: <Text size="lg">Errore nella generazione</Text>,
+						children: error,
+						cancelProps: {style: {display: "none"}},
+						confirmProps: {variant: "light", color: "red"},
+						labels: { confirm: "Ok", cancel: ""},
+					});
+					break;
+				}
+			}
 		}
 		setLoading(false);
-	}, [localStory, chosenModel]);
+	}, [localStory]);
 
-	const onRequestAllTexts = useCallback(() => {
+
+	const onRequestAllTexts = useCallback((story: Story) => {
+		if (!checkStorySettings(story)) return;
 		modals.openConfirmModal({
 			title: <Text size="lg">Generare i testi per tutta la storia?</Text>,
 			children: "Per ogni scena sarà possibile ritornare ai testi precedenti.",
 			labels: { confirm: "Continua", cancel: "Annulla" },
-			onConfirm: onConfirmGenerateAll,
+			onConfirm: generateMultipleScenes,
 		})
-	}, [onConfirmGenerateAll]);
+	}, [generateMultipleScenes]);
+
+	const onSceneRequestedNewText = useCallback(async (story: Story, nodeId: string, alsoFollowing?: boolean) => {
+		if (!checkStorySettings(story)) return;
+		if (alsoFollowing) await generateMultipleScenes(nodeId)
+		else {
+			try {
+				await story.sendSceneToLLM(nodeId);
+			} catch (error) {
+				modals.openConfirmModal({
+					title: <Text size="lg">Errore di generazione</Text>,
+					children: error as string,
+					cancelProps: {style: {display: "none"}},
+					confirmProps: {variant: "light", color: "red"},
+					labels: { confirm: "Ok", cancel: ""},
+				});
+			}
+		}
+	}, [checkStorySettings, generateMultipleScenes]);
 	
 	const handleSave = useCallback((id: string, localStory: Story) => {
 		props.setStory(id, localStory);
@@ -138,7 +185,7 @@ function StoryEditor(props: {
 	}, []);
 
 	const onClickHome = useCallback(() => {
-		if (!dirty || window.confirm("Sono presenti modifiche non salvate.\nUscire da questa storia?")) {
+		if (!dirty || window.confirm("Sono presenti modifiche non salvate. Uscire da questa storia?")) {
 			navigate("/stories");
 		}
 	}, [dirty]);
@@ -158,14 +205,14 @@ function StoryEditor(props: {
 		return () => window.removeEventListener('beforeunload', onBeforeUnload);
 	}, [dirty]);
 			
-
 	return (
 		<AppShell
 			header={{ height: "10vh" }}
 			navbar={{ width: "17vw", breakpoint: "sm", collapsed: {desktop: !sideTab} }}
+			aside={{ width: "15vw", breakpoint: "sm", collapsed: {desktop: !aside} }}
 			classNames={{main: classes.growcol}}>
 			<AppShell.Header>
-				<Grid styles={{inner: {alignItems: "center"}}}>
+				<Grid styles={{inner: {alignItems: "center"}}} px="xs">
 					<Grid.Col span={2}>
 						<Center>
 							<ActionIcon.Group>
@@ -194,7 +241,7 @@ function StoryEditor(props: {
 									size="xl"
 									variant="light"
 									title="Genera tutti i testi"
-									onClick={onRequestAllTexts}
+									onClick={() => onRequestAllTexts(localStory)}
 									loaderProps={{size: "xs"}}
 									loading={loading}>
 									<AiPen/>
@@ -203,11 +250,20 @@ function StoryEditor(props: {
 						</Center>
 					</Grid.Col>
 					<Grid.Col span={10}>
-						<TextInput
-							styles={{input: {textAlign:"center", fontSize:"xx-large"}}}
-							size="xl"
-							defaultValue={localStory.title}
-							onChange={e => handleTitleChange(e.currentTarget.value)}/>
+						<Group>
+							<TextInput
+								size="xl"
+								defaultValue={localStory.title}
+								onChange={e => handleTitleChange(e.currentTarget.value)}
+								style={{flexGrow: "1"}}
+								styles={{input: {textAlign:"center", fontSize:"xx-large"}}}/>
+							<ActionIcon
+								size="xl"
+								onClick={toggleAside}
+								variant={aside ? "filled" : "light"}>
+								<i className="bi bi-gear" />
+							</ActionIcon>
+						</Group>
 					</Grid.Col>
 				</Grid>
 			</AppShell.Header>
@@ -217,6 +273,10 @@ function StoryEditor(props: {
 					setStory={story => setLocalStory(story)}
 					readOnly={false} />
 			</AppShell.Navbar>
+			<AppShell.Aside>
+				<CloseButton onClick={closeAside}/>
+				<StorySettings story={localStory} setSettings={settings => setLocalStory(story => story.cloneAndSetSettings(settings))}/>
+			</AppShell.Aside>
 			<AppShell.Main>
 				<GeneratingTextsDialog loading={loading} {...currentLoadingInfo}/>
 				<Tabs
@@ -275,7 +335,8 @@ function StoryEditor(props: {
 							onSceneClickOpenScene={onClickEditNode}
 							onChoiceMoved={onChoiceMoved}
 							onChoiceDeleted={onChoiceDeleted}
-							onChoiceClickEditNode={onClickEditNode}/>
+							onChoiceClickEditNode={onClickEditNode}
+							sendToLLM={(id: string) => onSceneRequestedNewText(localStory, id, false)}/>
 					</Tabs.Panel>
 					{openNodes.map(nodeId => {
 						const node = localStory.getNode(nodeId);
@@ -286,9 +347,9 @@ function StoryEditor(props: {
 									<SceneEditor
 										story={localStory}
 										setStory={setLocalStory}
-										nodeId={nodeId}
 										scene={node.data.scene as Scene}
-										setScene={newScene => onSceneEdited(nodeId, newScene)}/>}
+										setScene={newScene => onSceneEdited(nodeId, newScene)}
+										sendToLLM={alsoFollowing => onSceneRequestedNewText(localStory, node.id, alsoFollowing)}/>}
 								{node.type === NodeType.choice &&
 									<ChoiceEditor 
 										story={localStory}

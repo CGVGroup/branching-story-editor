@@ -1,4 +1,4 @@
-import { getConnectedEdges, getIncomers, getOutgoers, Node, ReactFlowJsonObject } from "@xyflow/react";
+import { getConnectedEdges, getOutgoers, Node, ReactFlowJsonObject } from "@xyflow/react";
 import { StoryElementType, StoryElement, SmartSerializedStoryElement, smartSerializeStoryElement, StoryElementTypeArray } from "./StoryElement.ts";
 import Scene, { SmartSerializedScene } from "./Scene.ts";
 import Choice, { SmartSerializedChoice } from "./Choice.ts";
@@ -6,8 +6,17 @@ import { Info } from "../Flow/InfoNode.tsx";
 import { NodeType, storyNodeClassNames } from "../Flow/StoryNode.tsx";
 import { sendToLLM } from "../Misc/LLM.ts";
 import { getElementFromDB } from "../Misc/DB.ts";
-import getAllOutgoers from "../Misc/GraphUtils.ts";
+import { getAllOutgoers, getPreviousSceneNode } from "../Misc/GraphUtils.ts";
 import { TextsLoadingInfo } from "../Layout/Components/GeneratingTextsDialog.tsx";
+
+/**
+ * LLM configuration for the Story.
+ */
+type StorySettingsType = {
+	model: string,
+	prompt: string,
+	mainCharacter: string
+}
 
 /**
  * Complete info for saving to JSON.
@@ -18,7 +27,8 @@ type SerializedStory = {
 	flow: ReactFlowJsonObject,
 	title: string,
 	summary: string,
-	notes: string
+	notes: string,
+	settings: StorySettingsType
 }
 
 /**
@@ -45,7 +55,8 @@ type SmartSerializedNode = {
  * @param flow {@link ReactFlowJsonObject} containing all Nodes, Edges and everything related to ReactFlow
  * @param title title of the Story
  * @param summary summary of the Story
- * @param notes notes for the Story 
+ * @param notes notes for the Story
+ * @param settings LLM settings for the Story
  */
 class Story {
 	elements: StoryElement[];
@@ -53,6 +64,7 @@ class Story {
 	title: string;
 	summary: string;
 	notes: string;
+	settings: StorySettingsType;
 
 	constructor(
 		elements?: string[],
@@ -60,7 +72,8 @@ class Story {
 		flow: ReactFlowJsonObject = {nodes: [], edges: [], viewport: {x: 0, y: 0, zoom: 1}},
 		title?: string,
 		summary?: string,
-		notes?: string
+		notes?: string,
+		settings?: StorySettingsType,
 	) {
 		this.elements = elements?.map(id => getElementFromDB(id)).concat(residentElements ?? []) ?? [];
 		this.flow = {...flow, nodes: flow.nodes.map(node => {
@@ -76,6 +89,7 @@ class Story {
 		this.title = title ?? "Storia senza titolo";
 		this.summary = summary ?? "";
 		this.notes = notes ?? "";
+		this.settings = settings ?? {model: "", prompt: "", mainCharacter: ""}
 	}
 
 	clone(): Story {
@@ -85,7 +99,8 @@ class Story {
 			this.flow,
 			this.title,
 			this.summary,
-			this.notes
+			this.notes,
+			this.settings,
 		); 
 	}
 
@@ -100,6 +115,42 @@ class Story {
 		if (!this.canAddElement(element)) return false;
 		this.elements.push(element);
 		return true;
+	}
+	
+	setElement(id: string, newElement: StoryElement) {
+		this.elements = this.elements.map(element => element.id === id ? newElement : element);
+	}
+
+	deleteElement(id: string) {
+		this.elements = this.elements.filter(element => element.id !== id)
+	}
+
+	getElements(): StoryElement[] {
+		return [...this.elements];
+	}
+  
+	getElementsByType(type: StoryElementType): StoryElement[] {
+		return this.elements.filter(element => element.elementType === type);
+	}
+
+	getElement(id: string): StoryElement | undefined {
+		return this.elements.find(element => element.id === id);
+	}
+
+	getElementByName(name: string): StoryElement | undefined {
+		return this.elements.find(element => element.name === name);
+	}
+
+	getNode(id: string): Node | undefined {
+		return this.flow.nodes.find(node => node.id === id);
+	}
+
+	getScene(id: string): Scene | undefined {
+		return this.getNode(id)?.data.scene as Scene
+	}
+
+	getNodes(): Node[] {
+		return this.flow.nodes;
 	}
 
 	cloneAndAddElement(element: StoryElement): Story {
@@ -156,46 +207,16 @@ class Story {
 		return cloned;
 	}
 
+	cloneAndSetSettings(settings: StorySettingsType): Story {
+		const cloned = this.clone();
+		cloned.settings = settings;
+		return cloned;
+	}
+
 	cloneAndDeleteElement(id: string): Story {
 		const cloned = this.clone();
 		cloned.deleteElement(id);
 		return cloned;
-	}
-
-	setElement(id: string, newElement: StoryElement) {
-		this.elements = this.elements.map(element => element.id === id ? newElement : element);
-	}
-
-	deleteElement(id: string) {
-		this.elements = this.elements.filter(element => element.id !== id)
-	}
-
-	getElements(): StoryElement[] {
-		return [...this.elements];
-	}
-  
-	getElementsByType(type: StoryElementType): StoryElement[] {
-		return this.elements.filter(element => element.elementType === type);
-	}
-
-	getElement(id: string): StoryElement | undefined {
-		return this.elements.find(element => element.id === id);
-	}
-
-	getElementByName(name: string): StoryElement | undefined {
-		return this.elements.find(element => element.name === name);
-	}
-
-	getNode(id: string): Node | undefined {
-		return this.flow.nodes.find(node => node.id === id);
-	}
-
-	getScene(id: string): Scene | undefined {
-		return this.getNode(id)?.data.scene as Scene
-	}
-
-	getNodes(): Node[] {
-		return this.flow.nodes;
 	}
 
 	/**
@@ -223,7 +244,8 @@ class Story {
 					default:
 						return node;
 				}
-			})}
+			})},
+			settings: this.settings
 		}
 	}
 
@@ -271,7 +293,7 @@ class Story {
 	}
 
 	static deserialize(obj: SerializedStory): Story {
-		return new Story(obj.elements, obj.residentElements, obj.flow, obj.title, obj.summary, obj.notes);
+		return new Story(obj.elements, obj.residentElements, obj.flow, obj.title, obj.summary, obj.notes, obj.settings);
 	}
 
 	toJSON(): string {
@@ -282,24 +304,20 @@ class Story {
 		return this.deserialize(JSON.parse(json));
 	}
 	/**
-	 * Sends a single scene to the LLM and returns the promised response.
+	 * Sends a single scene to the LLM and adds the new text to the Scene's history.
 	 * 
 	 * A `payload` is first created from Scene and Story data to fit the requirements of the prompt.
 	 * @param id Scene id
-	 * @param model chosen LLM model
-	 * @param prompt chosen LLM prompt
-	 * @returns promise with the generated text
 	 */ 
-	async sendSceneToLLM(id: string, model: string, prompt: string): Promise<string | null> {
+	async sendSceneToLLM(id: string): Promise<void> {
 		const node = this.getNode(id);
-		if (!node || node.type === NodeType.choice) return null;
+		if (!node || node.type !== NodeType.scene) throw new TypeError(`Il nodo ${node?.data?.label} non è un nodo di Scena.`);
 		
 		let payload: object = {
 			title: this.title,
 			characters: this.getElementsByType(StoryElementType.character),
 			objects: this.getElementsByType(StoryElementType.object),
 			locations: this.getElementsByType(StoryElementType.location),
-			is_choice: node.type === NodeType.choice,
 		};
 		
 		const scene = node.data.scene as Scene;
@@ -311,37 +329,33 @@ class Story {
 			location: this.getElement(scene.details.backgroundIds[StoryElementType.location][0])?.name ?? "",
 			characters: this.getElementsByType(StoryElementType.character).map(char => {
 				let str = char.name;
-				if (char.description) str = str.concat(` - Descrizione: ${char.description}`)
+				if (char.type) str = str.concat(` (${char.type})`);
+				//if (char.description) str = str.concat(` - Descrizione: ${char.description}`);
 				return str}).join("\n"),
+			main_character: this.getElement(this.settings.mainCharacter)?.name ?? ""
 		};
 		
-		const incomers = getIncomers(node, this.flow.nodes, this.flow.edges)
-		if (incomers.length === 1 && incomers[0].type === NodeType.scene) {
-			payload = {...payload, previous_scene: (incomers[0].data.scene as Scene).history.current.fullText};
-		} else {
+		const previousSceneNode = getPreviousSceneNode(this.flow, node);
+		if (previousSceneNode) 
+			payload = {...payload, previous_scene: (previousSceneNode.data.scene as Scene).history.current.fullText};
+		else
 			payload = {...payload, previous_scene: ""};
-		}
 
-		return sendToLLM(payload, model, prompt).then(res => {
-			return JSON.parse(res);
-		}).catch(err => {
-			console.error(err);
-			return null;
-		});
+		const fullText = JSON.parse(await sendToLLM(payload, this.settings.model, this.settings.prompt));
+		if (fullText) scene.history.push({prompt: scene.history.current.prompt, fullText: fullText});
+		else throw new Error("Si è verificato un errore nella generazione del testo.");
 	}
 
 	/**
 	 * Async generator to send multiple Scenes to the LLM and get info after each one is generated.
 	 * 
 	 * If called with `startingNodeId`, recursively sends all connected nodes until a Choice Node is hit for every branch, else sends all Scene Nodes.
-	 * @param model chosen LLM model
-	 * @param prompt chosen LLM prompt
 	 * @param startingNodeId Node to start from or entire Story
 	 * @returns `done` whether the entire generation is complete
 	 * @returns `progress` {@link TextsLoadingInfo generation info}
 	 * @returns `newStory` cloned Story object with all changes applied
 	 */
-	async *sendStoryToLLM(model: string, prompt: string, startingNodeId?: string): AsyncGenerator<{done: boolean, progress: TextsLoadingInfo, newStory: Story}> {
+	async *sendStoryToLLM(startingNodeId?: string): AsyncGenerator<{done: boolean, progress: TextsLoadingInfo, newStory: Story, error: string}> {
 		let processableNodes: Node[];
 		if (startingNodeId) {
 			processableNodes = Array.from(getAllOutgoers(this.flow, this.getNode(startingNodeId)!, node => node.type === NodeType.choice));
@@ -350,17 +364,20 @@ class Story {
 		}
 		
 		let i = 0; 
-		for (const node of processableNodes) {
-			const scene = node.data.scene as Scene;
-			yield {done: false, progress: {current: i, total: processableNodes.length, currentScene: node.data.label as string}, newStory: this}
-			const fullText = await this.sendSceneToLLM(node.id, model, prompt);
-			i++;
-			if (fullText) scene.history.push({prompt: scene.history.current.prompt, fullText: fullText});
-			yield {done: false, progress: {current: i, total: processableNodes.length, currentScene: node.data.label as string}, newStory: this};
+		let info = {done: false, progress: {current: i, total: processableNodes.length, currentScene: ""}, newStory: this, error: ""};
+		try {
+			for (const node of processableNodes) {
+				yield info = {...info, progress: {current: i, total: processableNodes.length, currentScene: node.data.label as string}};
+				await this.sendSceneToLLM(node.id);
+				i++;
+				yield info = {...info, progress: {current: i, total: processableNodes.length, currentScene: node.data.label as string}};
+			}
+			yield {...info, done: true, progress: {current: i, total: processableNodes.length, currentScene: ""}, newStory: this.clone()};
+		} catch (error) {
+			yield info = {...info, done: true, error: error as string};
 		}
-		yield {done: true, progress: {current: i, total: processableNodes.length, currentScene: ""}, newStory: this.clone()};
 	}
 }
 
 export default Story;
-export {SerializedStory};
+export {StorySettingsType, SerializedStory};

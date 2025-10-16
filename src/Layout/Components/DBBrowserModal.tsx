@@ -74,14 +74,15 @@ function DBBrowserModal(props: {
 			selected.includes(id) ? selected.filter(e => e !== id) : [...selected, id]
 	), []);
 
+	// If no filter is active, return first maxResultCount results
+	// Otherwise, filter the search results and return the first maxResultCount results
 	useEffect(() => {
 		const results = searchDB(type, search);
 		if (Object.values(filters).every(value => value.length === 0)) {
 			setResults(results.slice(0, maxResultsCount));
 			return;
 		}
-		setResults(results.filter((element, idx) => {
-			if (idx >= maxResultsCount) return false;
+		setResults(results.filter(element => {
 			for (const [key, filter] of Object.entries(filters) as [keyof SearchFilters, string[]][]) {
 				if (!Object.keys(element).includes(key)) continue;
 				const value = (element as StoryElement & ObjectElement)[key];
@@ -90,13 +91,15 @@ function DBBrowserModal(props: {
 				}
 				return filter.includes(value);
 			}
-		}));
+		}).slice(0, maxResultsCount));
 	}, [search, type, filters, props.selectedElements]);
 
+	// Keep type updated upon change of props.elementType
 	useEffect(() => {
 		setType(props.elementType);
 	}, [props.elementType]);
 
+	// Monitors updateFilters and sets the filters accordingly
 	useEffect(() => {
 		if (updateFilters.type) setFilters(filters => {return {...filters, type: typeTree.getCheckedNodes().map(status => status.value)}});
 		if (updateFilters.dating) setFilters(filters => {return {...filters, dating: datingTree.getCheckedNodes().map(status => status.value)}});
