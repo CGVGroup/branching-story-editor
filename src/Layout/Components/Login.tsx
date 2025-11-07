@@ -18,7 +18,7 @@ function Login(props: {
 
     const handleContinue = useCallback((name: string) => {
         if (!name) return;
-        setUsername(name);
+        setUsername(name.toLocaleLowerCase());
         navigate(props.navigateTo);
     }, [setUsername]);
     return (

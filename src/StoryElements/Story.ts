@@ -313,25 +313,29 @@ class Story {
 		const node = this.getNode(id);
 		if (!node || node.type !== NodeType.scene) throw new TypeError(`Il nodo ${node?.data?.label} non è un nodo di Scena.`);
 		
+		const scene = node.data.scene as Scene;
+
+		if (scene.history.current.prompt === "") return;
+
 		let payload: object = {
 			title: this.title,
-			characters: this.getElementsByType(StoryElementType.character),
-			objects: this.getElementsByType(StoryElementType.object),
-			locations: this.getElementsByType(StoryElementType.location),
-		};
-		
-		const scene = node.data.scene as Scene;
-		payload = {...payload,
+			characters: this.getElementsByType(StoryElementType.character)
+				.map(char => {
+					let str = char.name;
+					if (char.type) str = str.concat(` (${char.type})`);
+					return str})
+				.join("\n"),
+			objects: this.getElementsByType(StoryElementType.object)
+				.map(obj => {
+					let str = obj.name;
+					if (obj.type) str = str.concat(` (${obj.type})`);
+					return str})
+				.join("\n"),
+			location: this.getElement(scene.details.backgroundIds[StoryElementType.location][0])?.name ?? "",
 			prompt: scene.history.current.prompt,
 			time: scene.details.time,
 			tones: scene.details.tones,
 			weather: scene.details.weather,
-			location: this.getElement(scene.details.backgroundIds[StoryElementType.location][0])?.name ?? "",
-			characters: this.getElementsByType(StoryElementType.character).map(char => {
-				let str = char.name;
-				if (char.type) str = str.concat(` (${char.type})`);
-				//if (char.description) str = str.concat(` - Descrizione: ${char.description}`);
-				return str}).join("\n"),
 			main_character: this.getElement(this.settings.mainCharacter)?.name ?? ""
 		};
 		
